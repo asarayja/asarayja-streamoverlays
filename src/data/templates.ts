@@ -1663,6 +1663,8 @@ interface FamilyStyle {
   id: string;
   name: string;
   tags: StyleTag[];
+  /** Which collection the family files under. Defaults to "core". */
+  collection?: Collection;
   /** Display face for headlines. */
   display: string;
   displayWeight: number;
@@ -1714,7 +1716,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     name,
     category,
     tags: f.tags,
-    collection: "core",
+    collection: f.collection ?? "core",
     family: f.name,
     layers,
   });
@@ -1959,8 +1961,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         fontWeight: 400,
         fill: "@textSecondary",
       }),
-      camera("Webcam", { x: 40, y: 660, width: 480, height: 270 }),
-      chat("Chat", { x: 1500, y: 140, width: 380, height: 580 }, 7),
+      // No webcam or chat here — those are their own screens/exports; the
+      // gameplay overlay is just the branding bar and socials over the game.
       social("Socials", { x: 620, y: 984, width: 680, height: 52 }, {
         platforms: ["twitch", "discord", "instagram", "x"],
         fontFamily: f.body,
@@ -2291,6 +2293,7 @@ const STARLIT_SERENITY: FamilyStyle = {
 const HALLOWED_NIGHT: FamilyStyle = {
   id: "hallowed",
   name: "Hallowed Night",
+  collection: "gothic",
   tags: ["Horror", "Dark", "Fantasy"],
   display: "Cinzel Decorative",
   displayWeight: 700,
@@ -3849,12 +3852,11 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
   // Pack naming: themed collections compose the palette in ("Midnight
   // Cathedral — Gameplay"); core families compose their family name in
   // ("Neon Grid — Starting Soon"); one-off core designs keep their own name.
-  const name =
-    base.collection !== "core"
+  const name = base.family
+    ? `${base.family} — ${base.name}`
+    : base.collection !== "core"
       ? `${palette.name} — ${base.name}`
-      : base.family
-        ? `${base.family} — ${base.name}`
-        : base.name;
+      : base.name;
   return {
     id: `${base.id}--${palette.id}`,
     name,
