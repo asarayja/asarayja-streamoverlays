@@ -35,7 +35,7 @@ import type {
   Theme,
 } from "@/lib/types";
 
-const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "crescent", "plaque", "scanlines"];
+const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "moon", "crescent", "plaque", "scanlines"];
 const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs"];
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
 
@@ -486,6 +486,25 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
               onBegin={beginGesture}
               onChange={(cornerRadius) => live({ cornerRadius })}
             />
+          )}
+          {shape.shape === "moon" && (
+            <>
+              <Slider
+                label="Phase"
+                min={0.05}
+                max={1}
+                step={0.01}
+                value={shape.moonPhase ?? 1}
+                suffix={(shape.moonPhase ?? 1) >= 0.99 ? " · full" : (shape.moonPhase ?? 1) <= 0.5 ? " · waxing" : " · gibbous"}
+                onBegin={beginGesture}
+                onChange={(moonPhase) => live({ moonPhase })}
+              />
+              <Toggle
+                label="Craters"
+                checked={shape.craters ?? true}
+                onChange={(craters) => commit({ craters })}
+              />
+            </>
           )}
         </Section>
       );

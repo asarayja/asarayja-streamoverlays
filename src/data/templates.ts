@@ -68,6 +68,8 @@ function shape(
     fill?: string;
     cornerRadius?: number;
     background?: boolean;
+    moonPhase?: number;
+    craters?: boolean;
   } = {},
 ): LayerSpec {
   return {
@@ -77,6 +79,8 @@ function shape(
     shape: o.shape ?? "rect",
     fill: o.fill ?? "@primary",
     cornerRadius: o.cornerRadius ?? 0,
+    moonPhase: o.moonPhase,
+    craters: o.craters,
   };
 }
 
@@ -2128,8 +2132,9 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     layers: [
       ...gothicScene(),
       shape("Decor — Moon", { x: 830, y: 150, width: 220, height: 220 }, {
-        shape: "ellipse",
-        fill: "@accent/85",
+        shape: "moon",
+        moonPhase: 1,
+        fill: "@accent",
         effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
         animation: anim("float", { duration: 6000, intensity: 0.6 }),
       }),
@@ -2175,16 +2180,25 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     collection: "gothic",
     layers: [
       ...gothicScene(),
-      shape("Decor — Phase 1", { x: 580, y: 245, width: 50, height: 50 }, { shape: "ellipse", fill: "@accent/30" }),
-      shape("Decor — Phase 2", { x: 700, y: 235, width: 70, height: 70 }, { shape: "ellipse", fill: "@accent/55" }),
+      shape("Decor — Phase 1", { x: 580, y: 245, width: 50, height: 50 }, {
+        shape: "moon", moonPhase: 0.14, craters: false, fill: "@accent/70",
+      }),
+      shape("Decor — Phase 2", { x: 700, y: 235, width: 70, height: 70 }, {
+        shape: "moon", moonPhase: 0.4, craters: false, fill: "@accent/85",
+      }),
       shape("Decor — Full moon", { x: 840, y: 200, width: 140, height: 140 }, {
-        shape: "ellipse",
-        fill: "@accent/95",
+        shape: "moon",
+        moonPhase: 1,
+        fill: "@accent",
         effects: { glow: { enabled: true, color: "@glow", strength: 70 } },
         animation: anim("pulse", { duration: 5200, intensity: 0.7 }),
       }),
-      shape("Decor — Phase 4", { x: 1150, y: 235, width: 70, height: 70 }, { shape: "ellipse", fill: "@accent/55" }),
-      shape("Decor — Phase 5", { x: 1290, y: 245, width: 50, height: 50 }, { shape: "ellipse", fill: "@accent/30" }),
+      shape("Decor — Phase 4", { x: 1150, y: 235, width: 70, height: 70 }, {
+        shape: "moon", moonPhase: 0.6, craters: false, fill: "@accent/85",
+      }),
+      shape("Decor — Phase 5", { x: 1290, y: 245, width: 50, height: 50 }, {
+        shape: "moon", moonPhase: 0.86, craters: false, fill: "@accent/70",
+      }),
       text("Headline", { x: 260, y: 520, width: 1400, height: 120 }, "BE RIGHT BACK", {
         fontFamily: "Cinzel Decorative",
         fontSize: 92,

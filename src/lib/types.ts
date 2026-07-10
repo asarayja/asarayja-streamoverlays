@@ -307,8 +307,10 @@ export type ShapeKind =
   | "triangle"
   | "hexagon"
   | "line"
-  /** Moon: an outer disc with an offset bite taken out of it. */
+  /** A bare crescent: the lune between two circles. */
   | "crescent"
+  /** A moon with a phase terminator, craters and limb darkening. */
+  | "moon"
   /** Ornate bracket plaque — the alert/panel silhouette of holo packs. */
   | "plaque"
   /** Horizontal CRT lines across the box. */
@@ -319,6 +321,10 @@ export interface ShapeLayer extends LayerBase {
   shape: ShapeKind;
   fill: ColorValue;
   cornerRadius: number;
+  /** For `shape: "moon"`. 0 = new, 0.5 = half, 1 = full. */
+  moonPhase?: number;
+  /** For `shape: "moon"`. A full moon without craters reads as a flat disc. */
+  craters?: boolean;
 }
 
 /**

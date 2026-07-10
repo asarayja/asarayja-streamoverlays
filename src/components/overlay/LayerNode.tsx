@@ -16,7 +16,7 @@ import {
 import { sample } from "@/lib/animation";
 import { measureText } from "@/lib/measure";
 import { resolveSrc, resolveText, type MissingFieldMode } from "@/lib/placeholders";
-import { ensureContrast, lighten, resolveColor } from "@/lib/theme";
+import { darken, ensureContrast, lighten, resolveColor, withAlpha } from "@/lib/theme";
 import type {
   AlertLayer,
   ChannelProfile,
@@ -239,6 +239,34 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "moon") {
+    const phase = layer.moonPhase ?? 1;
+    const showCraters = layer.craters ?? true;
+    const base = resolveColor(layer.fill, ctx.theme);
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          c.save();
+          c.translate(w / 2, h / 2);
+          moonPath(c, Math.min(w, h) / 2, phase);
+          c.restore();
+          // Fill through Konva so the glow/shadow props still apply.
+          c.fillStrokeShape(shape);
+
+          if (showCraters) {
+            c.save();
+            c.translate(w / 2, h / 2);
+            moonPath(c, Math.min(w, h) / 2, phase);
+            c.clip();
+            drawCraters(c, Math.min(w, h) / 2, base);
+            c.restore();
+          }
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "crescent") {
     return (
       <KonvaShape
@@ -275,6 +303,79 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
   }
 
   return <Line closed points={polygonPoints(layer.shape, w, h)} {...paint} />;
+}
+
+/**
+ * The lit limb of a moon at `phase` (0 = new, 0.5 = half, 1 = full).
+ *
+ * Canvas angles run clockwise on screen because y points down, so pi/2 is the
+ * bottom and 3pi/2 the top. Sweeping pi/2 -> -pi/2 forwards passes the *left*
+ * side — the terminator of a gibbous moon; sweeping backwards passes the right
+ * and gives a crescent. Getting that direction backwards collapses the full
+ * moon into a zero-area lens.
+ */
+function moonPath(c: Konva.Context, R: number, phase: number) {
+  const k = 2 * phase - 1;
+  c.beginPath();
+  c.arc(0, 0, R, -Math.PI / 2, Math.PI / 2, false);
+  c.ellipse(0, 0, R * Math.abs(k), R, 0, Math.PI / 2, -Math.PI / 2, k < 0);
+  c.closePath();
+}
+
+/**
+ * Maria, craters and limb darkening. A crater is a bright rim below-right over
+ * a dark floor — lit from the upper left. Drawn the other way round, or as a
+ * flat disc, it reads as a bubble sitting on the surface.
+ */
+function drawCraters(c: Konva.Context, R: number, base: string) {
+  const TAU = Math.PI * 2;
+  const dark = darken(base, 0.62);
+
+  for (let i = 0; i < 3; i++) {
+    const angle = noise(i * 2.3 + 3) * TAU;
+    const dist = Math.sqrt(noise(i * 4.1 + 3)) * R * 0.55;
+    const radius = R * (0.22 + noise(i * 6.7 + 3) * 0.16);
+    const cx = Math.cos(angle) * dist;
+    const cy = Math.sin(angle) * dist;
+    const g = c.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    g.addColorStop(0, withAlpha(dark, 0.2));
+    g.addColorStop(1, withAlpha(dark, 0));
+    c.setAttr("fillStyle", g);
+    c.beginPath();
+    c.arc(cx, cy, radius, 0, TAU, false);
+    c.fill();
+  }
+
+  for (let i = 0; i < 16; i++) {
+    const angle = noise(i * 1.7 + 3) * TAU;
+    const rr = Math.sqrt(noise(i * 3.1 + 3));
+    const dist = rr * R * 0.86;
+    const cx = Math.cos(angle) * dist;
+    const cy = Math.sin(angle) * dist;
+    // Craters foreshorten toward the limb.
+    const cr = R * (0.035 + noise(i * 5.3 + 3) * 0.075) * (1 - rr * 0.35);
+
+    c.setAttr("globalAlpha", 0.16 + noise(i * 7.7 + 3) * 0.1);
+    c.setAttr("fillStyle", "#ffffff");
+    c.beginPath();
+    c.arc(cx + cr * 0.2, cy + cr * 0.2, cr, 0, TAU, false);
+    c.fill();
+
+    c.setAttr("globalAlpha", 0.2 + noise(i * 9.1 + 3) * 0.12);
+    c.setAttr("fillStyle", dark);
+    c.beginPath();
+    c.arc(cx, cy, cr * 0.92, 0, TAU, false);
+    c.fill();
+  }
+  c.setAttr("globalAlpha", 1);
+
+  const limb = c.createRadialGradient(0, 0, R * 0.55, 0, 0, R);
+  limb.addColorStop(0, withAlpha(dark, 0));
+  limb.addColorStop(1, withAlpha(dark, 0.3));
+  c.setAttr("fillStyle", limb);
+  c.beginPath();
+  c.arc(0, 0, R, 0, TAU, false);
+  c.fill();
 }
 
 /**

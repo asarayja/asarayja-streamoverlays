@@ -128,7 +128,7 @@ function makeLayer(type: LayerType, index: number): Layer {
       };
     case "shape":
     case "background":
-      return { ...base, type, shape: "rect", fill: "@primary", cornerRadius: 12 };
+      return { ...base, type, shape: "rect", fill: "@primary", cornerRadius: 12, moonPhase: 1, craters: true };
     case "window":
       return {
         ...base,
