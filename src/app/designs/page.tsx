@@ -77,7 +77,7 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
   return (
     <Link
       ref={viewRef}
-      href={`/designs/${design.key}`}
+      href={`/designs/view?d=${design.key}`}
       className={cx(
         "group animate-rise block overflow-hidden rounded-2xl border border-white/10",
         "transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/50",

@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 import { NextResponse } from "next/server";
 import { PALETTES } from "@/data/palettes";
 import { TEMPLATES } from "@/data/templates";

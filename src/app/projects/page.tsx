@@ -83,7 +83,7 @@ function ProjectCard({ project, profile }: { project: Project; profile: ReturnTy
   return (
     <div ref={viewRef} className="group animate-rise">
       <button
-        onClick={() => router.push(`/editor/${project.id}`)}
+        onClick={() => router.push(`/editor?id=${project.id}`)}
         className="relative block w-full overflow-hidden rounded-2xl border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/50"
       >
         <div ref={sizeRef} className={cx("aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}>
@@ -120,7 +120,7 @@ function ProjectCard({ project, profile }: { project: Project; profile: ReturnTy
           <button
             onClick={() => {
               const copy = duplicate(project.id);
-              if (copy) router.push(`/editor/${copy.id}`);
+              if (copy) router.push(`/editor?id=${copy.id}`);
             }}
             title="Duplicate"
             className="rounded p-1.5 text-zinc-600 transition-colors hover:bg-white/5 hover:text-zinc-300"

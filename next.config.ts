@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Emit a self-contained server bundle (server.js + traced deps) under
-  // .next/standalone, so the app can run with `node server.js` without a build.
-  output: "standalone",
+  // Emit a fully static site to out/ — plain HTML/CSS/JS that any static host
+  // serves with no Node server. Runtime ids (editor, live, design detail) live
+  // in query strings so no dynamic route params are needed.
+  output: "export",
 };
 
 export default nextConfig;

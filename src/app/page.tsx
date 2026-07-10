@@ -67,7 +67,7 @@ export default function GalleryPage() {
     // Opening a template makes a draft, not a saved project. It only enters
     // history once you actually edit it — browsing never clutters the list.
     const project = createDraft(template.id, useBrand ? brandTheme : undefined);
-    if (project) router.push(`/editor/${project.id}`);
+    if (project) router.push(`/editor?id=${project.id}`);
   };
 
   const clearAll = () => {

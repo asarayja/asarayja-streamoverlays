@@ -47,7 +47,7 @@ export function RecentProjects() {
             key={project.id}
             project={project}
             profile={profile}
-            onOpen={() => router.push(`/editor/${project.id}`)}
+            onOpen={() => router.push(`/editor?id=${project.id}`)}
           />
         ))}
       </div>

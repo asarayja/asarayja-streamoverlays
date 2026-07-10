@@ -99,7 +99,7 @@ export async function decodePayload(encoded: string): Promise<SharePayload | nul
 export async function buildObsUrl(payload: SharePayload): Promise<string> {
   const encoded = await encodePayload(payload);
   const origin = typeof window === "undefined" ? "" : window.location.origin;
-  return `${origin}/live/overlay/${payload.project.obsCode}#d=${encoded}`;
+  return `${origin}/live/overlay?code=${payload.project.obsCode}#d=${encoded}`;
 }
 
 /**

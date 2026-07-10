@@ -232,7 +232,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             <Palette className="size-3.5" />
             My brand
           </Button>
-          <Link href={`/live/overlay/${project.obsCode}`} target="_blank">
+          <Link href={`/live/overlay?code=${project.obsCode}`} target="_blank">
             <Button title="Open the OBS view in a new tab">
               <Radio className="size-3.5" />
               Live view
