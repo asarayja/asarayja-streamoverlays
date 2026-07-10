@@ -250,6 +250,25 @@ function makeLayer(type: LayerType, index: number): Layer {
         pill: true,
         pillColor: "@surface/80",
       };
+    case "goal":
+      return {
+        ...base,
+        type: "goal",
+        width: 640,
+        height: 150,
+        goalStyle: "bar",
+        label: "FOLLOWER GOAL",
+        current: 847,
+        target: 1000,
+        barShape: "rect",
+        fill: "@surface/90",
+        trackColor: "@surface/60",
+        barColor: "@accent",
+        labelColor: "@accent",
+        valueColor: "@text",
+        fontFamily: "Inter",
+        cornerRadius: 16,
+      };
     case "particle":
       return {
         ...base,

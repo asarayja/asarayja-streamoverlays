@@ -27,6 +27,7 @@ import type {
   Effects,
   FlagLayer,
   FrameLayer,
+  GoalLayer,
   IconLayer,
   WindowLayer,
   Gradient,
@@ -1256,10 +1257,14 @@ function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: R
 function AlertContent({ layer, ctx, glowBoost }: { layer: AlertLayer; ctx: RenderContext; glowBoost: number }) {
   const { width: w, height: h } = layer;
   const coffin = layer.boxShape === "coffin";
+  const showAvatar = layer.avatar !== false;
   const avatarSize = h * 0.52;
   // A coffin's pointed head eats the left edge, so the whole row shifts inboard.
   const headInset = coffin ? h * 0.18 : 0;
-  const left = headInset + h * 0.24 + avatarSize + h * 0.16;
+  // With no avatar disc the text takes the space, centred vertically.
+  const left = showAvatar
+    ? headInset + h * 0.24 + avatarSize + h * 0.16
+    : headInset + h * 0.3;
   const textWidth = w - left - h * 0.2 - headInset;
 
   const title = resolveText(layer.title, ctx.profile, missingMode(ctx.mode));
@@ -1291,14 +1296,16 @@ function AlertContent({ layer, ctx, glowBoost }: { layer: AlertLayer; ctx: Rende
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         />
       )}
-      <Circle
-        x={headInset + h * 0.24 + avatarSize / 2}
-        y={h / 2}
-        radius={avatarSize / 2}
-        fill={resolveColor("@primary", ctx.theme)}
-        stroke={resolveColor("@accent", ctx.theme)}
-        strokeWidth={3}
-      />
+      {showAvatar && (
+        <Circle
+          x={headInset + h * 0.24 + avatarSize / 2}
+          y={h / 2}
+          radius={avatarSize / 2}
+          fill={resolveColor("@primary", ctx.theme)}
+          stroke={resolveColor("@accent", ctx.theme)}
+          strokeWidth={3}
+        />
+      )}
       <Text
         x={left}
         y={h * 0.26}
@@ -1321,6 +1328,177 @@ function AlertContent({ layer, ctx, glowBoost }: { layer: AlertLayer; ctx: Rende
         ellipsis
         fill={resolveColor(layer.subtitleColor, ctx.theme)}
       />
+    </Group>
+  );
+}
+
+function fmtGoal(n: number): string {
+  return Math.round(n).toLocaleString("en-US");
+}
+
+function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderContext; glowBoost: number }) {
+  const { width: w, height: h } = layer;
+  const frac = layer.target > 0 ? Math.max(0, Math.min(1, layer.current / layer.target)) : 0;
+  const pct = Math.round(frac * 100);
+  const label = resolveText(layer.label, ctx.profile, missingMode(ctx.mode));
+  const value = `${fmtGoal(layer.current)} / ${fmtGoal(layer.target)}`;
+
+  const barColor = resolveColor(layer.barColor, ctx.theme);
+  const trackColor = resolveColor(layer.trackColor, ctx.theme);
+  const labelColor = resolveColor(layer.labelColor, ctx.theme);
+  const valueColor = resolveColor(layer.valueColor, ctx.theme);
+  const fill = resolveColor(layer.fill, ctx.theme);
+
+  if (layer.goalStyle === "ring") {
+    const cx = w / 2;
+    const cy = h / 2;
+    const D = Math.min(w, h);
+    const thick = D * 0.11;
+    const R = D / 2 - thick / 2 - D * 0.02;
+    const start = -Math.PI / 2;
+    return (
+      <Group listening={false}>
+        <KonvaShape
+          stroke={trackColor}
+          strokeWidth={thick}
+          sceneFunc={(c, s) => {
+            c.beginPath();
+            c.arc(cx, cy, R, 0, Math.PI * 2);
+            c.strokeShape(s);
+          }}
+        />
+        <KonvaShape
+          stroke={barColor}
+          strokeWidth={thick}
+          lineCap="round"
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+          sceneFunc={(c, s) => {
+            c.beginPath();
+            // A full ring has no end cap to round, so close the circle instead
+            // of leaving a hairline gap at the top.
+            if (frac >= 1) c.arc(cx, cy, R, 0, Math.PI * 2);
+            else c.arc(cx, cy, R, start, start + frac * Math.PI * 2, false);
+            c.strokeShape(s);
+          }}
+        />
+        <Text
+          x={0}
+          y={cy - R * 0.42}
+          width={w}
+          align="center"
+          text={`${pct}%`}
+          fontFamily={layer.fontFamily}
+          fontSize={R * 0.52}
+          fill={valueColor}
+        />
+        <Text
+          x={0}
+          y={cy + R * 0.06}
+          width={w}
+          align="center"
+          text={value}
+          fontFamily="Inter"
+          fontSize={R * 0.2}
+          fill={labelColor}
+        />
+        <Text
+          x={0}
+          y={cy + R * 0.34}
+          width={w}
+          align="center"
+          text={label}
+          fontFamily={layer.fontFamily}
+          fontSize={R * 0.17}
+          letterSpacing={2}
+          wrap="none"
+          fill={labelColor}
+        />
+      </Group>
+    );
+  }
+
+  // Bar style: a plate in the family silhouette, a label + count row, and a
+  // rounded track with the filled portion swept to the goal fraction.
+  const coffin = layer.barShape === "coffin";
+  const plaque = layer.barShape === "plaque";
+  const inset = coffin ? w * 0.06 : 0;
+  const padX = h * 0.2 + inset;
+  const labelSize = fitFontSize(label, w * 0.62 - padX, h * 0.26, layer.fontFamily, 400, 2);
+  const valueSize = h * 0.22;
+  const barH = h * 0.26;
+  const barW = w - padX * 2;
+  const barX = padX;
+  const barY = h - h * 0.24 - barH;
+  const r = barH / 2;
+  const fillW = frac <= 0 ? 0 : Math.max(barH, barW * frac);
+
+  return (
+    <Group listening={false}>
+      {coffin ? (
+        <KonvaShape
+          fill={fill}
+          {...borderProps(layer.effects, ctx.theme, w, h)}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+          sceneFunc={(c, s) => {
+            coffinPathH(c, w, h);
+            c.fillStrokeShape(s);
+          }}
+        />
+      ) : plaque ? (
+        <KonvaShape
+          fill={fill}
+          {...borderProps(layer.effects, ctx.theme, w, h)}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+          sceneFunc={(c, s) => {
+            plaquePath(c, w, h);
+            c.fillStrokeShape(s);
+          }}
+        />
+      ) : (
+        <Rect
+          width={w}
+          height={h}
+          cornerRadius={layer.cornerRadius}
+          fill={fill}
+          {...borderProps(layer.effects, ctx.theme)}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        />
+      )}
+      <Text
+        x={barX}
+        y={h * 0.2}
+        width={w * 0.62 - padX}
+        text={label}
+        fontFamily={layer.fontFamily}
+        fontSize={labelSize}
+        letterSpacing={1.5}
+        wrap="none"
+        ellipsis
+        fill={labelColor}
+      />
+      <Text
+        x={w * 0.5}
+        y={h * 0.2 + (labelSize - valueSize) * 0.6}
+        width={w * 0.5 - padX}
+        align="right"
+        text={value}
+        fontFamily="Inter"
+        fontSize={valueSize}
+        wrap="none"
+        fill={valueColor}
+      />
+      <Rect x={barX} y={barY} width={barW} height={barH} cornerRadius={r} fill={trackColor} />
+      {fillW > 0 && (
+        <Rect
+          x={barX}
+          y={barY}
+          width={fillW}
+          height={barH}
+          cornerRadius={r}
+          fill={barColor}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        />
+      )}
     </Group>
   );
 }
@@ -2079,6 +2257,8 @@ function Content({ layer, ctx, reveal, glowBoost }: { layer: Layer; ctx: RenderC
       return <AlertContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
     case "social":
       return <SocialContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
+    case "goal":
+      return <GoalContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
     case "particle":
       return <ParticleContent layer={layer} ctx={ctx} />;
     default:

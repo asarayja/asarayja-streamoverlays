@@ -202,6 +202,7 @@ function alert(
     fontFamily?: string;
     titleColor?: string;
     subtitleColor?: string;
+    avatar?: boolean;
   } = {},
 ): LayerSpec {
   return {
@@ -216,6 +217,44 @@ function alert(
     fontFamily: o.fontFamily ?? "Bebas Neue",
     titleColor: o.titleColor ?? "@accent",
     subtitleColor: o.subtitleColor ?? "@text",
+    avatar: o.avatar ?? true,
+  };
+}
+
+function goal(
+  name: string,
+  box: Box,
+  label: string,
+  current: number,
+  target: number,
+  o: BaseOpts & {
+    goalStyle?: "bar" | "ring";
+    barShape?: "rect" | "coffin" | "plaque";
+    fill?: string;
+    trackColor?: string;
+    barColor?: string;
+    labelColor?: string;
+    valueColor?: string;
+    fontFamily?: string;
+    cornerRadius?: number;
+  } = {},
+): LayerSpec {
+  return {
+    ...common(name, o),
+    ...box,
+    type: "goal",
+    goalStyle: o.goalStyle ?? "bar",
+    label,
+    current,
+    target,
+    barShape: o.barShape ?? "rect",
+    fill: o.fill ?? "@surface/90",
+    trackColor: o.trackColor ?? "@surface/55",
+    barColor: o.barColor ?? "@accent",
+    labelColor: o.labelColor ?? "@accent",
+    valueColor: o.valueColor ?? "@text",
+    fontFamily: o.fontFamily ?? "Inter",
+    cornerRadius: o.cornerRadius ?? 16,
   };
 }
 
@@ -876,6 +915,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
       alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "Tier 1 · welcome aboard", {
         fontFamily: "Orbitron",
         cornerRadius: 8,
+        avatar: false,
         fill: "@surface/95",
         titleColor: "@accent",
         subtitleColor: "@text",
@@ -884,6 +924,48 @@ const BASE_TEMPLATES: BaseTemplate[] = [
           border: { enabled: true, color: "@accent", width: 2, radius: 8 },
         },
         animation: anim("bounce", { duration: 1100 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-goals",
+    name: "Goals",
+    category: "Goals",
+    tags: ["Esports", "Neon"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      goal("Follower ring", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
+        goalStyle: "ring",
+        fontFamily: "Orbitron",
+        barColor: "@accent",
+        trackColor: "@surface/60",
+        effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+        animation: anim("zoom", { duration: 900, easing: "backOut" }),
+      }),
+      goal("Sub goal", { x: 560, y: 430, width: 760, height: 150 }, "SUB GOAL", 62, 100, {
+        goalStyle: "bar",
+        fill: "@surface/88",
+        fontFamily: "Orbitron",
+        barColor: "@accent",
+        cornerRadius: 8,
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 24 },
+          border: { enabled: true, color: "@border", width: 1, radius: 8 },
+        },
+        animation: anim("slide", { direction: "right", duration: 700 }),
+      }),
+      goal("Donation goal", { x: 560, y: 610, width: 760, height: 150 }, "DONATION GOAL", 340, 500, {
+        goalStyle: "bar",
+        fill: "@surface/88",
+        fontFamily: "Orbitron",
+        barColor: "@primary",
+        cornerRadius: 8,
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 24 },
+          border: { enabled: true, color: "@border", width: 1, radius: 8 },
+        },
+        animation: anim("slide", { direction: "right", duration: 700, delay: 160 }),
       }),
     ],
   },
@@ -1735,6 +1817,9 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         fontFamily: f.display,
         cornerRadius: f.radius,
         boxShape: f.alertShape ?? "rect",
+        // The hero (subscriber) reads cleaner as a plain plate; the follower
+        // keeps the viewer-avatar disc.
+        avatar: !hero,
         // Both alerts sit on the family's dark plate so they read as part of the
         // overlay, not a bright slab pasted over it. The hero (subscriber) is
         // set apart by an accent border and a stronger glow, not by inverting
@@ -1767,6 +1852,54 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     ]);
 
   const PANELS = ["ABOUT ME", "COMMANDS", "DONATE", "DISCORD", "LINKS", "MERCH"];
+
+  // Goal bars take the family silhouette so they sit with the rest of the pack.
+  const goalShape: "rect" | "coffin" | "plaque" =
+    f.alertShape === "coffin" ? "coffin" : f.plateShape === "plaque" ? "plaque" : "rect";
+
+  // Followers as a hero ring, subs and donations as bars beside it — the
+  // standard goals widget, rendered in this family's identity.
+  const goalsScreen = base("goals", "Goals", "Goals", [
+    ...(f.overlayDecor?.() ?? []),
+    goal("Follower goal", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
+      goalStyle: "ring",
+      fontFamily: f.display,
+      barColor: "@accent",
+      trackColor: "@surface/60",
+      valueColor: "@text",
+      labelColor: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+      animation: anim("zoom", { duration: 900, easing: "backOut" }),
+    }),
+    goal("Sub goal", { x: 560, y: 430, width: 760, height: 150 }, "SUB GOAL", 62, 100, {
+      goalStyle: "bar",
+      barShape: goalShape,
+      fill: "@surface/88",
+      fontFamily: f.display,
+      barColor: "@accent",
+      labelColor: "@accent",
+      cornerRadius: f.radius,
+      effects: {
+        glow: { enabled: true, color: "@glow", strength: 22 },
+        border: { enabled: true, color: "@border", width: 1, radius: f.radius },
+      },
+      animation: anim("slide", { direction: "right", duration: 700 }),
+    }),
+    goal("Donation goal", { x: 560, y: 610, width: 760, height: 150 }, "DONATION GOAL", 340, 500, {
+      goalStyle: "bar",
+      barShape: goalShape,
+      fill: "@surface/88",
+      fontFamily: f.display,
+      barColor: "@primary",
+      labelColor: "@accent",
+      cornerRadius: f.radius,
+      effects: {
+        glow: { enabled: true, color: "@glow", strength: 22 },
+        border: { enabled: true, color: "@border", width: 1, radius: f.radius },
+      },
+      animation: anim("slide", { direction: "right", duration: 700, delay: 160 }),
+    }),
+  ]);
 
   return [
     scene("starting", "Starting Soon", "Starting Soon", "STARTING SOON"),
@@ -1873,6 +2006,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
 
     alertScreen("follower", "Follower Alert", "NEW FOLLOWER", "AwesomeViewer", false),
     alertScreen("subscriber", "Subscriber Alert", "NEW SUBSCRIBER", "Tier 1 · welcome aboard", true),
+
+    goalsScreen,
 
     base("socialbar", "Social Bar", "Social Bars", [
       social("Socials", { x: 460, y: 962, width: 1000, height: 60 }, {
@@ -2642,6 +2777,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         fontFamily: "Cinzel Decorative",
         cornerRadius: 10,
         boxShape: "coffin",
+        avatar: false,
         // Stays on the dark plate so it reads as gothic, not a bright slab.
         // Accent title is contrast-gated against the background, and surface
         // tracks the background's darkness, so it's readable in every palette.
@@ -2653,6 +2789,51 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
           border: { enabled: true, color: "@accent", width: 2, radius: 10 },
         },
         animation: anim("elastic", { duration: 1200 }),
+      }),
+    ],
+  },
+
+  {
+    id: "gothic-goals",
+    name: "Goals",
+    category: "Goals",
+    tags: ["Dark"],
+    collection: "gothic",
+    layers: [
+      particles("Decor — Bats", { kind: "bats", count: 8, size: 6, speed: 1.0, color: "@primary", opacity: 0.6 }),
+      goal("Follower ring", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
+        goalStyle: "ring",
+        fontFamily: "Cinzel Decorative",
+        barColor: "@accent",
+        trackColor: "@surface/60",
+        effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+        animation: anim("zoom", { duration: 900, easing: "backOut" }),
+      }),
+      goal("Sub goal", { x: 560, y: 430, width: 760, height: 150 }, "SUB GOAL", 62, 100, {
+        goalStyle: "bar",
+        barShape: "coffin",
+        fill: "@surface/88",
+        fontFamily: "Cinzel Decorative",
+        barColor: "@accent",
+        cornerRadius: 10,
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 22 },
+          border: { enabled: true, color: "@border", width: 1, radius: 10 },
+        },
+        animation: anim("slide", { direction: "right", duration: 700 }),
+      }),
+      goal("Donation goal", { x: 560, y: 610, width: 760, height: 150 }, "DONATION GOAL", 340, 500, {
+        goalStyle: "bar",
+        barShape: "coffin",
+        fill: "@surface/88",
+        fontFamily: "Cinzel Decorative",
+        barColor: "@primary",
+        cornerRadius: 10,
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 22 },
+          border: { enabled: true, color: "@border", width: 1, radius: 10 },
+        },
+        animation: anim("slide", { direction: "right", duration: 700, delay: 160 }),
       }),
     ],
   },
@@ -3103,6 +3284,7 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
       alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "You're amazing — thank you!", {
         fontFamily: "Poppins",
         cornerRadius: 28,
+        avatar: false,
         fill: "@surface/95",
         titleColor: "@accent",
         subtitleColor: "@text",
@@ -3111,6 +3293,49 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
           border: { enabled: true, color: "@accent", width: 2, radius: 28 },
         },
         animation: anim("bounce", { duration: 1100 }),
+      }),
+    ],
+  },
+
+  {
+    id: "pride-goals",
+    name: "Goals",
+    category: "Goals",
+    tags: ["Cozy"],
+    collection: "pride",
+    layers: [
+      particles("Decor — Hearts", { kind: "hearts", count: 14, size: 6, speed: 1.1, color: "@primary", opacity: 0.75 }),
+      goal("Follower ring", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
+        goalStyle: "ring",
+        fontFamily: "Poppins",
+        barColor: "@primary",
+        trackColor: "@surface/55",
+        effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+        animation: anim("zoom", { duration: 900, easing: "backOut" }),
+      }),
+      goal("Sub goal", { x: 560, y: 430, width: 760, height: 150 }, "SUB GOAL", 62, 100, {
+        goalStyle: "bar",
+        fill: "@surface/88",
+        fontFamily: "Poppins",
+        barColor: "@primary",
+        cornerRadius: 26,
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 20 },
+          border: { enabled: true, color: "@border", width: 1, radius: 26 },
+        },
+        animation: anim("slide", { direction: "right", duration: 700 }),
+      }),
+      goal("Donation goal", { x: 560, y: 610, width: 760, height: 150 }, "DONATION GOAL", 340, 500, {
+        goalStyle: "bar",
+        fill: "@surface/88",
+        fontFamily: "Poppins",
+        barColor: "@secondary",
+        cornerRadius: 26,
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 20 },
+          border: { enabled: true, color: "@border", width: 1, radius: 26 },
+        },
+        animation: anim("slide", { direction: "right", duration: 700, delay: 160 }),
       }),
     ],
   },

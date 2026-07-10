@@ -289,6 +289,7 @@ export const LAYER_TYPES = [
   "chatbox",
   "alert",
   "social",
+  "goal",
   "particle",
   "video",
 ] as const;
@@ -492,6 +493,33 @@ export interface AlertLayer extends LayerBase {
   subtitle: string;
   titleColor: ColorValue;
   subtitleColor: ColorValue;
+  /** The viewer-avatar disc. Off for alerts that read cleaner without it. */
+  avatar?: boolean;
+}
+
+/**
+ * A follower / sub / donation goal. Rendered two ways from the same data: a
+ * horizontal progress bar (which takes the family's plate silhouette) or a
+ * radial ring. The fill fraction is current/target, clamped to [0,1].
+ */
+export interface GoalLayer extends LayerBase {
+  type: "goal";
+  goalStyle: "bar" | "ring";
+  label: string;
+  current: number;
+  target: number;
+  /** Bar plate silhouette; matches the family (coffin for gothic, etc.). */
+  barShape?: "rect" | "coffin" | "plaque";
+  /** Plate/panel behind the bar, and the ring's hub. */
+  fill: ColorValue;
+  /** Unfilled track. */
+  trackColor: ColorValue;
+  /** Filled portion. */
+  barColor: ColorValue;
+  labelColor: ColorValue;
+  valueColor: ColorValue;
+  fontFamily: string;
+  cornerRadius: number;
 }
 
 export interface SocialLayer extends LayerBase {
@@ -555,6 +583,7 @@ export type Layer =
   | ChatBoxLayer
   | AlertLayer
   | SocialLayer
+  | GoalLayer
   | ParticleLayer;
 
 /**
@@ -583,6 +612,7 @@ export type LayerPatch = Partial<
     Fields<ChatBoxLayer> &
     Fields<AlertLayer> &
     Fields<SocialLayer> &
+    Fields<GoalLayer> &
     Fields<ParticleLayer>
 >;
 
@@ -602,6 +632,7 @@ export const TEMPLATE_CATEGORIES = [
   "Stream Panels",
   "Webcam Frames",
   "Alerts",
+  "Goals",
   "Chat Boxes",
   "Social Bars",
   "Stinger Transitions",

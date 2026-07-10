@@ -23,6 +23,7 @@ import {
   Share2,
   Sparkles,
   Square,
+  Target,
   Trash2,
   Type,
   Unlock,
@@ -70,6 +71,7 @@ const LAYER_ICONS: Record<LayerType, typeof Square> = {
   chatbox: MessageSquare,
   alert: Bell,
   social: Share2,
+  goal: Target,
   particle: Sparkles,
   video: Video,
 };
@@ -88,6 +90,7 @@ const ADDABLE: LayerType[] = [
   "chatbox",
   "alert",
   "social",
+  "goal",
   "particle",
 ];
 

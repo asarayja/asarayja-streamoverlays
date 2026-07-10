@@ -27,6 +27,7 @@ import type {
   Effects,
   FlagLayer,
   FrameLayer,
+  GoalLayer,
   ImageLayer,
   Layer,
   LayerPatch,
@@ -907,6 +908,87 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             value={alert.titleColor}
             onChange={(titleColor) => live({ titleColor })}
             onCommit={(titleColor) => commit({ titleColor })}
+          />
+        </Section>
+      );
+    }
+
+    case "goal": {
+      const g = layer as GoalLayer;
+      const num = (v: string) => {
+        const n = Number(v.replace(/[^0-9.]/g, ""));
+        return Number.isFinite(n) ? n : 0;
+      };
+      return (
+        <Section title="Goal">
+          <Field label="Style">
+            <Segmented
+              value={g.goalStyle}
+              onChange={(goalStyle) => commit({ goalStyle })}
+              options={[
+                { value: "bar", label: "Bar" },
+                { value: "ring", label: "Ring" },
+              ]}
+            />
+          </Field>
+          <Field label="Label">
+            <TextInput
+              value={g.label}
+              onChange={(e) => live({ label: e.target.value })}
+              onBlur={(e) => commit({ label: e.target.value })}
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-2">
+            <Field label="Current">
+              <TextInput
+                value={String(g.current)}
+                inputMode="numeric"
+                onChange={(e) => live({ current: num(e.target.value) })}
+                onBlur={(e) => commit({ current: num(e.target.value) })}
+              />
+            </Field>
+            <Field label="Target">
+              <TextInput
+                value={String(g.target)}
+                inputMode="numeric"
+                onChange={(e) => live({ target: num(e.target.value) })}
+                onBlur={(e) => commit({ target: num(e.target.value) })}
+              />
+            </Field>
+          </div>
+          {g.goalStyle === "bar" && (
+            <Field label="Plate shape">
+              <Segmented
+                value={g.barShape ?? "rect"}
+                onChange={(barShape) => commit({ barShape })}
+                options={[
+                  { value: "rect", label: "Rect" },
+                  { value: "coffin", label: "Coffin" },
+                  { value: "plaque", label: "Plaque" },
+                ]}
+              />
+            </Field>
+          )}
+          <ColorField
+            label="Bar colour"
+            theme={theme}
+            value={g.barColor}
+            onChange={(barColor) => live({ barColor })}
+            onCommit={(barColor) => commit({ barColor })}
+          />
+          <ColorField
+            label="Track colour"
+            theme={theme}
+            value={g.trackColor}
+            onChange={(trackColor) => live({ trackColor })}
+            onCommit={(trackColor) => commit({ trackColor })}
+          />
+          <ColorField
+            label="Label colour"
+            theme={theme}
+            value={g.labelColor}
+            onChange={(labelColor) => live({ labelColor })}
+            onCommit={(labelColor) => commit({ labelColor })}
           />
         </Section>
       );
