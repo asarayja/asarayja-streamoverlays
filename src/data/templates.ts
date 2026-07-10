@@ -2622,6 +2622,89 @@ const MOONLIT_GROVE: FamilyStyle = {
   contentOffsetY: -70,
 };
 
+/** Red Plasma (spec theme A): flowing energy — glowing plasma waves crossing
+    diagonally, glossy chrome ribbons, a metallic headline with a light-reflection
+    band, and rising sparks. Red in a red palette; colour follows the palette. */
+const PLASMA: FamilyStyle = {
+  id: "plasma",
+  name: "Plasma",
+  tags: ["Neon", "Dark", "Sci-Fi"],
+  display: "Orbitron",
+  displayWeight: 800,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 6,
+  frameRadius: 8,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 30 },
+  },
+  // Metallic lettering: dark → bright band → dark, the plasma-pack light
+  // reflection. Chrome is colourless, so these are literal greys.
+  headlineEffects: {
+    gradient: { enabled: true, from: "#c4c4c4", via: "#ffffff", to: "#6b6b6b", angle: 90 },
+    glow: { enabled: true, color: "@glow", strength: 24 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 130 } },
+    }),
+    // Deep red pooling behind everything.
+    shape("Glow — pool", { x: 240, y: 220, width: 1100, height: 760 }, {
+      shape: "ellipse",
+      fill: "@primary/20",
+      effects: { glow: { enabled: true, color: "@glow", strength: 120 } },
+    }),
+    // Plasma energy: glowing red waves crossing the frame.
+    shape("Wave — plasma back", { x: -120, y: 120, width: 2160, height: 420 }, {
+      shape: "wave",
+      fill: "@primary/70",
+      opacity: 0.85,
+      effects: { glow: { enabled: true, color: "@glow", strength: 66 } },
+    }),
+    shape("Wave — plasma bright", { x: -120, y: 300, width: 2160, height: 300 }, {
+      shape: "wave",
+      fill: "@glow",
+      opacity: 0.8,
+      effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
+    }),
+    // Glossy chrome ribbons riding through the lower half — a bright silver
+    // core between darker edges reads as curved, polished metal.
+    shape("Wave — chrome 1", { x: -120, y: 560, width: 2160, height: 360 }, {
+      shape: "wave",
+      effects: {
+        gradientStroke: { enabled: true, from: "#9a9a9a", to: "#ffffff", angle: 90, width: 30 },
+        glow: { enabled: true, color: "@text", strength: 14 },
+      },
+    }),
+    shape("Wave — chrome 2", { x: -160, y: 700, width: 1900, height: 300 }, {
+      shape: "wave",
+      effects: {
+        gradientStroke: { enabled: true, from: "#8a8a8a", to: "#ffffff", angle: 90, width: 30 },
+        glow: { enabled: true, color: "@text", strength: 10 },
+      },
+    }),
+    // 40–60 sparks rising through the scene.
+    particles("Decor — Sparks", { kind: "embers", count: 52, size: 3, speed: 0.7, color: "@glow", opacity: 0.7 }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.4, color: "@text", opacity: 0.35 }),
+  ],
+  overlayDecor: () => [
+    shape("Wave — corner", { x: 1180, y: 740, width: 900, height: 300 }, {
+      shape: "wave",
+      fill: "@glow",
+      opacity: 0.5,
+      effects: { glow: { enabled: true, color: "@glow", strength: 58 } },
+    }),
+  ],
+  contentOffsetY: -30,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   HALLOWED_NIGHT,
   ASTRAL_DECK,
@@ -2633,6 +2716,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   LIQUID_NEON,
   HEX_STORM,
   MOONLIT_GROVE,
+  PLASMA,
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);

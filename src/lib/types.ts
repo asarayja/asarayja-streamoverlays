@@ -214,6 +214,8 @@ export interface Border {
 export interface Gradient {
   enabled: boolean;
   from: ColorValue;
+  /** Optional middle stop — a bright metallic band / light reflection. */
+  via?: ColorValue;
   to: ColorValue;
   /** Degrees, 0 = left-to-right. */
   angle: number;
@@ -342,7 +344,9 @@ export type ShapeKind =
   /** A slanted parallelogram — the diagonal esports ribbon. */
   | "shard"
   /** A honeycomb lattice of hexagon outlines — the esports mesh accent. */
-  | "hexmesh";
+  | "hexmesh"
+  /** A flowing curved energy ribbon: a thick, round-capped bezier stroke. */
+  | "wave";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";

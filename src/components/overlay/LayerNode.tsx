@@ -102,12 +102,16 @@ function gradientProps(gradient: Gradient, theme: Theme, w: number, h: number) {
   return {
     fillLinearGradientStartPoint: { x: cx - dx, y: cy - dy },
     fillLinearGradientEndPoint: { x: cx + dx, y: cy + dy },
-    fillLinearGradientColorStops: [
-      0,
-      resolveColor(gradient.from, theme),
-      1,
-      resolveColor(gradient.to, theme),
-    ],
+    fillLinearGradientColorStops: gradient.via
+      ? [
+          0,
+          resolveColor(gradient.from, theme),
+          0.5,
+          resolveColor(gradient.via, theme),
+          1,
+          resolveColor(gradient.to, theme),
+        ]
+      : [0, resolveColor(gradient.from, theme), 1, resolveColor(gradient.to, theme)],
   };
 }
 
@@ -425,6 +429,43 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
         {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         sceneFunc={(c, shape) => {
           hexMeshPath(c, w, h);
+          c.strokeShape(shape);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "wave") {
+    // A flowing energy ribbon: an S-curve stroked thick with round caps. A
+    // metallic (from → bright → from) gradient stroke reads as glossy chrome;
+    // a solid stroke with heavy glow reads as a plasma streak.
+    const th = h * 0.34;
+    const gs = layer.effects.gradientStroke;
+    const strokePaint = gs?.enabled
+      ? {
+          strokeLinearGradientStartPoint: { x: 0, y: 0 },
+          strokeLinearGradientEndPoint: { x: 0, y: h },
+          strokeLinearGradientColorStops: [
+            0,
+            resolveColor(gs.from, ctx.theme),
+            0.5,
+            resolveColor(gs.to, ctx.theme),
+            1,
+            resolveColor(gs.from, ctx.theme),
+          ],
+        }
+      : { stroke: resolveColor(layer.fill, ctx.theme) };
+    return (
+      <KonvaShape
+        strokeWidth={th}
+        lineCap="round"
+        lineJoin="round"
+        {...strokePaint}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        sceneFunc={(c, shape) => {
+          c.beginPath();
+          c.moveTo(0, h * 0.5);
+          c.bezierCurveTo(w * 0.32, h * 0.08, w * 0.68, h * 0.92, w, h * 0.5);
           c.strokeShape(shape);
         }}
       />
