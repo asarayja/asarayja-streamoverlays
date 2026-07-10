@@ -1858,9 +1858,10 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     f.alertShape === "coffin" ? "coffin" : f.plateShape === "plaque" ? "plaque" : "rect";
 
   // Followers as a hero ring, subs and donations as bars beside it — the
-  // standard goals widget, rendered in this family's identity.
+  // standard goals widget, rendered in this family's identity. No ambient
+  // decor: a goals overlay sits over live gameplay, so it stays clean. Each
+  // goal is its own layer, free to rearrange into a row or a stack.
   const goalsScreen = base("goals", "Goals", "Goals", [
-    ...(f.overlayDecor?.() ?? []),
     goal("Follower goal", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
       goalStyle: "ring",
       fontFamily: f.display,
@@ -2800,7 +2801,6 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Dark"],
     collection: "gothic",
     layers: [
-      particles("Decor — Bats", { kind: "bats", count: 8, size: 6, speed: 1.0, color: "@primary", opacity: 0.6 }),
       goal("Follower ring", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
         goalStyle: "ring",
         fontFamily: "Cinzel Decorative",
@@ -3304,7 +3304,6 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     tags: ["Cozy"],
     collection: "pride",
     layers: [
-      particles("Decor — Hearts", { kind: "hearts", count: 14, size: 6, speed: 1.1, color: "@primary", opacity: 0.75 }),
       goal("Follower ring", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
         goalStyle: "ring",
         fontFamily: "Poppins",
