@@ -2488,121 +2488,6 @@ const LIQUID_NEON: FamilyStyle = {
   contentOffsetY: -60,
 };
 
-/** Plasma: glossy flowing chrome ribbons and glowing plasma sweeps on
-    near-black, with a chrome-gradient headline. Red in a red palette. */
-const PLASMA: FamilyStyle = {
-  id: "plasma",
-  name: "Plasma",
-  tags: ["Neon", "Dark", "Sci-Fi"],
-  display: "Chakra Petch",
-  displayWeight: 700,
-  displayTracking: 2,
-  displayTransform: "uppercase",
-  body: "Rajdhani",
-  radius: 8,
-  frameRadius: 12,
-  corners: false,
-  strokeWidth: 2,
-  frameEffects: {
-    border: { enabled: true, color: "@accent", width: 2, radius: 12 },
-    glow: { enabled: true, color: "@glow", strength: 26 },
-  },
-  // Chrome lettering: a bright top fading to dark, the plasma-pack signature.
-  headlineEffects: {
-    gradient: { enabled: true, from: "@text", to: "@text-72", angle: 90 },
-    glow: { enabled: true, color: "@glow", strength: 26 },
-  },
-  plateShape: "rect",
-  scene: () => [
-    shape("Backdrop", FULL, {
-      background: true,
-      fill: "@background",
-      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 135 } },
-    }),
-
-    // ---- Red plasma: soft glowing streaks, no hard edges. Elongated ellipses
-    // ---- with heavy glow read as pooled energy, not cut-out shapes.
-    shape("Plasma — pool", { x: 120, y: 470, width: 780, height: 560 }, {
-      shape: "ellipse",
-      fill: "@primary/20",
-      effects: { glow: { enabled: true, color: "@glow", strength: 110 } },
-    }),
-    shape("Plasma — streak upper", { x: 1000, y: 120, width: 1000, height: 250 }, {
-      shape: "ellipse",
-      rotation: -16,
-      fill: "@primary/30",
-      effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
-    }),
-    shape("Plasma — streak mid", { x: 1120, y: 330, width: 900, height: 170 }, {
-      shape: "ellipse",
-      rotation: -10,
-      fill: "@primary/34",
-      effects: { glow: { enabled: true, color: "@glow", strength: 74 } },
-    }),
-    shape("Plasma — hot spot", { x: 1470, y: 540, width: 130, height: 130 }, {
-      shape: "ellipse",
-      fill: "@glow",
-      opacity: 0.8,
-      effects: { glow: { enabled: true, color: "@glow", strength: 60 } },
-    }),
-    // A sharp bright red streak: a thin ribbon whose glow feathers the edges.
-    shape("Plasma — bolt", { x: 940, y: 250, width: 1060, height: 120 }, {
-      shape: "ribbon",
-      fill: "@glow",
-      opacity: 0.7,
-      effects: { glow: { enabled: true, color: "@glow", strength: 72 } },
-    }),
-    shape("Plasma — arc", { x: 1380, y: 740, width: 600, height: 360 }, {
-      shape: "ribbon",
-      rotation: 40,
-      fill: "@glow",
-      opacity: 0.55,
-      effects: { glow: { enabled: true, color: "@glow", strength: 64 } },
-    }),
-
-    // ---- Chrome blades: a dark metallic base with a bright core laid on top,
-    // ---- so the bright band reads as a specular highlight on curved steel.
-    shape("Chrome 1 — base", { x: 180, y: 640, width: 1600, height: 300 }, {
-      shape: "ribbon",
-      opacity: 0.95,
-      effects: { gradient: { enabled: true, from: "@text-25", to: "@text-82", angle: 66 } },
-    }),
-    shape("Chrome 1 — highlight", { x: 250, y: 720, width: 1470, height: 130 }, {
-      shape: "ribbon",
-      fill: "@text",
-      opacity: 0.9,
-      effects: { glow: { enabled: true, color: "@glow", strength: 8 } },
-    }),
-    shape("Chrome 2 — base", { x: -80, y: 770, width: 1120, height: 230 }, {
-      shape: "ribbon",
-      rotation: -6,
-      opacity: 0.88,
-      effects: { gradient: { enabled: true, from: "@text-35", to: "@text-85", angle: 60 } },
-    }),
-    shape("Chrome 2 — highlight", { x: -20, y: 825, width: 1020, height: 100 }, {
-      shape: "ribbon",
-      rotation: -6,
-      fill: "@text",
-      opacity: 0.75,
-    }),
-
-    // ---- Sparkle: soft bokeh, fine sparks and pin stars for depth.
-    particles("Decor — Bokeh", { kind: "bokeh", count: 14, size: 7, speed: 0.35, color: "@text", opacity: 0.4 }),
-    particles("Decor — Sparks", { kind: "embers", count: 44, size: 2.5, speed: 0.6, color: "@glow", opacity: 0.7 }),
-    particles("Decor — Stars", { kind: "stars", count: 30, size: 2, speed: 0.2, color: "@text", opacity: 0.6 }),
-  ],
-  overlayDecor: () => [
-    shape("Plasma — corner", { x: 1540, y: 730, width: 540, height: 360 }, {
-      shape: "ribbon",
-      rotation: 34,
-      fill: "@glow",
-      opacity: 0.45,
-      effects: { glow: { enabled: true, color: "@glow", strength: 54 } },
-    }),
-  ],
-  contentOffsetY: -40,
-};
-
 const NEW_FAMILIES: FamilyStyle[] = [
   HALLOWED_NIGHT,
   ASTRAL_DECK,
@@ -2612,7 +2497,6 @@ const NEW_FAMILIES: FamilyStyle[] = [
   STARLIT_SERENITY,
   OVERDRIVE,
   LIQUID_NEON,
-  PLASMA,
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);

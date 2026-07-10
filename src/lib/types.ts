@@ -342,9 +342,7 @@ export type ShapeKind =
   /** A slanted parallelogram — the diagonal esports ribbon. */
   | "shard"
   /** A honeycomb lattice of hexagon outlines — the esports mesh accent. */
-  | "hexmesh"
-  /** A flowing curved blade — the plasma ribbon, pointed at both ends. */
-  | "ribbon";
+  | "hexmesh";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";
