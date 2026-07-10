@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { PALETTES } from "@/data/palettes";
+import { TEMPLATES } from "@/data/templates";
 import { contrastRatio, hexToRgb, rgbToHsl, wcagLuminance } from "@/lib/theme";
-import type { Theme, ThemeToken } from "@/lib/types";
+import type { Layer, Theme, ThemeToken } from "@/lib/types";
 
 /** Temporary palette QA endpoint — same gates as the in-app ContrastCheck. */
 
@@ -46,5 +47,52 @@ export function GET() {
       }
     }
   }
-  return NextResponse.json({ palettes: PALETTES.length, failures });
+  failures.push(...familyCoherenceFailures());
+  return NextResponse.json({ palettes: PALETTES.length, templates: TEMPLATES.length, failures });
+}
+
+/**
+ * A pack is only a design family if its full-screen scenes share their ground.
+ * Every scene of a family must open with an identical backdrop layer — same
+ * fill, same gradient token, same angle — or one palette produces burgundy
+ * screens and violet screens that plainly don't belong together.
+ */
+function familyCoherenceFailures(): string[] {
+  const out: string[] = [];
+  const groups = new Map<string, Map<string, string[]>>();
+
+  for (const template of TEMPLATES) {
+    // One variant per design is enough; the layers are palette-independent.
+    if (template.paletteId !== PALETTES.find((p) => p.collection === template.collection)?.id) continue;
+
+    // Only screens that declare a family; standalone core designs are
+    // deliberately one-offs and share nothing.
+    const family = template.family;
+    if (!family) continue;
+
+    const backdrop = template.layers.find((l) => l.type === "background");
+    if (!backdrop) continue; // overlays have no scene ground, by design
+
+    const key = signature(backdrop);
+    if (!groups.has(family)) groups.set(family, new Map());
+    const sigs = groups.get(family)!;
+    if (!sigs.has(key)) sigs.set(key, []);
+    sigs.get(key)!.push(template.name);
+  }
+
+  for (const [family, sigs] of groups) {
+    if (sigs.size > 1) {
+      const detail = [...sigs.entries()]
+        .map(([sig, names]) => `${sig} <- ${names.length} screen(s)`)
+        .join(" | ");
+      out.push(`family "${family}": ${sigs.size} different scene backdrops — ${detail}`);
+    }
+  }
+  return out;
+}
+
+function signature(layer: Layer): string {
+  const g = layer.effects.gradient;
+  const fill = "fill" in layer ? layer.fill : "?";
+  return g.enabled ? `${fill}->${g.from}->${g.to}@${g.angle}` : `${fill}`;
 }

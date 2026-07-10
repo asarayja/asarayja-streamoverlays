@@ -551,6 +551,8 @@ export interface Template {
   category: TemplateCategory;
   tags: StyleTag[];
   collection: Collection;
+  /** Design family this screen belongs to; screens of a family share a ground. */
+  family?: string;
   /** Pack sub-style, inherited from the variant's palette. */
   subStyle?: string;
   /** Palette this variant ships with; the user can swap it instantly. */

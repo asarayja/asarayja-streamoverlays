@@ -135,6 +135,30 @@ function fontStyleOf(weight: number, italic: boolean): string {
   return italic ? `italic ${weight}` : `${weight}`;
 }
 
+/**
+ * Shrink a font so a single line fits its box.
+ *
+ * Konva charges `letterSpacing` per *character* (not per gap) when it decides
+ * whether a line fits, and a Text with a width but no height silently wraps —
+ * which is how an alert title ends up sitting on top of its own subtitle.
+ * Every single-line label goes through here.
+ */
+function fitFontSize(
+  text: string,
+  boxWidth: number,
+  fontSize: number,
+  fontFamily: string,
+  fontWeight: number,
+  letterSpacing = 0,
+): number {
+  if (!text || boxWidth <= 0) return fontSize;
+  const glyphs = measureText(text, fontSize, fontFamily, fontWeight);
+  const spacing = letterSpacing * text.length;
+  if (glyphs <= 0 || glyphs + spacing <= boxWidth - 4) return fontSize;
+  const target = Math.max(20, boxWidth - 4 - spacing);
+  return Math.max(9, fontSize * (target / glyphs));
+}
+
 function applyTransform(text: string, transform: TextLayer["textTransform"]): string {
   if (transform === "uppercase") return text.toUpperCase();
   if (transform === "lowercase") return text.toLowerCase();
@@ -257,18 +281,9 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
   // the two are solved separately; folding spacing into the scale factor
   // under-shrinks and Konva then wraps the overflow onto a clipped line.
   // Multi-line text keeps its authored size and wraps instead.
-  let fontSize = layer.fontSize;
-  if (!resolved.includes("\n") && resolved.length > 0) {
-    const glyphs = measureText(resolved, fontSize, layer.fontFamily, layer.fontWeight);
-    // Konva charges letterSpacing per *character* (not per gap) when it decides
-    // whether a line fits — match that, or a 1px miss wraps the overflow onto a
-    // second line that the fixed layer height then clips.
-    const spacing = layer.letterSpacing * resolved.length;
-    if (glyphs + spacing > layer.width - 4 && glyphs > 0) {
-      const target = Math.max(20, layer.width - 4 - spacing);
-      fontSize = Math.max(9, fontSize * (target / glyphs));
-    }
-  }
+  const fontSize = resolved.includes("\n")
+    ? layer.fontSize
+    : fitFontSize(resolved, layer.width, layer.fontSize, layer.fontFamily, layer.fontWeight, layer.letterSpacing);
 
   // Striped lettering: each character gets the next flag colour, laid out by
   // measured advances. Stripes are pushed through the contrast gate against
@@ -548,9 +563,15 @@ function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: R
 function AlertContent({ layer, ctx, glowBoost }: { layer: AlertLayer; ctx: RenderContext; glowBoost: number }) {
   const { width: w, height: h } = layer;
   const avatarSize = h * 0.52;
-  const titleSize = h * 0.26;
-  const subtitleSize = h * 0.15;
   const left = h * 0.24 + avatarSize + h * 0.16;
+  const textWidth = w - left - h * 0.2;
+
+  const title = resolveText(layer.title, ctx.profile, missingMode(ctx.mode));
+  const subtitle = resolveText(layer.subtitle, ctx.profile, missingMode(ctx.mode));
+  // "NEW SUBSCRIBER" in a display face overflows its box at the authored size
+  // and would wrap onto the subtitle. Fit both to one line.
+  const titleSize = fitFontSize(title, textWidth, h * 0.26, layer.fontFamily, 400, 2);
+  const subtitleSize = fitFontSize(subtitle, textWidth, h * 0.15, "Inter", 400);
 
   return (
     <Group listening={false}>
@@ -573,20 +594,23 @@ function AlertContent({ layer, ctx, glowBoost }: { layer: AlertLayer; ctx: Rende
       <Text
         x={left}
         y={h * 0.26}
-        width={w - left - h * 0.2}
-        text={resolveText(layer.title, ctx.profile, missingMode(ctx.mode))}
+        width={textWidth}
+        text={title}
         fontFamily={layer.fontFamily}
         fontSize={titleSize}
         letterSpacing={2}
+        wrap="none"
         fill={resolveColor(layer.titleColor, ctx.theme)}
       />
       <Text
         x={left}
-        y={h * 0.26 + titleSize * 1.2}
-        width={w - left - h * 0.2}
-        text={resolveText(layer.subtitle, ctx.profile, missingMode(ctx.mode))}
+        y={h * 0.26 + titleSize * 1.25}
+        width={textWidth}
+        text={subtitle}
         fontFamily="Inter"
         fontSize={subtitleSize}
+        wrap="none"
+        ellipsis
         fill={resolveColor(layer.subtitleColor, ctx.theme)}
       />
     </Group>

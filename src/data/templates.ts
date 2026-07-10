@@ -289,6 +289,84 @@ function particles(
   };
 }
 
+
+/* -------------------------------------------------------------------------- */
+/*                            Family scene recipes                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A design family is only a family if its screens share their *ground*.
+ *
+ * Every full-screen scene in a family opens with the exact same backdrop
+ * layers — same token, same alpha, same angle, same decor — so a pack's
+ * Starting Soon and its Be Right Back are unmistakably the same design.
+ * Letting each screen pick its own gradient token was what made the packs
+ * look like eleven unrelated overlays: `@primary` scenes read burgundy while
+ * `@secondary` scenes read violet, from one palette.
+ */
+const FULL: Box = { x: 0, y: 0, width: 1920, height: 1080 };
+
+/** Gothic ground: burgundy-tinted night, drifting fog, stars, ornament frame. */
+function gothicScene(): LayerSpec[] {
+  return [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 180 } },
+    }),
+    particles("Decor — Fog", { kind: "fog", count: 9, size: 5, speed: 0.6, color: "@secondary" }),
+    particles("Decor — Stars", { kind: "stars", count: 42, size: 3, speed: 0.25, color: "@accent", opacity: 0.65 }),
+    shape("Decor — Outer frame", { x: 70, y: 70, width: 1780, height: 940 }, {
+      fill: "transparent",
+      opacity: 0.8,
+      effects: { border: { enabled: true, color: "@accent", width: 2, radius: 4 } },
+    }),
+    shape("Decor — Inner frame", { x: 88, y: 88, width: 1744, height: 904 }, {
+      fill: "transparent",
+      opacity: 0.9,
+      effects: { border: { enabled: true, color: "@border", width: 1, radius: 2 } },
+    }),
+  ];
+}
+
+/** Neon Grid ground: cool wash, grid dust, glowing accent rails. */
+function neonScene(): LayerSpec[] {
+  return [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 170 } },
+    }),
+    particles("Decor — Grid dust", { kind: "dots", count: 44, size: 3, speed: 0.4, color: "@glow", opacity: 0.55 }),
+    shape("Decor — Top rail", { x: 0, y: 0, width: 1920, height: 4 }, {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+      animation: anim("shimmer", { duration: 3600 }),
+    }),
+    shape("Decor — Bottom rail", { x: 0, y: 1076, width: 1920, height: 4 }, {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+      animation: anim("shimmer", { duration: 3600, delay: 600 }),
+    }),
+  ];
+}
+
+/** Pride ground: neutral night under a blurred flag aurora, plus stars. */
+function prideScene(washOpacity = 0.15): LayerSpec[] {
+  return [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
+      stackDirection: "vertical",
+      cornerRadius: 0,
+      opacity: washOpacity,
+      // Blurred into a soft aurora — hard stripe bands read as a dim flag,
+      // not a sky. Static layer, so the blur cache is safe.
+      effects: { blur: { enabled: true, amount: 60 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 44, size: 3, speed: 0.3, color: "@accent", opacity: 0.7 }),
+  ];
+}
+
 /* -------------------------------------------------------------------------- */
 /*                              Base templates                                */
 /* -------------------------------------------------------------------------- */
@@ -383,12 +461,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     collection: "core",
     family: "Neon Grid",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/30", angle: 160 } },
-      }),
-      particles("Decor — Grid dust", { kind: "dots", count: 50, size: 3, speed: 0.5, color: "@glow", opacity: 0.6 }),
+      ...neonScene(),
       shape("Decor — Top line", { x: 360, y: 430, width: 1200, height: 3 }, {
         fill: "@accent",
         effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
@@ -441,12 +514,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     collection: "core",
     family: "Neon Grid",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/25", angle: 200 } },
-      }),
-      particles("Decor — Grid dust", { kind: "dots", count: 40, size: 3, speed: 0.4, color: "@glow", opacity: 0.5 }),
+      ...neonScene(),
       frame("Decor — Frame", { x: 560, y: 380, width: 800, height: 320 }, {
         fill: "@surface/60",
         strokeColor: "@accent",
@@ -487,12 +555,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     collection: "core",
     family: "Neon Grid",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@accent/20", angle: 45 } },
-      }),
-      particles("Decor — Stars", { kind: "stars", count: 60, size: 3, speed: 0.4, color: "@glow", opacity: 0.7 }),
+      ...neonScene(),
       img("Logo", { x: 860, y: 170, width: 200, height: 200 }, "{{LOGO}}", {
         logo: true,
         animation: anim("zoom", { duration: 900, easing: "backOut" }),
@@ -531,12 +594,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     collection: "core",
     family: "Neon Grid",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 180 } },
-      }),
-      particles("Decor — Grid dust", { kind: "dots", count: 30, size: 3, speed: 0.3, color: "@glow", opacity: 0.5 }),
+      ...neonScene(),
       frame("Card", { x: 660, y: 330, width: 600, height: 420 }, {
         fill: "@surface/80",
         strokeColor: "@border",
@@ -582,15 +640,10 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     collection: "core",
     family: "Neon Grid",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 135 } },
-      }),
-      particles("Decor — Grid dust", { kind: "dots", count: 40, size: 3, speed: 0.4, color: "@glow", opacity: 0.5 }),
+      ...neonScene(),
       frame("Webcam", { x: 90, y: 140, width: 1020, height: 574 }, {
         camera: true,
-        strokeColor: "@primary",
+        strokeColor: "@accent",
         strokeWidth: 4,
         cornerRadius: 8,
         corners: true,
@@ -1430,28 +1483,12 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Fantasy"],
     collection: "gothic",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/30", angle: 180 } },
-      }),
-      particles("Decor — Fog", { kind: "fog", count: 10, size: 5, speed: 0.6, color: "@secondary" }),
-      particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.2, color: "@accent", opacity: 0.7 }),
-      shape("Decor — Moon", { x: 830, y: 110, width: 260, height: 260 }, {
+      ...gothicScene(),
+      shape("Decor — Moon", { x: 830, y: 150, width: 220, height: 220 }, {
         shape: "ellipse",
         fill: "@accent/85",
         effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
         animation: anim("float", { duration: 6000, intensity: 0.6 }),
-      }),
-      shape("Decor — Left column", { x: 150, y: 180, width: 80, height: 900 }, {
-        fill: "@surface/80",
-        effects: { border: { enabled: true, color: "@border", width: 2, radius: 0 } },
-        opacity: 0.85,
-      }),
-      shape("Decor — Right column", { x: 1690, y: 180, width: 80, height: 900 }, {
-        fill: "@surface/80",
-        effects: { border: { enabled: true, color: "@border", width: 2, radius: 0 } },
-        opacity: 0.85,
       }),
       particles("Decor — Bats", { kind: "bats", count: 9, size: 6, speed: 0.8, color: "@secondary", opacity: 0.7 }),
       text("Headline", { x: 260, y: 520, width: 1400, height: 130 }, "STARTING SOON", {
@@ -1494,23 +1531,17 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Fantasy", "Purple"],
     collection: "gothic",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/25", angle: 200 } },
-      }),
-      particles("Decor — Fog", { kind: "fog", count: 9, size: 5, speed: 0.7, color: "@primary" }),
-      particles("Decor — Stars", { kind: "stars", count: 50, size: 3, speed: 0.3, color: "@accent" }),
-      shape("Decor — Phase 1", { x: 560, y: 240, width: 60, height: 60 }, { shape: "ellipse", fill: "@accent/30" }),
-      shape("Decor — Phase 2", { x: 690, y: 225, width: 90, height: 90 }, { shape: "ellipse", fill: "@accent/55" }),
-      shape("Decor — Full moon", { x: 830, y: 190, width: 160, height: 160 }, {
+      ...gothicScene(),
+      shape("Decor — Phase 1", { x: 580, y: 245, width: 50, height: 50 }, { shape: "ellipse", fill: "@accent/30" }),
+      shape("Decor — Phase 2", { x: 700, y: 235, width: 70, height: 70 }, { shape: "ellipse", fill: "@accent/55" }),
+      shape("Decor — Full moon", { x: 840, y: 200, width: 140, height: 140 }, {
         shape: "ellipse",
         fill: "@accent/95",
         effects: { glow: { enabled: true, color: "@glow", strength: 70 } },
         animation: anim("pulse", { duration: 5200, intensity: 0.7 }),
       }),
-      shape("Decor — Phase 4", { x: 1140, y: 225, width: 90, height: 90 }, { shape: "ellipse", fill: "@accent/55" }),
-      shape("Decor — Phase 5", { x: 1300, y: 240, width: 60, height: 60 }, { shape: "ellipse", fill: "@accent/30" }),
+      shape("Decor — Phase 4", { x: 1150, y: 235, width: 70, height: 70 }, { shape: "ellipse", fill: "@accent/55" }),
+      shape("Decor — Phase 5", { x: 1290, y: 245, width: 50, height: 50 }, { shape: "ellipse", fill: "@accent/30" }),
       text("Headline", { x: 260, y: 520, width: 1400, height: 120 }, "BE RIGHT BACK", {
         fontFamily: "Cinzel Decorative",
         fontSize: 92,
@@ -1543,19 +1574,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Fantasy", "Dark"],
     collection: "gothic",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/40", angle: 160 } },
-      }),
-      shape("Decor — Outer frame", { x: 70, y: 70, width: 1780, height: 940 }, {
-        fill: "transparent",
-        effects: { border: { enabled: true, color: "@accent", width: 3, radius: 4 } },
-      }),
-      shape("Decor — Inner frame", { x: 92, y: 92, width: 1736, height: 896 }, {
-        fill: "transparent",
-        effects: { border: { enabled: true, color: "@border", width: 1, radius: 2 } },
-      }),
+      ...gothicScene(),
       particles("Decor — Petals", { kind: "petals", count: 20, size: 6, speed: 0.5, color: "@primary", opacity: 0.7 }),
       particles("Decor — Candlelight", { kind: "embers", count: 16, size: 3, speed: 0.4, color: "@accent", opacity: 0.6 }),
       text("Headline", { x: 260, y: 380, width: 1400, height: 120 }, "THANK YOU FOR WATCHING", {
@@ -1590,13 +1609,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Dark", "Minimal"],
     collection: "gothic",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/30", angle: 180 } },
-      }),
-      particles("Decor — Fog", { kind: "fog", count: 8, size: 5, speed: 0.5, color: "@secondary" }),
-      particles("Decor — Stars", { kind: "stars", count: 36, size: 3, speed: 0.2, color: "@accent", opacity: 0.6 }),
+      ...gothicScene(),
       img("Logo", { x: 860, y: 250, width: 200, height: 200 }, "{{LOGO}}", {
         logo: true,
         animation: anim("float", { duration: 6000, intensity: 0.5 }),
@@ -1686,16 +1699,11 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Cozy"],
     collection: "gothic",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 135 } },
-      }),
-      particles("Decor — Stars", { kind: "stars", count: 60, size: 4, speed: 0.4, color: "@accent" }),
+      ...gothicScene(),
       particles("Decor — Moths", { kind: "moths", count: 8, size: 5, speed: 0.8, color: "@primary", opacity: 0.75 }),
       frame("Webcam", { x: 90, y: 140, width: 1020, height: 574 }, {
         camera: true,
-        strokeColor: "@primary",
+        strokeColor: "@accent",
         strokeWidth: 6,
         cornerRadius: 12,
         effects: { glow: { enabled: true, color: "@glow", strength: 34 } },
@@ -1887,23 +1895,8 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     tags: ["Cozy"],
     collection: "pride",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-      }),
-      // The whole sky is the flag, washed dark enough to read over. This is
-      // what makes the scene unmistakably pride instead of "dark theme with a
-      // thin stripe".
-      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
-        stackDirection: "vertical",
-        cornerRadius: 0,
-        opacity: 0.16,
-        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
-        // not a sky. Static layer, so the blur cache is safe.
-        effects: { blur: { enabled: true, amount: 60 } },
-      }),
+      ...prideScene(),
       particles("Decor — Light rays", { kind: "rays", count: 7, size: 5, speed: 1, color: "@glow" }),
-      particles("Decor — Stars", { kind: "stars", count: 50, size: 3, speed: 0.3, color: "@accent", opacity: 0.8 }),
       particles("Decor — Confetti", { kind: "confetti", count: 24, size: 5, speed: 0.5, color: "@accent", opacity: 0.75 }),
       text("Headline", { x: 210, y: 430, width: 1500, height: 140 }, "STARTING SOON", {
         fontFamily: "Poppins",
@@ -1951,18 +1944,7 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     tags: ["Cozy"],
     collection: "pride",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-      }),
-      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
-        stackDirection: "vertical",
-        cornerRadius: 0,
-        opacity: 0.13,
-        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
-        // not a sky. Static layer, so the blur cache is safe.
-        effects: { blur: { enabled: true, amount: 60 } },
-      }),
+      ...prideScene(),
       particles("Decor — Clouds", { kind: "fog", count: 8, size: 5, speed: 0.8, color: "@accentSecondary" }),
       particles("Decor — Hearts", { kind: "hearts", count: 12, size: 6, speed: 0.6, color: "@primary", opacity: 0.7 }),
       img("Profile", { x: 830, y: 240, width: 260, height: 260 }, "{{PROFILE_IMAGE}}", {
@@ -2007,20 +1989,8 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     tags: ["Cozy"],
     collection: "pride",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-      }),
-      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
-        stackDirection: "vertical",
-        cornerRadius: 0,
-        opacity: 0.16,
-        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
-        // not a sky. Static layer, so the blur cache is safe.
-        effects: { blur: { enabled: true, amount: 60 } },
-      }),
+      ...prideScene(),
       particles("Decor — Confetti", { kind: "confetti", count: 50, size: 6, speed: 1, color: "@accent" }),
-      particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.4, color: "@accentSecondary", opacity: 0.7 }),
       img("Logo", { x: 860, y: 170, width: 200, height: 200 }, "{{LOGO}}", {
         logo: true,
         animation: anim("zoom", { duration: 900, easing: "backOut" }),
@@ -2062,19 +2032,7 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     tags: ["Minimal", "Cozy"],
     collection: "pride",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-      }),
-      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
-        stackDirection: "vertical",
-        cornerRadius: 0,
-        opacity: 0.1,
-        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
-        // not a sky. Static layer, so the blur cache is safe.
-        effects: { blur: { enabled: true, amount: 60 } },
-      }),
-      particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.25, color: "@accent", opacity: 0.6 }),
+      ...prideScene(),
       shape("Card", { x: 610, y: 290, width: 700, height: 500 }, {
         fill: "@surface/90",
         cornerRadius: 28,
@@ -2181,20 +2139,8 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     tags: ["Cozy"],
     collection: "pride",
     layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-      }),
-      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
-        stackDirection: "vertical",
-        cornerRadius: 0,
-        opacity: 0.12,
-        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
-        // not a sky. Static layer, so the blur cache is safe.
-        effects: { blur: { enabled: true, amount: 60 } },
-      }),
+      ...prideScene(),
       particles("Decor — Hearts", { kind: "hearts", count: 10, size: 5, speed: 0.5, color: "@primary", opacity: 0.6 }),
-      particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.3, color: "@accent", opacity: 0.7 }),
       frame("Webcam", { x: 90, y: 140, width: 1020, height: 574 }, {
         camera: true,
         strokeColor: "@accent",
@@ -2415,6 +2361,7 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
     category: base.category,
     tags: [...tags],
     collection: base.collection,
+    family: base.family ?? (base.collection !== "core" ? base.collection : undefined),
     subStyle: palette.subStyle,
     paletteId: palette.id,
     layers: base.layers.map((spec, i) => {

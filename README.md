@@ -77,6 +77,13 @@ palette and all eleven screens exist, named "Midnight Cathedral — …", sharin
 radii, ornament and motion rules. The pack sub-style (Dark Goth, Trans Pride, …) lives on the
 palette, because the palette *is* the pack identity.
 
+**A family shares its ground.** Every full-screen scene in a family opens with the identical
+backdrop layers — same token, same alpha, same angle, same decor — emitted by one recipe
+(`gothicScene()`, `neonScene()`, `prideScene()` in `data/templates.ts`). Letting each screen pick
+its own gradient token was what made packs look like eleven unrelated overlays: `@primary` scenes
+read burgundy while `@secondary` scenes read violet, out of one palette. `GET /qa` now fails the
+build-time check if two screens of a family disagree on their backdrop signature.
+
 **Gothic family** (10 packs): Cinzel Decorative display over IM Fell English SC and Inter,
 blackletter channel marks on scenes, square-ish corners, ornament hairlines, and deterministic
 decor particles — bats, moths, petals, fog. Several packs are tuned to published gothic palettes
@@ -160,6 +167,10 @@ lightness 0.035–0.09 — never pure black (crushes on stream), never drifting 
 enforces the band alongside the contrast pairs.
 
 **Konva drops text lines that overflow a fixed height.** Text layer boxes have to fit their content.
+
+**Every single-line label auto-shrinks.** `fitFontSize` is shared by text layers and alert
+titles/subtitles. A Konva `Text` with a width but no height silently *wraps* — which is how
+"NEW SUBSCRIBER" in a display face ended up sitting on top of its own subtitle.
 
 **Long channel names auto-shrink.** Single-line text that overflows its box scales its font down
 instead of clipping. Two traps live here: Konva charges `letterSpacing` per *character* (not per
