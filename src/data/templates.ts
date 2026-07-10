@@ -92,6 +92,7 @@ function text(
     letterSpacing?: number;
     lineHeight?: number;
     fill?: string;
+    fillStripes?: string[];
     textTransform?: "none" | "uppercase" | "lowercase";
   } = {},
 ): LayerSpec {
@@ -108,6 +109,7 @@ function text(
     letterSpacing: o.letterSpacing ?? 0,
     lineHeight: o.lineHeight ?? 1.2,
     fill: o.fill ?? "@text",
+    fillStripes: o.fillStripes,
     textTransform: o.textTransform ?? "none",
   };
 }
@@ -1888,7 +1890,17 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
         fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/25", angle: 160 } },
+      }),
+      // The whole sky is the flag, washed dark enough to read over. This is
+      // what makes the scene unmistakably pride instead of "dark theme with a
+      // thin stripe".
+      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
+        stackDirection: "vertical",
+        cornerRadius: 0,
+        opacity: 0.16,
+        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
+        // not a sky. Static layer, so the blur cache is safe.
+        effects: { blur: { enabled: true, amount: 60 } },
       }),
       particles("Decor — Light rays", { kind: "rays", count: 7, size: 5, speed: 1, color: "@glow" }),
       particles("Decor — Stars", { kind: "stars", count: 50, size: 3, speed: 0.3, color: "@accent", opacity: 0.8 }),
@@ -1899,12 +1911,13 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         fontWeight: 800,
         align: "center",
         fill: "@text",
+        fillStripes: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
         letterSpacing: 4,
-        effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+        effects: { shadow: { enabled: true, color: "@shadow", blur: 18, offsetY: 6, opacity: 0.8 } },
         animation: anim("zoom", { duration: 900, easing: "backOut" }),
       }),
-      flag("Decor — Pride flag", { x: 640, y: 594, width: 640, height: 12 }, {
-        cornerRadius: 6,
+      flag("Decor — Pride flag", { x: 610, y: 592, width: 700, height: 16 }, {
+        cornerRadius: 8,
         effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
         animation: anim("shimmer", { duration: 3600 }),
       }),
@@ -1941,7 +1954,14 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
         fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/25", angle: 200 } },
+      }),
+      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
+        stackDirection: "vertical",
+        cornerRadius: 0,
+        opacity: 0.13,
+        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
+        // not a sky. Static layer, so the blur cache is safe.
+        effects: { blur: { enabled: true, amount: 60 } },
       }),
       particles("Decor — Clouds", { kind: "fog", count: 8, size: 5, speed: 0.8, color: "@accentSecondary" }),
       particles("Decor — Hearts", { kind: "hearts", count: 12, size: 6, speed: 0.6, color: "@primary", opacity: 0.7 }),
@@ -1960,7 +1980,9 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         fontWeight: 800,
         align: "center",
         fill: "@text",
+        fillStripes: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
         letterSpacing: 3,
+        effects: { shadow: { enabled: true, color: "@shadow", blur: 16, offsetY: 5, opacity: 0.8 } },
         animation: anim("fade", { duration: 1100 }),
       }),
       text("Sub", { x: 360, y: 720, width: 1200, height: 44 }, "{{CHANNEL_NAME}} will be back shortly", {
@@ -1988,7 +2010,14 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
         fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/30", angle: 45 } },
+      }),
+      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
+        stackDirection: "vertical",
+        cornerRadius: 0,
+        opacity: 0.16,
+        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
+        // not a sky. Static layer, so the blur cache is safe.
+        effects: { blur: { enabled: true, amount: 60 } },
       }),
       particles("Decor — Confetti", { kind: "confetti", count: 50, size: 6, speed: 1, color: "@accent" }),
       particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.4, color: "@accentSecondary", opacity: 0.7 }),
@@ -2002,12 +2031,13 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         fontWeight: 800,
         align: "center",
         fill: "@text",
+        fillStripes: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
         letterSpacing: 3,
-        effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+        effects: { shadow: { enabled: true, color: "@shadow", blur: 18, offsetY: 6, opacity: 0.8 } },
         animation: anim("slide", { direction: "up", duration: 900, delay: 200 }),
       }),
-      flag("Decor — Pride flag", { x: 640, y: 584, width: 640, height: 12 }, {
-        cornerRadius: 6,
+      flag("Decor — Pride flag", { x: 610, y: 582, width: 700, height: 16 }, {
+        cornerRadius: 8,
         animation: anim("shimmer", { duration: 3600 }),
       }),
       text("Channel name", { x: 310, y: 630, width: 1300, height: 70 }, "{{CHANNEL_NAME}}", {
@@ -2015,7 +2045,7 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         fontSize: 48,
         fontWeight: 700,
         align: "center",
-        fill: "@accent",
+        fill: "@text",
         animation: anim("fade", { duration: 900, delay: 500 }),
       }),
       social("Socials", { x: 310, y: 780, width: 1300, height: 60 }, {
@@ -2035,7 +2065,14 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
         fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/20", angle: 180 } },
+      }),
+      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
+        stackDirection: "vertical",
+        cornerRadius: 0,
+        opacity: 0.1,
+        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
+        // not a sky. Static layer, so the blur cache is safe.
+        effects: { blur: { enabled: true, amount: 60 } },
       }),
       particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.25, color: "@accent", opacity: 0.6 }),
       shape("Card", { x: 610, y: 290, width: 700, height: 500 }, {
@@ -2068,6 +2105,10 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         fill: "@textSecondary",
         animation: anim("fade", { duration: 900, delay: 550 }),
       }),
+      flag("Decor — Pride flag", { x: 760, y: 756, width: 400, height: 10 }, {
+        cornerRadius: 5,
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
       social("Socials", { x: 660, y: 700, width: 600, height: 48 }, {
         platforms: ["twitch", "discord", "instagram"],
         fontSize: 20,
@@ -2089,9 +2130,15 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         effects: { border: { enabled: true, color: "@border", width: 1, radius: 18 } },
         animation: anim("slide", { direction: "up", duration: 700 }),
       }),
-      flag("Decor — Pride flag", { x: 40, y: 98, width: 1840, height: 6 }, {
-        cornerRadius: 3,
+      flag("Decor — Pride flag", { x: 40, y: 98, width: 1840, height: 8 }, {
+        cornerRadius: 4,
         animation: anim("shimmer", { duration: 4200 }),
+      }),
+      flag("Decor — Rainbow rail", { x: 0, y: 0, width: 10, height: 1080 }, {
+        stackDirection: "vertical",
+        cornerRadius: 0,
+        opacity: 0.9,
+        animation: anim("shimmer", { duration: 5200 }),
       }),
       img("Logo", { x: 62, y: 40, width: 40, height: 40 }, "{{LOGO}}", { logo: true }),
       text("Channel name", { x: 118, y: 42, width: 600, height: 36 }, "{{CHANNEL_NAME}}", {
@@ -2137,7 +2184,14 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
         fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 135 } },
+      }),
+      flag("Decor — Rainbow wash", { x: -160, y: -160, width: 2240, height: 1400 }, {
+        stackDirection: "vertical",
+        cornerRadius: 0,
+        opacity: 0.12,
+        // Blurred into a soft aurora — hard stripe bands read as a dim flag,
+        // not a sky. Static layer, so the blur cache is safe.
+        effects: { blur: { enabled: true, amount: 60 } },
       }),
       particles("Decor — Hearts", { kind: "hearts", count: 10, size: 5, speed: 0.5, color: "@primary", opacity: 0.6 }),
       particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.3, color: "@accent", opacity: 0.7 }),
@@ -2160,7 +2214,11 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         fontWeight: 700,
         fill: "@text",
       }),
-      text("Slogan", { x: 92, y: 870, width: 900, height: 36 }, "{{SLOGAN}}", {
+      flag("Decor — Pride flag", { x: 90, y: 856, width: 640, height: 10 }, {
+        cornerRadius: 5,
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
+      text("Slogan", { x: 92, y: 880, width: 900, height: 36 }, "{{SLOGAN}}", {
         fontFamily: "Inter",
         fontSize: 24,
         fontWeight: 400,
@@ -2186,11 +2244,17 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     collection: "pride",
     layers: [
       particles("Decor — Hearts", { kind: "hearts", count: 10, size: 5, speed: 0.5, color: "@primary", opacity: 0.6 }),
-      frame("Decor — Halo frame", { x: 296, y: 96, width: 1328, height: 768 }, {
-        fill: "transparent",
-        strokeColor: "@border",
-        strokeWidth: 1,
-        cornerRadius: 32,
+      // A full rainbow border built from four flag bars — stripes run along
+      // each edge, framing the camera in the pack's actual flag.
+      flag("Decor — Flag top", { x: 308, y: 104, width: 1304, height: 10 }, { cornerRadius: 5 }),
+      flag("Decor — Flag bottom", { x: 308, y: 846, width: 1304, height: 10 }, { cornerRadius: 5 }),
+      flag("Decor — Flag left", { x: 304, y: 118, width: 10, height: 724 }, {
+        stackDirection: "vertical",
+        cornerRadius: 5,
+      }),
+      flag("Decor — Flag right", { x: 1606, y: 118, width: 10, height: 724 }, {
+        stackDirection: "vertical",
+        cornerRadius: 5,
       }),
       frame("Camera", { x: 320, y: 120, width: 1280, height: 720 }, {
         camera: true,
@@ -2241,6 +2305,10 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         fill: "@accent",
         letterSpacing: 4,
       }),
+      flag("Decor — Pride flag", { x: 1400, y: 108, width: 460, height: 8 }, {
+        cornerRadius: 4,
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
       chatbox("Chat", { x: 1400, y: 120, width: 460, height: 840 }, {
         cornerRadius: 24,
         rows: 10,
@@ -2266,6 +2334,10 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
           border: { enabled: true, color: "@border", width: 1, radius: 28 },
         },
         animation: anim("elastic", { duration: 1200 }),
+      }),
+      flag("Decor — Pride flag", { x: 620, y: 648, width: 680, height: 10 }, {
+        cornerRadius: 5,
+        animation: anim("elastic", { duration: 1200, delay: 150 }),
       }),
     ],
   },
@@ -2349,6 +2421,9 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
       const layer = { ...spec, id: `${base.id}-l${i}` } as Layer;
       // Flags fly the palette's authentic stripes, not the authored default.
       if (layer.type === "flag" && palette.flag) layer.stripes = palette.flag;
+      if (layer.type === "text" && layer.fillStripes && palette.flag) {
+        layer.fillStripes = palette.flag;
+      }
       return layer;
     }),
   };

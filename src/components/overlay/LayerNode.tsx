@@ -15,7 +15,7 @@ import {
 import { sample } from "@/lib/animation";
 import { measureText } from "@/lib/measure";
 import { resolveSrc, resolveText, type MissingFieldMode } from "@/lib/placeholders";
-import { resolveColor } from "@/lib/theme";
+import { ensureContrast, resolveColor } from "@/lib/theme";
 import type {
   AlertLayer,
   ChannelProfile,
@@ -268,6 +268,47 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
       const target = Math.max(20, layer.width - 4 - spacing);
       fontSize = Math.max(9, fontSize * (target / glyphs));
     }
+  }
+
+  // Striped lettering: each character gets the next flag colour, laid out by
+  // measured advances. Stripes are pushed through the contrast gate against
+  // the theme background so a dark flag blue never disappears into a dark
+  // scene — same hue, adjusted lightness.
+  if (layer.fillStripes && layer.fillStripes.length > 0 && !resolved.includes("\n")) {
+    const stripes = layer.fillStripes.map((stripe) =>
+      ensureContrast(stripe, ctx.theme.background, 3),
+    );
+    const chars = [...visible];
+    const advances = chars.map(
+      (ch) => measureText(ch, fontSize, layer.fontFamily, layer.fontWeight) + layer.letterSpacing,
+    );
+    const total = advances.reduce((n, a) => n + a, 0);
+    let x = layer.align === "center" ? (layer.width - total) / 2 : layer.align === "right" ? layer.width - total : 0;
+    let colorIndex = 0;
+    const shadow = shadowProps(layer.effects, ctx.theme, glowBoost);
+
+    return (
+      <Group listening={false}>
+        {chars.map((ch, i) => {
+          const cx = x;
+          x += advances[i];
+          if (ch.trim() === "") return null; // spaces advance but don't consume a stripe
+          const fill = stripes[colorIndex++ % stripes.length];
+          return (
+            <Text
+              key={i}
+              x={cx}
+              text={ch}
+              fontFamily={layer.fontFamily}
+              fontSize={fontSize}
+              fontStyle={fontStyleOf(layer.fontWeight, layer.italic)}
+              fill={fill}
+              {...shadow}
+            />
+          );
+        })}
+      </Group>
+    );
   }
 
   return (

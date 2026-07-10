@@ -212,22 +212,32 @@ export function EditorCanvas({ profile, panTool }: { profile: ChannelProfile; pa
 
               {showGrid && <Grid zoom={zoom} />}
 
-              {project.layers.map((layer) => (
-                <LayerNode
-                  key={layer.id}
-                  layer={layer}
-                  ctx={ctx}
-                  draggable={!panTool}
-                  onSelect={(id, additive) => toggleSelect(id, additive)}
-                  onDragStart={beginGesture}
-                  onDragMove={handleDragMove}
-                  onDragEnd={(id, x, y) => {
-                    setGuides([]);
-                    updateLayer(id, { x, y }, false);
-                  }}
-                  onTransformEnd={handleTransformEnd}
-                />
-              ))}
+              {/* Layers are clipped to the artboard, matching what export and
+                  OBS produce — decor that deliberately overshoots the canvas
+                  (blurred washes, off-screen particle entries) would otherwise
+                  spill into the workspace. */}
+              <Group
+                clipFunc={(c) => {
+                  c.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                }}
+              >
+                {project.layers.map((layer) => (
+                  <LayerNode
+                    key={layer.id}
+                    layer={layer}
+                    ctx={ctx}
+                    draggable={!panTool}
+                    onSelect={(id, additive) => toggleSelect(id, additive)}
+                    onDragStart={beginGesture}
+                    onDragMove={handleDragMove}
+                    onDragEnd={(id, x, y) => {
+                      setGuides([]);
+                      updateLayer(id, { x, y }, false);
+                    }}
+                    onTransformEnd={handleTransformEnd}
+                  />
+                ))}
+              </Group>
 
               {guides.map((guide, i) => (
                 <Line

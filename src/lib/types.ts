@@ -314,6 +314,13 @@ export interface TextLayer extends LayerBase {
   letterSpacing: number;
   lineHeight: number;
   fill: ColorValue;
+  /**
+   * Per-character stripe colouring — the "each letter its own flag colour"
+   * treatment. Literal hexes like flag layers; pride palettes substitute
+   * their authentic stripes in. Single-line text only; `fill` is the
+   * fallback when unset.
+   */
+  fillStripes?: string[];
   textTransform: TextTransform;
 }
 
