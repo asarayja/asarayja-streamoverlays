@@ -129,6 +129,43 @@ function makeLayer(type: LayerType, index: number): Layer {
     case "shape":
     case "background":
       return { ...base, type, shape: "rect", fill: "@primary", cornerRadius: 12 };
+    case "window":
+      return {
+        ...base,
+        type: "window",
+        width: 640,
+        height: 400,
+        title: "CAM.EXE",
+        fill: "@surface/85",
+        titleBarColor: "@primary",
+        textColor: "@text",
+        fontFamily: "Press Start 2P",
+        fontSize: 12,
+        cornerRadius: 10,
+        buttons: true,
+        gloss: true,
+        content: "empty",
+        chatFontSize: 20,
+        usernameColor: "@accent",
+        messageColor: "@text",
+        rows: 8,
+      };
+    case "chip":
+      return {
+        ...base,
+        type: "chip",
+        width: 420,
+        height: 52,
+        label: "Recent sub",
+        value: "pixel_wren",
+        fill: "@surface/90",
+        labelColor: "@accent",
+        valueColor: "@text",
+        fontFamily: "Inter",
+        fontSize: 16,
+        cornerRadius: 26,
+        icon: "heart",
+      };
     case "flag":
       return {
         ...base,

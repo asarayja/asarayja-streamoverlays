@@ -9,20 +9,23 @@ import {
   Image as KonvaImage,
   Line,
   Rect,
+  Shape as KonvaShape,
   Star,
   Text,
 } from "react-konva";
 import { sample } from "@/lib/animation";
 import { measureText } from "@/lib/measure";
 import { resolveSrc, resolveText, type MissingFieldMode } from "@/lib/placeholders";
-import { ensureContrast, resolveColor } from "@/lib/theme";
+import { ensureContrast, lighten, resolveColor } from "@/lib/theme";
 import type {
   AlertLayer,
   ChannelProfile,
   ChatBoxLayer,
+  ChipLayer,
   Effects,
   FlagLayer,
   FrameLayer,
+  WindowLayer,
   Gradient,
   ImageLayer,
   Layer,
@@ -104,7 +107,31 @@ function gradientProps(gradient: Gradient, theme: Theme, w: number, h: number) {
   };
 }
 
-function borderProps(effects: Effects, theme: Theme) {
+function borderProps(effects: Effects, theme: Theme, w = 0, h = 0) {
+  // A gradient stroke outranks a flat border — it is the more specific choice,
+  // and Konva can only paint one stroke per shape.
+  const gs = effects.gradientStroke;
+  if (gs?.enabled) {
+    const rad = (gs.angle * Math.PI) / 180;
+    const cx = w / 2;
+    const cy = h / 2;
+    const length = Math.abs(w * Math.cos(rad)) + Math.abs(h * Math.sin(rad));
+    const dx = (Math.cos(rad) * length) / 2;
+    const dy = (Math.sin(rad) * length) / 2;
+    return {
+      strokeWidth: gs.width,
+      strokeLinearGradientStartPoint: { x: cx - dx, y: cy - dy },
+      strokeLinearGradientEndPoint: { x: cx + dx, y: cy + dy },
+      strokeLinearGradientColorStops: [
+        0,
+        resolveColor(gs.from, theme),
+        0.5,
+        resolveColor(gs.to, theme),
+        1,
+        resolveColor(gs.from, theme),
+      ],
+    };
+  }
   if (!effects.border.enabled) return {};
   return {
     stroke: resolveColor(effects.border.color, theme),
@@ -211,7 +238,72 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
       />
     );
   }
+
+  if (layer.shape === "crescent") {
+    // One path, outer arc clockwise and the bite anticlockwise: the nonzero
+    // winding rule punches the hole without compositing, so the moon stays
+    // transparent over whatever is behind it.
+    const r = Math.min(w, h) / 2;
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          c.beginPath();
+          c.arc(w / 2, h / 2, r, 0, Math.PI * 2, false);
+          c.arc(w / 2 + r * 0.5, h / 2 - r * 0.18, r * 0.86, 0, Math.PI * 2, true);
+          c.closePath();
+          c.fillStrokeShape(shape);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "scanlines") {
+    const gap = Math.max(3, layer.cornerRadius || 4);
+    const stroke = fill ?? resolveColor(layer.fill, ctx.theme);
+    return (
+      <KonvaShape
+        sceneFunc={(c, shape) => {
+          c.beginPath();
+          for (let y = 0; y < h; y += gap) {
+            c.moveTo(0, y);
+            c.lineTo(w, y);
+          }
+          c.strokeShape(shape);
+        }}
+        stroke={stroke}
+        strokeWidth={1}
+      />
+    );
+  }
+
+  if (layer.shape === "plaque") {
+    return <KonvaShape {...paint} sceneFunc={(c, shape) => { plaquePath(c, w, h); c.fillStrokeShape(shape); }} />;
+  }
+
   return <Line closed points={polygonPoints(layer.shape, w, h)} {...paint} />;
+}
+
+/**
+ * The ornate bracket silhouette used by holo alert plates and stream panels:
+ * a rounded rectangle whose left and right edges bow outward into a pair of
+ * cusps. Drawn as one path so it can carry a gradient stroke.
+ */
+function plaquePath(c: CanvasRenderingContext2D | Konva.Context, w: number, h: number) {
+  const notch = Math.min(w, h) * 0.18;
+  const r = h * 0.28;
+  c.beginPath();
+  c.moveTo(notch, 0);
+  c.lineTo(w - notch, 0);
+  c.quadraticCurveTo(w - notch * 0.35, 0, w - notch * 0.2, h * 0.22);
+  c.quadraticCurveTo(w, h * 0.5, w - notch * 0.2, h * 0.78);
+  c.quadraticCurveTo(w - notch * 0.35, h, w - notch, h);
+  c.lineTo(notch, h);
+  c.quadraticCurveTo(notch * 0.35, h, notch * 0.2, h * 0.78);
+  c.quadraticCurveTo(0, h * 0.5, notch * 0.2, h * 0.22);
+  c.quadraticCurveTo(notch * 0.35, 0, notch, 0);
+  c.closePath();
+  void r;
 }
 
 /** Fallback when a flag layer somehow has no stripes: the classic six. */
@@ -326,20 +418,39 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
     );
   }
 
+  const common = {
+    text: visible,
+    width: layer.width,
+    height: layer.height,
+    fontFamily: layer.fontFamily,
+    fontSize,
+    fontStyle: fontStyleOf(layer.fontWeight, layer.italic),
+    align: layer.align,
+    verticalAlign: "top" as const,
+    lineHeight: layer.lineHeight,
+    letterSpacing: layer.letterSpacing,
+    wrap: "word" as const,
+  };
+
+  // Bevelled lettering: a light copy above-left and a dark copy below-right,
+  // with the real glyphs on top. Canvas has no emboss filter, and the shadow
+  // slot is already spoken for by glow.
+  const emboss = layer.effects.emboss;
+  if (emboss?.enabled) {
+    const d = Math.max(1, emboss.depth);
+    return (
+      <Group listening={false}>
+        <Text {...common} x={-d} y={-d} fill={resolveColor(emboss.light, ctx.theme)} />
+        <Text {...common} x={d} y={d} fill={resolveColor(emboss.dark, ctx.theme)} />
+        <Text {...common} fill={resolveColor(layer.fill, ctx.theme)} {...shadowProps(layer.effects, ctx.theme, glowBoost)} />
+      </Group>
+    );
+  }
+
   return (
     <Text
-      text={visible}
-      width={layer.width}
-      height={layer.height}
-      fontFamily={layer.fontFamily}
-      fontSize={fontSize}
-      fontStyle={fontStyleOf(layer.fontWeight, layer.italic)}
-      align={layer.align}
-      verticalAlign="top"
-      lineHeight={layer.lineHeight}
-      letterSpacing={layer.letterSpacing}
+      {...common}
       fill={resolveColor(layer.fill, ctx.theme)}
-      wrap="word"
       {...shadowProps(layer.effects, ctx.theme, glowBoost)}
     />
   );
@@ -505,32 +616,51 @@ const CHAT_SAMPLE: Array<{ user: string; message: string }> = [
   { user: "Cinder", message: "how long is the stream today?" },
 ];
 
-function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: RenderContext; glowBoost: number }) {
-  const { width: w, height: h } = layer;
-  const pad = Math.max(14, layer.fontSize * 0.8);
-  const rowHeight = layer.fontSize * 2.4;
+/**
+ * Sample chat rows, shared by the chat box and the retro chat window.
+ *
+ * Studio-only, exactly like the CAMERA label on a camera frame: these names are
+ * placeholders, and burning them into an exported PNG — or painting them under
+ * the real chat widget in OBS — would be wrong. `live` mode renders the frame
+ * empty, ready to be filled.
+ */
+function ChatRows({
+  width: w,
+  height: h,
+  fontFamily,
+  fontSize,
+  rows: maxRows,
+  usernameColor,
+  messageColor,
+  ctx,
+}: {
+  width: number;
+  height: number;
+  fontFamily: string;
+  fontSize: number;
+  rows: number;
+  usernameColor: string;
+  messageColor: string;
+  ctx: RenderContext;
+}) {
+  if (ctx.mode === "live") return null;
+
+  const pad = Math.max(14, fontSize * 0.8);
+  const rowHeight = fontSize * 2.4;
   const capacity = Math.max(1, Math.floor((h - pad * 2) / rowHeight));
-  const rows = CHAT_SAMPLE.slice(0, Math.min(layer.rows, capacity));
-  const avatar = layer.fontSize * 0.62;
+  const rows = CHAT_SAMPLE.slice(0, Math.min(maxRows, capacity));
+  const avatar = fontSize * 0.62;
 
   return (
-    <Group listening={false}>
-      <Rect
-        width={w}
-        height={h}
-        cornerRadius={layer.cornerRadius}
-        fill={resolveColor(layer.fill, ctx.theme)}
-        {...borderProps(layer.effects, ctx.theme)}
-        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
-      />
+    <>
       {rows.map((row, i) => {
         const y = pad + i * rowHeight;
-        const nameWidth = measureText(`${row.user}:`, layer.fontSize, layer.fontFamily, 700);
+        const nameWidth = measureText(`${row.user}:`, fontSize, fontFamily, 700);
         return (
           <Group key={row.user} y={y}>
             <Circle
               x={pad + avatar}
-              y={layer.fontSize * 0.7}
+              y={fontSize * 0.7}
               radius={avatar}
               fill={resolveColor(i % 2 === 0 ? "@primary" : "@secondary", ctx.theme)}
               opacity={0.85}
@@ -538,24 +668,50 @@ function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: R
             <Text
               x={pad + avatar * 2 + 10}
               text={`${row.user}:`}
-              fontFamily={layer.fontFamily}
-              fontSize={layer.fontSize}
+              fontFamily={fontFamily}
+              fontSize={fontSize}
               fontStyle="700"
-              fill={resolveColor(layer.usernameColor, ctx.theme)}
+              fill={resolveColor(usernameColor, ctx.theme)}
             />
             <Text
               x={pad + avatar * 2 + 10 + nameWidth + 8}
               width={w - (pad + avatar * 2 + 10 + nameWidth + 8) - pad}
               text={row.message}
-              fontFamily={layer.fontFamily}
-              fontSize={layer.fontSize}
-              fill={resolveColor(layer.messageColor, ctx.theme)}
+              fontFamily={fontFamily}
+              fontSize={fontSize}
+              fill={resolveColor(messageColor, ctx.theme)}
               ellipsis
               wrap="none"
             />
           </Group>
         );
       })}
+    </>
+  );
+}
+
+function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: RenderContext; glowBoost: number }) {
+  const { width: w, height: h } = layer;
+  return (
+    <Group listening={false}>
+      <Rect
+        width={w}
+        height={h}
+        cornerRadius={layer.cornerRadius}
+        fill={resolveColor(layer.fill, ctx.theme)}
+        {...borderProps(layer.effects, ctx.theme, w, h)}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+      />
+      <ChatRows
+        width={w}
+        height={h}
+        fontFamily={layer.fontFamily}
+        fontSize={layer.fontSize}
+        rows={layer.rows}
+        usernameColor={layer.usernameColor}
+        messageColor={layer.messageColor}
+        ctx={ctx}
+      />
     </Group>
   );
 }
@@ -716,6 +872,185 @@ function batPoints(s: number, flap: number): number[] {
   ];
 }
 
+/**
+ * A retro OS window. The title bar and its traffic-light buttons are the whole
+ * identity of Y2K packs; the interior is a camera hole in `live` mode so OBS
+ * composites the real webcam through it.
+ */
+function WindowContent({ layer, ctx, glowBoost }: { layer: WindowLayer; ctx: RenderContext; glowBoost: number }) {
+  const { width: w, height: h } = layer;
+  const bar = Math.max(26, Math.min(h * 0.12, layer.fontSize * 2.1));
+  const r = layer.cornerRadius;
+  const isCamera = layer.content === "camera";
+  const body = ctx.mode === "live" && isCamera ? undefined : resolveColor(layer.fill, ctx.theme);
+  const barColor = resolveColor(layer.titleBarColor, ctx.theme);
+  const ink = resolveColor(layer.textColor, ctx.theme);
+  const btn = bar * 0.32;
+
+  return (
+    <Group listening={false}>
+      <Rect
+        width={w}
+        height={h}
+        cornerRadius={r}
+        fill={body}
+        {...borderProps(layer.effects, ctx.theme, w, h)}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+      />
+      {/* Title bar: square at the bottom, rounded at the top. */}
+      <Rect width={w} height={bar} cornerRadius={[r, r, 0, 0]} fill={barColor} />
+      <Text
+        x={bar * 0.45}
+        y={0}
+        height={bar}
+        width={w - bar * 3}
+        verticalAlign="middle"
+        text={resolveText(layer.title, ctx.profile, missingMode(ctx.mode))}
+        fontFamily={layer.fontFamily}
+        fontSize={fitFontSize(layer.title, w - bar * 3, layer.fontSize, layer.fontFamily, 400, 1)}
+        letterSpacing={1}
+        fill={ink}
+        wrap="none"
+      />
+      {layer.buttons &&
+        [2.4, 1.6, 0.8].map((slot, i) => (
+          <Group key={i} x={w - bar * slot} y={bar / 2}>
+            <Circle radius={btn} stroke={ink} strokeWidth={1.5} />
+            {i === 2 && (
+              <>
+                <Line points={[-btn * 0.45, -btn * 0.45, btn * 0.45, btn * 0.45]} stroke={ink} strokeWidth={1.5} />
+                <Line points={[btn * 0.45, -btn * 0.45, -btn * 0.45, btn * 0.45]} stroke={ink} strokeWidth={1.5} />
+              </>
+            )}
+            {i === 0 && <Line points={[-btn * 0.45, 0, btn * 0.45, 0]} stroke={ink} strokeWidth={1.5} />}
+            {i === 1 && <Rect x={-btn * 0.4} y={-btn * 0.4} width={btn * 0.8} height={btn * 0.8} stroke={ink} strokeWidth={1.5} />}
+          </Group>
+        ))}
+      {layer.gloss && (
+        <Group
+          clipFunc={(c) => {
+            c.rect(0, bar, w, h - bar);
+          }}
+        >
+          {[0.12, 0.34].map((offset, i) => (
+            <Line
+              key={i}
+              closed
+              points={[
+                w * offset, h * 1.2,
+                w * (offset + 0.12), h * 1.2,
+                w * (offset + 0.42), -h * 0.2,
+                w * (offset + 0.3), -h * 0.2,
+              ]}
+              fill="rgba(255,255,255,0.10)"
+            />
+          ))}
+        </Group>
+      )}
+      {layer.content === "chat" && (
+        <Group y={bar}>
+          <ChatRows
+            width={w}
+            height={h - bar}
+            fontFamily={layer.fontFamily === "Press Start 2P" ? "Space Grotesk" : layer.fontFamily}
+            fontSize={layer.chatFontSize}
+            rows={layer.rows}
+            usernameColor={layer.usernameColor}
+            messageColor={layer.messageColor}
+            ctx={ctx}
+          />
+        </Group>
+      )}
+      {ctx.mode !== "live" && isCamera && (
+        <Text
+          y={bar}
+          width={w}
+          height={h - bar}
+          align="center"
+          verticalAlign="middle"
+          text="CAMERA"
+          fontFamily="Inter"
+          fontSize={Math.max(12, w * 0.035)}
+          letterSpacing={4}
+          fill={resolveColor("@border", ctx.theme)}
+          opacity={0.5}
+        />
+      )}
+    </Group>
+  );
+}
+
+const CHIP_ICONS = {
+  heart: (s: number, color: string) => (
+    <Group>
+      <Circle x={-0.5 * s} y={-0.3 * s} radius={0.55 * s} fill={color} />
+      <Circle x={0.5 * s} y={-0.3 * s} radius={0.55 * s} fill={color} />
+      <Line closed points={[-1.0 * s, -0.05 * s, 1.0 * s, -0.05 * s, 0, 1.15 * s]} fill={color} />
+    </Group>
+  ),
+  star: (s: number, color: string) => (
+    <Star numPoints={4} innerRadius={0.35 * s} outerRadius={1.2 * s} fill={color} />
+  ),
+  none: () => null,
+};
+
+/** A compact event badge: icon, label, value. */
+function ChipContent({ layer, ctx, glowBoost }: { layer: ChipLayer; ctx: RenderContext; glowBoost: number }) {
+  const { width: w, height: h } = layer;
+  const pad = h * 0.4;
+  const iconSize = h * 0.18;
+  const hasIcon = layer.icon !== "none";
+  const iconSpace = hasIcon ? iconSize * 2 + pad * 0.5 : 0;
+
+  const label = resolveText(layer.label, ctx.profile, missingMode(ctx.mode)).toUpperCase();
+  const value = resolveText(layer.value, ctx.profile, missingMode(ctx.mode));
+  const labelWidth = measureText(label, layer.fontSize, layer.fontFamily, 700) + layer.fontSize * 0.3 * label.length;
+
+  return (
+    <Group listening={false}>
+      <Rect
+        width={w}
+        height={h}
+        cornerRadius={layer.cornerRadius}
+        fill={resolveColor(layer.fill, ctx.theme)}
+        {...borderProps(layer.effects, ctx.theme, w, h)}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+      />
+      {hasIcon && (
+        <Group x={pad + iconSize} y={h / 2}>
+          {CHIP_ICONS[layer.icon](iconSize, resolveColor(layer.labelColor, ctx.theme))}
+        </Group>
+      )}
+      <Text
+        x={pad + iconSpace}
+        height={h}
+        verticalAlign="middle"
+        text={label}
+        fontFamily={layer.fontFamily}
+        fontSize={layer.fontSize}
+        fontStyle="700"
+        letterSpacing={layer.fontSize * 0.3}
+        fill={resolveColor(layer.labelColor, ctx.theme)}
+        wrap="none"
+      />
+      {value && (
+        <Text
+          x={pad + iconSpace + labelWidth + pad * 0.6}
+          width={w - (pad + iconSpace + labelWidth + pad * 0.6) - pad}
+          height={h}
+          verticalAlign="middle"
+          text={value}
+          fontFamily={layer.fontFamily}
+          fontSize={layer.fontSize}
+          fill={resolveColor(layer.valueColor, ctx.theme)}
+          wrap="none"
+          ellipsis
+        />
+      )}
+    </Group>
+  );
+}
+
 function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderContext }) {
   const { width: w, height: h } = layer;
   const color = resolveColor(layer.color, ctx.theme);
@@ -811,6 +1146,132 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
             fillRadialGradientEndPoint={{ x: 0, y: 0 }}
             fillRadialGradientEndRadius={radius}
             fillRadialGradientColorStops={[0, color, 1, "rgba(0,0,0,0)"]}
+          />,
+        );
+        break;
+      }
+
+      case "clouds": {
+        // One path, not a group of circles.
+        //
+        // Konva applies group opacity to each *child*, so overlapping
+        // translucent circles seam along every intersection — which is exactly
+        // why the clouds read as a pile of discs. Filling a single path whose
+        // subpaths union under the nonzero winding rule gives a clean
+        // silhouette: billowed on top, flat on the bottom, one alpha.
+        // Evenly spaced along the span (pure noise clumps them), with the flat
+        // baseline just past the bottom edge so the cut never shows.
+        const span = w + 900;
+        const slot = (i + 0.5) / Math.max(1, count) + seedX * 0.22;
+        const x = (((slot * span + t * layer.speed * (10 + seedS * 18)) % span) + span) % span - 450;
+        const y = h * 1.0 + (seedY - 0.5) * h * 0.07;
+        const scale = layer.size * (0.8 + seedS * 0.7);
+        const bob = Math.sin(t * 0.25 + i) * 3;
+        const alpha = 0.55 + seedS * 0.35;
+        const cap = lighten(color, 0.2);
+
+        // [offsetX, radius] — each puff's bottom rests on the baseline.
+        const puffs: Array<[number, number]> = [
+          [-2.35, 0.72],
+          [-1.5, 1.12],
+          [-0.5, 1.55],
+          [0.65, 1.28],
+          [1.7, 0.92],
+          [2.45, 0.6],
+        ];
+        const halfWidth = 3.05 * scale;
+
+        const cloudPath = (c: Konva.Context, list: Array<[number, number]>, lift: number, shrink: number) => {
+          c.beginPath();
+          for (const [px, r] of list) {
+            const rr = r * shrink * scale;
+            c.moveTo((px - 0.12 * lift) * scale + rr, (-r * scale) - lift * 0.12 * scale);
+            c.arc((px - 0.12 * lift) * scale, (-r * scale) - lift * 0.12 * scale, rr, 0, Math.PI * 2, false);
+          }
+          if (lift === 0) {
+            c.moveTo(-halfWidth, -0.62 * scale);
+            c.lineTo(halfWidth, -0.62 * scale);
+            c.lineTo(halfWidth, 0);
+            c.lineTo(-halfWidth, 0);
+            c.closePath();
+          }
+        };
+
+        nodes.push(
+          <Group key={i} x={x} y={y + bob}>
+            <KonvaShape
+              fill={color}
+              opacity={alpha}
+              sceneFunc={(c, shape) => {
+                cloudPath(c, puffs, 0, 1);
+                c.fillShape(shape);
+              }}
+            />
+            <KonvaShape
+              fill={cap}
+              opacity={alpha * 0.55}
+              sceneFunc={(c, shape) => {
+                cloudPath(c, puffs.slice(0, 4), 1, 0.66);
+                c.fillShape(shape);
+              }}
+            />
+          </Group>,
+        );
+        break;
+      }
+
+      case "shootingStars": {
+        // Each star has its own slot in a repeating cycle, so they streak one
+        // after another instead of all at once.
+        const period = 4 + seedS * 5;
+        const phase = ((t / period + seedX) % 1 + 1) % 1;
+        if (phase > 0.22) break; // dark most of the cycle
+        const p = phase / 0.22;
+        const startX = seedX * w * 0.8;
+        const startY = seedY * h * 0.5;
+        const travel = 260 * layer.speed;
+        const x = startX + p * travel;
+        const y = startY + p * travel * 0.45;
+        const tail = 60 + seedS * 60;
+        const fade = Math.sin(p * Math.PI);
+        nodes.push(
+          <Line
+            key={i}
+            points={[x, y, x - tail, y - tail * 0.45]}
+            stroke={color}
+            strokeWidth={layer.size * 0.45}
+            lineCap="round"
+            opacity={fade * 0.9}
+          />,
+        );
+        break;
+      }
+
+      case "blobs": {
+        // Mesh-gradient orbs: each takes the next brand hue, so a palette swap
+        // recolours the whole aurora.
+        const tones = [
+          resolveColor("@primary", ctx.theme),
+          resolveColor("@secondary", ctx.theme),
+          resolveColor("@accent", ctx.theme),
+          resolveColor("@accentSecondary", ctx.theme),
+        ];
+        const radius = layer.size * (26 + seedS * 34);
+        const x = seedX * w + Math.sin(t * 0.12 * layer.speed + i) * 90;
+        const y = seedY * h + Math.cos(t * 0.1 * layer.speed + i * 1.7) * 70;
+        const tone = tones[i % tones.length];
+        nodes.push(
+          <Circle
+            key={i}
+            x={x}
+            y={y}
+            radius={radius}
+            opacity={0.16 + seedS * 0.18}
+            fillRadialGradientStartPoint={{ x: 0, y: 0 }}
+            fillRadialGradientStartRadius={0}
+            fillRadialGradientEndPoint={{ x: 0, y: 0 }}
+            fillRadialGradientEndRadius={radius}
+            fillRadialGradientColorStops={[0, tone, 1, "rgba(0,0,0,0)"]}
           />,
         );
         break;
@@ -936,6 +1397,10 @@ function Content({ layer, ctx, reveal, glowBoost }: { layer: Layer; ctx: RenderC
       return <ShapeContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
     case "flag":
       return <FlagContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
+    case "window":
+      return <WindowContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
+    case "chip":
+      return <ChipContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
     case "text":
       return <TextContent layer={layer} ctx={ctx} reveal={reveal} glowBoost={glowBoost} />;
     case "image":

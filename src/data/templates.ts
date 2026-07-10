@@ -7,6 +7,7 @@ import {
   type Layer,
   type LayerBase,
   type ParticleKind,
+  type ShapeKind,
   type SocialPlatform,
   type Template,
   type TemplateCategory,
@@ -63,7 +64,7 @@ function shape(
   name: string,
   box: Box,
   o: BaseOpts & {
-    shape?: "rect" | "ellipse" | "triangle" | "hexagon" | "line";
+    shape?: ShapeKind;
     fill?: string;
     cornerRadius?: number;
     background?: boolean;
@@ -261,6 +262,76 @@ function flag(
     stripes: o.stripes ?? ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
     stackDirection: o.stackDirection ?? "horizontal",
     cornerRadius: o.cornerRadius ?? 4,
+  };
+}
+
+function windowBox(
+  name: string,
+  box: Box,
+  title: string,
+  o: BaseOpts & {
+    fill?: string;
+    titleBarColor?: string;
+    textColor?: string;
+    fontFamily?: string;
+    fontSize?: number;
+    cornerRadius?: number;
+    buttons?: boolean;
+    gloss?: boolean;
+    content?: "empty" | "camera" | "chat";
+    chatFontSize?: number;
+    rows?: number;
+  } = {},
+): LayerSpec {
+  return {
+    ...common(name, o),
+    ...box,
+    type: "window",
+    title,
+    fill: o.fill ?? "@surface/85",
+    titleBarColor: o.titleBarColor ?? "@primary",
+    textColor: o.textColor ?? "@text",
+    fontFamily: o.fontFamily ?? "Press Start 2P",
+    fontSize: o.fontSize ?? 12,
+    cornerRadius: o.cornerRadius ?? 10,
+    buttons: o.buttons ?? true,
+    gloss: o.gloss ?? true,
+    content: o.content ?? "empty",
+    chatFontSize: o.chatFontSize ?? 20,
+    usernameColor: "@accent",
+    messageColor: "@text",
+    rows: o.rows ?? 8,
+  };
+}
+
+function chip(
+  name: string,
+  box: Box,
+  label: string,
+  value: string,
+  o: BaseOpts & {
+    fill?: string;
+    labelColor?: string;
+    valueColor?: string;
+    fontFamily?: string;
+    fontSize?: number;
+    cornerRadius?: number;
+    icon?: "heart" | "star" | "none";
+  } = {},
+): LayerSpec {
+  return {
+    ...common(name, o),
+    ...box,
+    type: "chip",
+    label,
+    value,
+    fill: o.fill ?? "@surface/90",
+    labelColor: o.labelColor ?? "@accent",
+    valueColor: o.valueColor ?? "@text",
+    fontFamily: o.fontFamily ?? "Inter",
+    fontSize: o.fontSize ?? 16,
+    cornerRadius: o.cornerRadius ?? 26,
+    icon: o.icon ?? "heart",
   };
 }
 
@@ -1458,6 +1529,578 @@ const BASE_TEMPLATES: BaseTemplate[] = [
 ];
 
 
+
+/* -------------------------------------------------------------------------- */
+/*                            Family generator                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A design family is a *style*, not fourteen hand-written screens.
+ *
+ * Hand-authoring each screen is exactly what let Midnight Cathedral's Starting
+ * Soon drift away from its Stream Ending. Here a family declares its type,
+ * geometry, ground and ornament once; every screen is generated from that
+ * declaration, so coherence is structural rather than a thing to remember.
+ */
+interface FamilyStyle {
+  id: string;
+  name: string;
+  tags: StyleTag[];
+  /** Display face for headlines. */
+  display: string;
+  displayWeight: number;
+  displayTracking: number;
+  displayTransform: "none" | "uppercase";
+  /** Body/UI face. */
+  body: string;
+  /** Panel and plate radius. */
+  radius: number;
+  /** Camera and frame radius. */
+  frameRadius: number;
+  /** Esports-style corner brackets on frames. */
+  corners: boolean;
+  strokeWidth: number;
+  /** Effects applied to every framed element. */
+  frameEffects: DeepPartial<Effects>;
+  /** Headline treatment. */
+  headlineEffects: DeepPartial<Effects>;
+  /** The shared ground of every full-screen scene. */
+  scene: () => LayerSpec[];
+  /** Ambient decor layered over overlays (gameplay, webcam, chat). */
+  overlayDecor?: () => LayerSpec[];
+  /** Alert and panel silhouette. */
+  plateShape: "rect" | "plaque";
+  /** Panels use windows instead of plates. */
+  windowChrome?: boolean;
+  /**
+   * Lift scene copy clear of a busy lower third. Cloud families own their
+   * bottom half; the answer is to move the words, not to crop the sky.
+   */
+  contentOffsetY?: number;
+}
+
+const HEADLINE_BOX: Box = { x: 210, y: 430, width: 1500, height: 140 };
+
+function familyScreens(f: FamilyStyle): BaseTemplate[] {
+  const base = (id: string, name: string, category: TemplateCategory, layers: LayerSpec[]): BaseTemplate => ({
+    id: `${f.id}-${id}`,
+    name,
+    category,
+    tags: f.tags,
+    collection: "core",
+    family: f.name,
+    layers,
+  });
+
+  const dy = f.contentOffsetY ?? 0;
+
+  const headline = (copy: string, y = 430) =>
+    text("Headline", { ...HEADLINE_BOX, y: y + dy }, copy, {
+      fontFamily: f.display,
+      fontSize: 96,
+      fontWeight: f.displayWeight,
+      align: "center",
+      fill: "@text",
+      letterSpacing: f.displayTracking,
+      textTransform: f.displayTransform,
+      effects: f.headlineEffects,
+      animation: anim("fade", { duration: 1100 }),
+    });
+
+  const channelName = (y: number) =>
+    text("Channel name", { x: 310, y: y + dy, width: 1300, height: 76 }, "{{CHANNEL_NAME}}", {
+      fontFamily: f.display,
+      fontSize: 48,
+      fontWeight: f.displayWeight,
+      align: "center",
+      fill: "@accent",
+      letterSpacing: Math.max(2, f.displayTracking * 0.5),
+      textTransform: f.displayTransform,
+      animation: anim("fade", { duration: 900, delay: 400 }),
+    });
+
+  const slogan = (y: number) =>
+    text("Slogan", { x: 360, y: y + dy, width: 1200, height: 40 }, "{{SLOGAN}}", {
+      fontFamily: f.body,
+      fontSize: 24,
+      fontWeight: 400,
+      align: "center",
+      fill: "@textSecondary",
+      animation: anim("fade", { duration: 900, delay: 700 }),
+    });
+
+  const socials = (y: number, platforms?: SocialPlatform[], delay = 900) =>
+    social("Socials", { x: 460, y: y + dy, width: 1000, height: 56 }, {
+      platforms: platforms ?? ["twitch", "youtube", "discord", "instagram"],
+      fontFamily: f.body,
+      pillColor: "@surface/90",
+      animation: anim("fade", { duration: 900, delay }),
+    });
+
+  /** The camera hole: a chrome window for Y2K, a bracketed frame elsewhere. */
+  const camera = (name: string, box: Box, title = "CAM.EXE") =>
+    f.windowChrome
+      ? windowBox(name, box, title, {
+          content: "camera",
+          // Gloss over a camera window is the reference look, but it paints 10%
+          // white across the webcam. The transparency promise wins; users can
+          // switch it back on per layer.
+          gloss: false,
+          fontFamily: f.body,
+          fontSize: 13,
+          cornerRadius: f.frameRadius,
+          effects: f.frameEffects,
+          animation: anim("glow", { duration: 4200 }),
+        })
+      : frame(name, box, {
+          camera: true,
+          strokeColor: "@accent",
+          strokeWidth: f.strokeWidth,
+          cornerRadius: f.frameRadius,
+          corners: f.corners,
+          effects: f.frameEffects,
+          animation: anim("glow", { duration: 4200 }),
+        });
+
+  const chat = (name: string, box: Box, rows: number) =>
+    f.windowChrome
+      ? windowBox(name, box, "CHAT.EXE", {
+          content: "chat",
+          rows,
+          chatFontSize: 20,
+          gloss: false,
+          fontFamily: f.body,
+          fontSize: 13,
+          cornerRadius: f.radius,
+          effects: f.frameEffects,
+        })
+      : chatbox(name, box, {
+          cornerRadius: f.radius,
+          rows,
+          fontFamily: f.body,
+          effects: { border: { enabled: true, color: "@border", width: 1, radius: f.radius } },
+        });
+
+  const plate = (name: string, box: Box, o: Parameters<typeof shape>[2] = {}) =>
+    shape(name, box, {
+      shape: f.plateShape,
+      fill: "@surface/90",
+      cornerRadius: f.radius,
+      effects: { border: { enabled: true, color: "@border", width: 1, radius: f.radius }, ...o.effects },
+      ...o,
+    });
+
+  const alertScreen = (id: string, name: string, title: string, subtitle: string, hero: boolean) =>
+    base(id, name, "Alerts", [
+      ...(f.overlayDecor?.() ?? []),
+      alert("Alert", { x: 560, y: 400, width: 800, height: 240 }, title, subtitle, {
+        fontFamily: f.display,
+        cornerRadius: f.radius,
+        fill: hero ? "@accent/95" : "@surface/92",
+        titleColor: hero ? "@background" : "@accent",
+        subtitleColor: hero ? "@background/85" : "@text",
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: hero ? 42 : 34 },
+          border: { enabled: true, color: "@border", width: 1, radius: f.radius },
+        },
+        animation: anim(hero ? "bounce" : "elastic", { duration: 1150 }),
+      }),
+    ]);
+
+  /** A full-screen message scene: ground, headline, name, slogan, socials. */
+  const scene = (id: string, name: string, category: TemplateCategory, copy: string, extra: LayerSpec[] = []) =>
+    base(id, name, category, [
+      ...f.scene(),
+      ...extra,
+      headline(copy),
+      channelName(600),
+      slogan(700),
+      socials(880),
+    ]);
+
+  const PANELS = ["ABOUT ME", "COMMANDS", "DONATE", "DISCORD", "LINKS", "MERCH"];
+
+  return [
+    scene("starting", "Starting Soon", "Starting Soon", "STARTING SOON"),
+    scene("brb", "Be Right Back", "BRB", "BE RIGHT BACK"),
+    scene("ending", "Stream Ending", "Stream Ending", "THANKS FOR WATCHING", [
+      img("Logo", { x: 860, y: 200 + dy, width: 200, height: 200 }, "{{LOGO}}", {
+        logo: true,
+        animation: anim("zoom", { duration: 900, easing: "backOut" }),
+      }),
+    ]),
+    scene("pause", "Pause", "Pause", "STREAM ON PAUSE"),
+    scene("offline", "Offline", "Offline", "OFFLINE"),
+
+    // Intermission: camera and chat side by side over the family ground.
+    base("intermission", "Intermission", "Intermission", [
+      ...f.scene(),
+      text("Label", { x: 120, y: 110, width: 700, height: 50 }, "INTERMISSION", {
+        fontFamily: f.display,
+        fontSize: 34,
+        fontWeight: f.displayWeight,
+        fill: "@accent",
+        letterSpacing: Math.max(4, f.displayTracking),
+        animation: anim("fade", { duration: 900 }),
+      }),
+      camera("Webcam", { x: 120, y: 190, width: 1080, height: 608 }),
+      chat("Chat", { x: 1260, y: 190, width: 540, height: 608 }, 8),
+      socials(880, ["twitch", "discord", "instagram"], 600),
+    ]),
+
+    base("gameplay", "Gameplay", "Gameplay", [
+      ...(f.overlayDecor?.() ?? []),
+      plate("Top bar", { x: 40, y: 28, width: 1840, height: 66 }, {
+        animation: anim("slide", { direction: "up", duration: 700 }),
+      }),
+      img("Logo", { x: 64, y: 41, width: 40, height: 40 }, "{{LOGO}}", { logo: true }),
+      text("Channel name", { x: 120, y: 42, width: 600, height: 36 }, "{{CHANNEL_NAME}}", {
+        fontFamily: f.display,
+        fontSize: 26,
+        fontWeight: f.displayWeight,
+        fill: "@text",
+        letterSpacing: Math.max(1, f.displayTracking * 0.3),
+        textTransform: f.displayTransform,
+      }),
+      text("Slogan", { x: 122, y: 72, width: 600, height: 18 }, "{{SLOGAN}}", {
+        fontFamily: f.body,
+        fontSize: 13,
+        fontWeight: 400,
+        fill: "@textSecondary",
+      }),
+      camera("Webcam", { x: 40, y: 660, width: 480, height: 270 }),
+      chat("Chat", { x: 1500, y: 140, width: 380, height: 580 }, 7),
+      social("Socials", { x: 620, y: 984, width: 680, height: 52 }, {
+        platforms: ["twitch", "discord", "instagram", "x"],
+        fontFamily: f.body,
+        pillColor: "@surface/90",
+        animation: anim("fade", { duration: 900, delay: 500 }),
+      }),
+    ]),
+
+    base("chatting", "Just Chatting", "Just Chatting", [
+      ...f.scene(),
+      camera("Webcam", { x: 90, y: 140, width: 1020, height: 574 }),
+      plate("Name plate", { x: 90, y: 760, width: 640, height: 84 }),
+      text("Display name", { x: 130, y: 780, width: 560, height: 48 }, "{{DISPLAY_NAME}}", {
+        fontFamily: f.display,
+        fontSize: 38,
+        fontWeight: f.displayWeight,
+        fill: "@text",
+        textTransform: f.displayTransform,
+      }),
+      text("Slogan", { x: 92, y: 872, width: 900, height: 36 }, "{{SLOGAN}}", {
+        fontFamily: f.body,
+        fontSize: 24,
+        fontWeight: 400,
+        fill: "@textSecondary",
+      }),
+      chat("Chat", { x: 1180, y: 140, width: 650, height: 740 }, 9),
+      social("Socials", { x: 90, y: 950, width: 1000, height: 56 }, {
+        platforms: ["twitch", "tiktok", "instagram", "discord"],
+        fontFamily: f.body,
+        pillColor: "@surface/90",
+        animation: anim("fade", { duration: 900, delay: 400 }),
+      }),
+    ]),
+
+    base("webcam", "Webcam Frame", "Webcam Frames", [
+      ...(f.overlayDecor?.() ?? []),
+      camera("Camera", { x: 320, y: 120, width: 1280, height: 720 }),
+      plate("Name plate", { x: 660, y: 880, width: 600, height: 72 }),
+      text("Display name", { x: 660, y: 898, width: 600, height: 42 }, "{{DISPLAY_NAME}}", {
+        fontFamily: f.display,
+        fontSize: 32,
+        fontWeight: f.displayWeight,
+        align: "center",
+        fill: "@text",
+        textTransform: f.displayTransform,
+      }),
+    ]),
+
+    base("chatbox", "Chat Box", "Chat Boxes", [
+      ...(f.overlayDecor?.() ?? []),
+      chat("Chat", { x: 1400, y: 120, width: 460, height: 840 }, 10),
+    ]),
+
+    alertScreen("follower", "Follower Alert", "NEW FOLLOWER", "AwesomeViewer", false),
+    alertScreen("subscriber", "Subscriber Alert", "NEW SUBSCRIBER", "Tier 1 · welcome aboard", true),
+
+    base("socialbar", "Social Bar", "Social Bars", [
+      social("Socials", { x: 460, y: 962, width: 1000, height: 60 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram", "x"],
+        pill: true,
+        pillColor: "@surface/90",
+        gap: 20,
+        fontSize: 22,
+        fontFamily: f.body,
+        animation: anim("fade", { duration: 900 }),
+      }),
+    ]),
+
+    // Event badges: the "recent sub / top donator" stack from the references.
+    base("events", "Event Badges", "Social Bars", [
+      ...["Recent sub", "Top donator", "Recent donator", "Recent follower"].map((label, i) =>
+        chip(label, { x: 60, y: 300 + i * 76, width: 420, height: 52 }, label, "pixel_wren", {
+          fontFamily: f.body,
+          cornerRadius: f.radius,
+          effects: { border: { enabled: true, color: "@border", width: 1, radius: f.radius } },
+          animation: anim("slide", { direction: "left", duration: 700, delay: i * 120 }),
+        }),
+      ),
+    ]),
+
+    // Panels export one PNG each through Export -> All elements as PNGs.
+    base("panels", "Stream Panels", "Stream Panels", [
+      ...PANELS.map((label, i) =>
+        shape(`Panel ${i + 1}`, {
+          x: 160 + (i % 3) * 560,
+          y: 260 + Math.floor(i / 3) * 300,
+          width: 480,
+          height: 160,
+        }, {
+          shape: f.plateShape,
+          fill: "@surface/92",
+          cornerRadius: f.radius,
+          effects: {
+            border: { enabled: true, color: "@border", width: 1, radius: f.radius },
+            glow: { enabled: true, color: "@glow", strength: 14 },
+          },
+        }),
+      ),
+      ...PANELS.map((label, i) =>
+        text(`Panel label ${i + 1}`, {
+          x: 160 + (i % 3) * 560,
+          y: 315 + Math.floor(i / 3) * 300,
+          width: 480,
+          height: 56,
+        }, label, {
+          fontFamily: f.display,
+          fontSize: 36,
+          fontWeight: f.displayWeight,
+          align: "center",
+          fill: "@text",
+          letterSpacing: Math.max(1, f.displayTracking * 0.4),
+        }),
+      ),
+    ]),
+  ];
+}
+
+
+/* -------------------------------------------------------------------------- */
+/*                          The five new families                             */
+/* -------------------------------------------------------------------------- */
+
+/** Sci-fi HUD: cyan brackets over scanlines and a distant planet. */
+const ASTRAL_DECK: FamilyStyle = {
+  id: "astral",
+  name: "Astral Deck",
+  tags: ["Sci-Fi", "Esports"],
+  display: "Chakra Petch",
+  displayWeight: 700,
+  displayTracking: 8,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 4,
+  frameRadius: 4,
+  corners: true,
+  strokeWidth: 3,
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/26", angle: 170 } },
+    }),
+    // A planet on the horizon, rendered rather than painted: a disc with a
+    // limb-lit gradient and a ring, which survives any palette swap.
+    shape("Decor — Planet", { x: 560, y: 620, width: 800, height: 800 }, {
+      shape: "ellipse",
+      fill: "@primary",
+      opacity: 0.5,
+      effects: {
+        gradient: { enabled: true, from: "@secondary", to: "@background", angle: 300 },
+        glow: { enabled: true, color: "@glow", strength: 70 },
+      },
+      animation: anim("float", { duration: 9000, intensity: 0.3 }),
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 46, size: 3, speed: 0.2, color: "@accent", opacity: 0.7 }),
+    shape("Decor — Scanlines", FULL, {
+      shape: "scanlines",
+      fill: "@accent",
+      cornerRadius: 4,
+      opacity: 0.05,
+    }),
+  ],
+  overlayDecor: () => [
+    shape("Decor — Scanlines", FULL, { shape: "scanlines", fill: "@accent", cornerRadius: 4, opacity: 0.04 }),
+  ],
+};
+
+/** Y2K: chrome-bevel windows, glass gloss, pixel type, hearts. */
+const PIXEL_WINDOWS: FamilyStyle = {
+  id: "pixelwin",
+  name: "Pixel Windows",
+  tags: ["Pink", "Anime", "Cozy"],
+  display: "Press Start 2P",
+  displayWeight: 400,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Space Grotesk",
+  radius: 10,
+  frameRadius: 10,
+  corners: false,
+  strokeWidth: 3,
+  frameEffects: {
+    gradientStroke: { enabled: true, from: "@accent", to: "@text", angle: 135, width: 4 },
+    glow: { enabled: true, color: "@glow", strength: 18 },
+  },
+  headlineEffects: {
+    emboss: { enabled: true, light: "@text", dark: "@primary", depth: 3 },
+  },
+  plateShape: "rect",
+  windowChrome: true,
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/30", angle: 200 } },
+    }),
+    particles("Decor — Starfield", { kind: "stars", count: 70, size: 3, speed: 0.25, color: "@text", opacity: 0.75 }),
+    particles("Decor — Hearts", { kind: "hearts", count: 9, size: 5, speed: 0.5, color: "@accent", opacity: 0.6 }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Hearts", { kind: "hearts", count: 6, size: 4, speed: 0.45, color: "@accent", opacity: 0.5 }),
+  ],
+};
+
+/** Cozy Clouds: a painted-looking cloud horizon under a violet night. */
+const COZY_CLOUDS: FamilyStyle = {
+  id: "cozyclouds",
+  name: "Cozy Clouds",
+  tags: ["Cozy", "Purple", "Minimal"],
+  display: "Poppins",
+  displayWeight: 600,
+  displayTracking: 10,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 22,
+  frameRadius: 24,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 24 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  // A shadow, not a glow: the headline sits above a bright cloud bank, and a
+  // glow of the same family would vanish into it.
+  headlineEffects: { shadow: { enabled: true, color: "@shadow", blur: 22, offsetY: 6, opacity: 0.85 } },
+  plateShape: "rect",
+  // The cloud bank owns the bottom 40%; the copy sits clear above it.
+  contentOffsetY: -220,
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/30", angle: 180 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 60, size: 2.5, speed: 0.15, color: "@text", opacity: 0.7 }),
+    particles("Decor — Clouds far", { kind: "clouds", count: 6, size: 95, speed: 0.35, color: "@secondary", opacity: 0.45 }),
+    particles("Decor — Clouds near", { kind: "clouds", count: 4, size: 135, speed: 0.7, color: "@accent", opacity: 0.6 }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Stars", { kind: "stars", count: 24, size: 2.5, speed: 0.15, color: "@text", opacity: 0.5 }),
+  ],
+};
+
+/** Holo Glass: blurred mesh orbs, four-point sparkles, bevelled chrome type. */
+const HOLO_GLASS: FamilyStyle = {
+  id: "holo",
+  name: "Holo Glass",
+  tags: ["Purple", "Minimal", "Sci-Fi"],
+  display: "Montserrat",
+  displayWeight: 900,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 18,
+  frameRadius: 18,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    gradientStroke: { enabled: true, from: "@primary", to: "@secondary", angle: 120, width: 3 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: {
+    emboss: { enabled: true, light: "@text", dark: "@background", depth: 2 },
+    glow: { enabled: true, color: "@glow", strength: 18 },
+  },
+  plateShape: "plaque",
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    particles("Decor — Holo orbs", { kind: "blobs", count: 8, size: 5, speed: 0.6, color: "@primary" }),
+    particles("Decor — Sparkles", { kind: "stars", count: 20, size: 7, speed: 0.15, color: "@text", opacity: 0.85 }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Sparkles", { kind: "stars", count: 12, size: 6, speed: 0.15, color: "@text", opacity: 0.6 }),
+  ],
+};
+
+/** Starlit Serenity: indigo night, crescent moon, shooting stars. */
+const STARLIT_SERENITY: FamilyStyle = {
+  id: "starlit",
+  name: "Starlit Serenity",
+  tags: ["Blue", "Cozy", "Minimal"],
+  display: "Poppins",
+  displayWeight: 700,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 20,
+  frameRadius: 22,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@text", width: 2, radius: 22 },
+    glow: { enabled: true, color: "@glow", strength: 14 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/24", angle: 190 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 80, size: 2.5, speed: 0.12, color: "@text", opacity: 0.8 }),
+    particles("Decor — Shooting stars", { kind: "shootingStars", count: 5, size: 6, speed: 1, color: "@text" }),
+    shape("Decor — Moon", { x: 1580, y: 110, width: 170, height: 170 }, {
+      shape: "crescent",
+      fill: "@text",
+      effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+      animation: anim("float", { duration: 7000, intensity: 0.4 }),
+    }),
+    particles("Decor — Clouds", { kind: "clouds", count: 5, size: 105, speed: 0.3, color: "@secondary", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Stars", { kind: "stars", count: 26, size: 2.5, speed: 0.12, color: "@text", opacity: 0.55 }),
+  ],
+  contentOffsetY: -130,
+};
+
+const NEW_FAMILIES: FamilyStyle[] = [
+  ASTRAL_DECK,
+  PIXEL_WINDOWS,
+  COZY_CLOUDS,
+  HOLO_GLASS,
+  STARLIT_SERENITY,
+];
+
+const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);
+
 /* -------------------------------------------------------------------------- */
 /*                            Gothic design family                            */
 /* -------------------------------------------------------------------------- */
@@ -2388,6 +3031,7 @@ function expand(bases: BaseTemplate[], palettes: Palette[]): Template[] {
 
 export const TEMPLATES: Template[] = [
   ...expand(BASE_TEMPLATES, CORE_PALETTES),
+  ...expand(GENERATED_FAMILY_TEMPLATES, CORE_PALETTES),
   ...expand(GOTHIC_TEMPLATES, GOTHIC_PALETTES),
   ...expand(PRIDE_TEMPLATES, PRIDE_PALETTES),
 ];

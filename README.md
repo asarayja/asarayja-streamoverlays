@@ -100,6 +100,13 @@ survive palette swaps. Decor layers are named `Decor — …` so they toggle lik
 **Neon Grid family** (core): the same eleven screens in the core collection's esports language,
 so "search Neon Grid" surfaces a complete matching set across all fifteen core palettes.
 
+**Five generated families** — Astral Deck (sci-fi HUD), Pixel Windows (Y2K chrome), Cozy Clouds,
+Holo Glass and Starlit Serenity — are not hand-written screens at all. Each declares a
+`FamilyStyle` (type, radii, ground, ornament) and `familyScreens()` emits all fifteen screens from
+it, so coherence is structural rather than something to remember. They add Pause, Intermission,
+Event Badges and Stream Panels; the panels screen exports six ready-to-upload PNGs through
+Export → All elements as PNGs.
+
 ## Animation semantics: elements animate in place, playback never restarts
 
 Persistent widgets — camera frames, chat boxes, social bars — never fly in. They animate *in and
@@ -183,7 +190,17 @@ invisible and unselectable — but resolves to nothing in `live` mode. Nobody wa
 burned into their stream. Same for social bars: a platform with no handle is dropped.
 
 **The camera frame's fill is a studio-only placeholder.** OBS composites the browser source *above*
-your webcam, so any fill would tint it. In `live` mode the interior is fully transparent.
+your webcam, so any fill would tint it. In `live` mode the interior is fully transparent — which is
+also why the retro window's glass gloss is off by default on camera windows: a 10% white sheen
+across the frame would tint the webcam too.
+
+**Chat rows are studio-only.** The sample names are a preview affordance like the CAMERA label.
+`live` mode renders the chat frame empty, so an exported PNG carries no fake chat and the real chat
+widget layers cleanly on top in OBS.
+
+**Konva applies group opacity per child.** Overlapping translucent circles inside a group seam along
+every intersection — which is why the clouds are drawn as a single path whose subpaths union under
+the nonzero winding rule, rather than as a group of discs.
 
 **Layers reorder by drag.** The Layers panel rows are HTML5-draggable; a drop commits one
 `setLayersOrder` history entry, so a whole drag is a single undo step.

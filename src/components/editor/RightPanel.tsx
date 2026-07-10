@@ -17,6 +17,8 @@ import type {
   AlertLayer,
   AnimationPreset,
   ChatBoxLayer,
+  ChipLayer,
+  WindowLayer,
   Easing,
   Effects,
   FlagLayer,
@@ -33,8 +35,8 @@ import type {
   Theme,
 } from "@/lib/types";
 
-const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line"];
-const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays"];
+const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "crescent", "plaque", "scanlines"];
+const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs"];
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
 
 export function RightPanel() {
@@ -547,6 +549,87 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
           <p className="text-[11px] leading-relaxed text-zinc-600">
             Stripe colours are literal — a flag&apos;s colours belong to the flag, not the theme, so
             they survive palette swaps.
+          </p>
+        </Section>
+      );
+    }
+
+    case "window": {
+      const win = layer as WindowLayer;
+      return (
+        <Section title="Window">
+          <Field label="Title">
+            <TextInput
+              value={win.title}
+              onChange={(e) => live({ title: e.target.value })}
+              onBlur={(e) => commit({ title: e.target.value })}
+            />
+          </Field>
+          <ColorField label="Title bar" theme={theme} value={win.titleBarColor}
+            onChange={(titleBarColor) => live({ titleBarColor })}
+            onCommit={(titleBarColor) => commit({ titleBarColor })} />
+          <ColorField label="Body" theme={theme} value={win.fill}
+            onChange={(fill) => live({ fill })} onCommit={(fill) => commit({ fill })} />
+          <Slider label="Corner radius" min={0} max={40} value={win.cornerRadius}
+            onBegin={beginGesture} onChange={(cornerRadius) => live({ cornerRadius })} />
+          <Toggle label="Traffic-light buttons" checked={win.buttons} onChange={(buttons) => commit({ buttons })} />
+          <Toggle label="Glass gloss" checked={win.gloss} onChange={(gloss) => commit({ gloss })} />
+          {win.gloss && win.content === "camera" && (
+            <p className="text-[11px] leading-relaxed text-amber-400/80">
+              The gloss paints a faint white sheen across the window, so in OBS it tints your
+              webcam.
+            </p>
+          )}
+          <Field label="Contents">
+            <Segmented
+              value={win.content}
+              onChange={(content) => commit({ content })}
+              options={[
+                { value: "empty", label: "Empty" },
+                { value: "camera", label: "Camera" },
+                { value: "chat", label: "Chat" },
+              ]}
+            />
+          </Field>
+          {win.content === "camera" && (
+            <p className="text-[11px] leading-relaxed text-zinc-600">
+              The interior stays transparent in OBS so your webcam shows through the window.
+            </p>
+          )}
+        </Section>
+      );
+    }
+
+    case "chip": {
+      const chip = layer as ChipLayer;
+      return (
+        <Section title="Event badge">
+          <Field label="Label">
+            <TextInput value={chip.label} onChange={(e) => live({ label: e.target.value })}
+              onBlur={(e) => commit({ label: e.target.value })} />
+          </Field>
+          <Field label="Value">
+            <TextInput value={chip.value} onChange={(e) => live({ value: e.target.value })}
+              onBlur={(e) => commit({ value: e.target.value })} />
+          </Field>
+          <Field label="Icon">
+            <Segmented value={chip.icon} onChange={(icon) => commit({ icon })}
+              options={[
+                { value: "heart", label: "Heart" },
+                { value: "star", label: "Star" },
+                { value: "none", label: "None" },
+              ]} />
+          </Field>
+          <ColorField label="Background" theme={theme} value={chip.fill}
+            onChange={(fill) => live({ fill })} onCommit={(fill) => commit({ fill })} />
+          <ColorField label="Label colour" theme={theme} value={chip.labelColor}
+            onChange={(labelColor) => live({ labelColor })} onCommit={(labelColor) => commit({ labelColor })} />
+          <Slider label="Font size" min={10} max={36} value={chip.fontSize}
+            onBegin={beginGesture} onChange={(fontSize) => live({ fontSize })} />
+          <Slider label="Corner radius" min={0} max={40} value={chip.cornerRadius}
+            onBegin={beginGesture} onChange={(cornerRadius) => live({ cornerRadius })} />
+          <p className="text-[11px] leading-relaxed text-zinc-600">
+            Values are placeholders — without a Twitch connection there is no live event to read.
           </p>
         </Section>
       );

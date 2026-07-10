@@ -219,12 +219,35 @@ export interface Gradient {
   angle: number;
 }
 
+/**
+ * A stroke painted with a gradient rather than a flat colour — the holographic
+ * and chrome edges that define Y2K and sci-fi HUD packs. Optional: layers saved
+ * before this existed simply have no gradient stroke.
+ */
+export interface GradientStroke {
+  enabled: boolean;
+  from: ColorValue;
+  to: ColorValue;
+  angle: number;
+  width: number;
+}
+
+/** Bevelled/embossed lettering: a light edge above, a dark edge below. */
+export interface Emboss {
+  enabled: boolean;
+  light: ColorValue;
+  dark: ColorValue;
+  depth: number;
+}
+
 export interface Effects {
   shadow: Shadow;
   glow: Glow;
   blur: Blur;
   border: Border;
   gradient: Gradient;
+  gradientStroke?: GradientStroke;
+  emboss?: Emboss;
 }
 
 export const DEFAULT_EFFECTS: Effects = {
@@ -243,6 +266,8 @@ export const LAYER_TYPES = [
   "background",
   "shape",
   "flag",
+  "window",
+  "chip",
   "text",
   "image",
   "logo",
@@ -276,7 +301,18 @@ export interface LayerBase {
   animation: Animation;
 }
 
-export type ShapeKind = "rect" | "ellipse" | "triangle" | "hexagon" | "line";
+export type ShapeKind =
+  | "rect"
+  | "ellipse"
+  | "triangle"
+  | "hexagon"
+  | "line"
+  /** Moon: an outer disc with an offset bite taken out of it. */
+  | "crescent"
+  /** Ornate bracket plaque — the alert/panel silhouette of holo packs. */
+  | "plaque"
+  /** Horizontal CRT lines across the box. */
+  | "scanlines";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";
@@ -298,6 +334,45 @@ export interface FlagLayer extends LayerBase {
   /** Axis the stripes are stacked along. */
   stackDirection: "vertical" | "horizontal";
   cornerRadius: number;
+}
+
+/** A retro OS window: title bar, traffic-light buttons, glass gloss. */
+export interface WindowLayer extends LayerBase {
+  type: "window";
+  title: string;
+  fill: ColorValue;
+  titleBarColor: ColorValue;
+  textColor: ColorValue;
+  fontFamily: string;
+  fontSize: number;
+  cornerRadius: number;
+  buttons: boolean;
+  gloss: boolean;
+  /**
+   * What lives inside the frame. `camera` keeps the interior transparent in
+   * `live` mode so OBS composites the webcam through it; `chat` paints the
+   * same sample rows a chat box does — an empty CHAT.EXE is not a chat box.
+   */
+  content: "empty" | "camera" | "chat";
+  /** Chat rendering, when `content` is "chat". */
+  chatFontSize: number;
+  usernameColor: ColorValue;
+  messageColor: ColorValue;
+  rows: number;
+}
+
+/** A compact event badge: "RECENT SUB · pixel_wren". */
+export interface ChipLayer extends LayerBase {
+  type: "chip";
+  label: string;
+  value: string;
+  fill: ColorValue;
+  labelColor: ColorValue;
+  valueColor: ColorValue;
+  fontFamily: string;
+  fontSize: number;
+  cornerRadius: number;
+  icon: "heart" | "star" | "none";
 }
 
 export type TextTransform = "none" | "uppercase" | "lowercase";
@@ -401,7 +476,12 @@ export type ParticleKind =
   // Pride decor.
   | "confetti"
   | "hearts"
-  | "rays";
+  | "rays"
+  // Sky decor.
+  | "clouds"
+  | "shootingStars"
+  /** Blurred mesh-gradient orbs cycling through the theme's brand hues. */
+  | "blobs";
 
 export interface ParticleLayer extends LayerBase {
   type: "particle";
@@ -415,6 +495,8 @@ export interface ParticleLayer extends LayerBase {
 export type Layer =
   | ShapeLayer
   | FlagLayer
+  | WindowLayer
+  | ChipLayer
   | TextLayer
   | ImageLayer
   | FrameLayer
@@ -440,6 +522,8 @@ type Fields<T> = Omit<T, "type">;
 export type LayerPatch = Partial<
   Fields<ShapeLayer> &
     Fields<FlagLayer> &
+    Fields<WindowLayer> &
+    Fields<ChipLayer> &
     Fields<TextLayer> &
     Fields<ImageLayer> &
     Fields<FrameLayer> &
@@ -460,6 +544,9 @@ export const TEMPLATE_CATEGORIES = [
   "BRB",
   "Stream Ending",
   "Offline",
+  "Pause",
+  "Intermission",
+  "Stream Panels",
   "Webcam Frames",
   "Alerts",
   "Chat Boxes",
