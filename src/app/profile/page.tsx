@@ -62,7 +62,14 @@ export default function ProfilePage() {
       <main className="mx-auto grid max-w-[1600px] gap-8 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_460px]">
         <div className="space-y-6">
           <header>
-            <h1 className="text-3xl font-bold tracking-tight text-white">Channel profile</h1>
+            {!configured && (
+              <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-400/30 bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-400">
+                Step 1 of 2 · Set up your channel
+              </span>
+            )}
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              {configured ? "Channel profile" : "Welcome — let's set up your channel"}
+            </h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
               Enter this once. Templates are written against placeholders like{" "}
               <code className="rounded bg-white/8 px-1.5 py-0.5 font-mono text-[11px] text-brand-400">
@@ -72,7 +79,8 @@ export default function ProfilePage() {
               <code className="rounded bg-white/8 px-1.5 py-0.5 font-mono text-[11px] text-brand-400">
                 {"{{LOGO}}"}
               </code>
-              , so every overlay you open is already filled in with your details.
+              , so every overlay you open is already filled in with your details. You can change any
+              of it later.
             </p>
           </header>
 
@@ -168,7 +176,7 @@ export default function ProfilePage() {
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/">
               <Button variant="primary">
-                Browse templates
+                {configured ? "Browse templates" : "Continue to templates"}
                 <ArrowRight className="size-4" />
               </Button>
             </Link>

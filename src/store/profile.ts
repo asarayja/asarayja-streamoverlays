@@ -52,6 +52,9 @@ interface ProfileState {
   profile: ChannelProfile;
   /** True once the user has entered anything — gates the demo fallback. */
   configured: boolean;
+  /** False until localStorage has been read — distinguishes "new user" from "not loaded". */
+  hydrated: boolean;
+  markHydrated: () => void;
   setField: <K extends keyof ChannelProfile>(key: K, value: ChannelProfile[K]) => void;
   setSocial: (platform: SocialPlatform, handle: string) => void;
   setThemeToken: (token: ThemeToken, color: string) => void;
@@ -65,6 +68,8 @@ export const useProfileStore = create<ProfileState>()(
     (set) => ({
       profile: EMPTY_PROFILE,
       configured: false,
+      hydrated: false,
+      markHydrated: () => set({ hydrated: true }),
       setField: (key, value) =>
         set((s) => ({ profile: { ...s.profile, [key]: value }, configured: true })),
       setSocial: (platform, handle) =>
@@ -85,12 +90,14 @@ export const useProfileStore = create<ProfileState>()(
       name: "asarayja:profile",
       version: 2,
       skipHydration: true,
+      partialize: ({ profile, configured }) => ({ profile, configured }),
       // v1 themes predate the sixteen-token system; derive the new tokens.
       migrate: (persisted) => {
         const state = persisted as ProfileState;
         if (state?.profile?.theme) state.profile.theme = completeTheme(state.profile.theme);
         return state;
       },
+      onRehydrateStorage: () => (state) => state?.markHydrated(),
     },
   ),
 );

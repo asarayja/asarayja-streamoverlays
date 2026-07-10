@@ -35,6 +35,7 @@ interface EditorState {
 
   load: (project: Project) => void;
   markSaved: () => void;
+  renameProject: (name: string) => void;
 
   select: (ids: string[]) => void;
   toggleSelect: (id: string, additive: boolean) => void;
@@ -301,6 +302,7 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     load: (project) =>
       set({ project, selectedIds: [], past: [], future: [], dirty: false, time: SETTLED_TIME }),
     markSaved: () => set({ dirty: false }),
+    renameProject: (name) => patchProject((project) => ({ ...project, name })),
 
     select: (ids) => set({ selectedIds: ids }),
     toggleSelect: (id, additive) =>

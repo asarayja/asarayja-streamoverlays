@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Palette, Search, Wand2 } from "lucide-react";
 import { PALETTES } from "@/data/palettes";
 import { TEMPLATES } from "@/data/templates";
 import { TemplateCard } from "@/components/gallery/TemplateCard";
+import { RecentProjects } from "@/components/gallery/RecentProjects";
 import { TopNav } from "@/components/site/TopNav";
 import { Button, Chip, Select, TextInput, cx } from "@/components/ui";
 import { useProfileStore, useRenderProfile } from "@/store/profile";
@@ -19,7 +20,16 @@ export default function GalleryPage() {
   const router = useRouter();
   const profile = useRenderProfile();
   const brandTheme = useProfileStore((s) => s.profile.theme);
-  const createFromTemplate = useProjectsStore((s) => s.createFromTemplate);
+  const profileConfigured = useProfileStore((s) => s.configured);
+  const profileHydrated = useProfileStore((s) => s.hydrated);
+  const createDraft = useProjectsStore((s) => s.createDraft);
+
+  // Channel profile comes first. A brand-new visitor is sent to fill it in;
+  // once it exists it is remembered, and every later visit lands here on the
+  // gallery. Gated on `hydrated` so a returning user never flashes a redirect.
+  useEffect(() => {
+    if (profileHydrated && !profileConfigured) router.replace("/profile");
+  }, [profileHydrated, profileConfigured, router]);
 
   const [category, setCategory] = useState<TemplateCategory | "All">("All");
   const [collection, setCollection] = useState<Collection | "all">("all");
@@ -54,7 +64,9 @@ export default function GalleryPage() {
   };
 
   const open = (template: Template) => {
-    const project = createFromTemplate(template.id, useBrand ? brandTheme : undefined);
+    // Opening a template makes a draft, not a saved project. It only enters
+    // history once you actually edit it — browsing never clutters the list.
+    const project = createDraft(template.id, useBrand ? brandTheme : undefined);
     if (project) router.push(`/editor/${project.id}`);
   };
 
@@ -88,6 +100,8 @@ export default function GalleryPage() {
             details once — every design picks up your name, logo and socials automatically.
           </p>
         </section>
+
+        <RecentProjects />
 
         <div className="sticky top-16 z-30 -mx-6 mb-8 border-y border-white/[0.06] bg-ink-950/85 px-6 py-4 backdrop-blur-xl">
           <div className="flex flex-wrap items-center gap-3">

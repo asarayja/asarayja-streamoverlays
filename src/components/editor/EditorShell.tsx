@@ -59,9 +59,11 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const setMotion = useEditorStore((s) => s.setMotion);
 
   const upsert = useProjectsStore((s) => s.upsert);
-  const rename = useProjectsStore((s) => s.rename);
+  const renameProject = useEditorStore((s) => s.renameProject);
   const hydrated = useProjectsStore((s) => s.hydrated);
-  const saved = useProjectsStore((s) => s.projects.find((p) => p.id === projectId));
+  const saved = useProjectsStore((s) =>
+    s.projects.find((p) => p.id === projectId) ?? (s.draft?.id === projectId ? s.draft : null),
+  );
 
   const profile = useRenderProfile();
   const brandTheme = useProfileStore((s) => s.profile.theme);
@@ -164,10 +166,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
 
         <input
           value={project.name}
-          onChange={(e) => {
-            rename(project.id, e.target.value);
-            useEditorStore.setState({ project: { ...project, name: e.target.value } });
-          }}
+          onChange={(e) => renameProject(e.target.value)}
           className="w-56 rounded-lg bg-transparent px-2 py-1 text-sm font-medium text-white outline-none transition-colors hover:bg-white/5 focus:bg-white/5"
         />
 
