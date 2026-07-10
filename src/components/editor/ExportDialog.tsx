@@ -71,6 +71,9 @@ export function ExportDialog({
   const [scale, setScale] = useState(1);
   const [fps, setFps] = useState(30);
   const [videoFormat, setVideoFormat] = useState<"mp4" | "webm">("webm");
+  // Loop-friendly by default: record from the settled pose so a looped video
+  // doesn't replay the one-shot intro every cycle.
+  const [loopVideo, setLoopVideo] = useState(true);
   const [job, setJob] = useState<Job>(null);
   const [obsUrl, setObsUrl] = useState("");
   const [copied, setCopied] = useState(false);
@@ -136,6 +139,7 @@ export function ExportDialog({
         fps,
         mime: video.mime,
         background,
+        startTime: loopVideo ? SETTLED_TIME : 0,
         setTime: setExportTime,
         onProgress: (progress) => setJob({ label: "Recording", progress }),
       });
@@ -247,6 +251,7 @@ export function ExportDialog({
               fps,
               mime: video!.mime,
               background,
+              startTime: loopVideo ? SETTLED_TIME : 0,
               setTime: setExportTime,
               onProgress: (p) =>
                 setJob({
@@ -401,6 +406,19 @@ export function ExportDialog({
                 />
               </Field>
             </div>
+
+            <label className="mb-3 flex items-center gap-2 text-xs text-zinc-400">
+              <input
+                type="checkbox"
+                checked={loopVideo}
+                onChange={(e) => setLoopVideo(e.target.checked)}
+                className="size-3.5 accent-brand-500"
+              />
+              Loop-friendly
+              <span className="text-zinc-600">
+                (record from the settled pose, so a looped video doesn&apos;t replay the intro)
+              </span>
+            </label>
 
             <div className="flex gap-2">
               <Button disabled={!!job || !video} onClick={doVideo} className="flex-1">

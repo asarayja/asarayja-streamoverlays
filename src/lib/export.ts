@@ -126,6 +126,12 @@ export interface RecordOptions {
   setTime: (t: number) => void;
   /** Painted under the overlay; MediaRecorder cannot encode alpha. */
   background: string;
+  /**
+   * Clock value the recording starts from. Default 0 captures the one-shot
+   * entry animations. Passing a settled time skips them so a looped video does
+   * not replay the intro on every cycle.
+   */
+  startTime?: number;
   onProgress?: (fraction: number) => void;
 }
 
@@ -141,6 +147,7 @@ export interface RecordOptions {
  */
 export async function recordVideo(options: RecordOptions): Promise<Blob> {
   const { stage, durationMs, fps, mime, setTime, background, onProgress } = options;
+  const startTime = options.startTime ?? 0;
 
   const target = document.createElement("canvas");
   target.width = CANVAS_WIDTH;
@@ -161,7 +168,7 @@ export async function recordVideo(options: RecordOptions): Promise<Blob> {
 
   // Frame n's time is set here and painted on the *next* frame, once React has
   // committed the new stage props.
-  setTime(0);
+  setTime(startTime);
   await nextFrame();
 
   for (;;) {
@@ -173,7 +180,7 @@ export async function recordVideo(options: RecordOptions): Promise<Blob> {
     onProgress?.(Math.min(1, elapsed / durationMs));
     if (elapsed >= durationMs) break;
 
-    setTime(elapsed);
+    setTime(startTime + elapsed);
     await nextFrame();
   }
 
