@@ -588,6 +588,19 @@ function coffinPath(c: Konva.Context, w: number, h: number) {
   c.closePath();
 }
 
+/** The same casket laid on its side: narrow head at the left, wider foot at
+    the right, shoulders a quarter of the way in — the landscape alert plate. */
+function coffinPathH(c: Konva.Context, w: number, h: number) {
+  c.beginPath();
+  c.moveTo(0, h * 0.3);
+  c.lineTo(w * 0.24, 0);
+  c.lineTo(w, h * 0.14);
+  c.lineTo(w, h * 0.86);
+  c.lineTo(w * 0.24, h);
+  c.lineTo(0, h * 0.7);
+  c.closePath();
+}
+
 /**
  * The moulded-plastic sweep: a light wash over the top of a rounded box and a
  * darkened lip along its bottom. Clipped to the box, so it never spills.
@@ -1242,9 +1255,12 @@ function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: R
 
 function AlertContent({ layer, ctx, glowBoost }: { layer: AlertLayer; ctx: RenderContext; glowBoost: number }) {
   const { width: w, height: h } = layer;
+  const coffin = layer.boxShape === "coffin";
   const avatarSize = h * 0.52;
-  const left = h * 0.24 + avatarSize + h * 0.16;
-  const textWidth = w - left - h * 0.2;
+  // A coffin's pointed head eats the left edge, so the whole row shifts inboard.
+  const headInset = coffin ? h * 0.18 : 0;
+  const left = headInset + h * 0.24 + avatarSize + h * 0.16;
+  const textWidth = w - left - h * 0.2 - headInset;
 
   const title = resolveText(layer.title, ctx.profile, missingMode(ctx.mode));
   const subtitle = resolveText(layer.subtitle, ctx.profile, missingMode(ctx.mode));
@@ -1255,16 +1271,28 @@ function AlertContent({ layer, ctx, glowBoost }: { layer: AlertLayer; ctx: Rende
 
   return (
     <Group listening={false}>
-      <Rect
-        width={w}
-        height={h}
-        cornerRadius={layer.cornerRadius}
-        fill={resolveColor(layer.fill, ctx.theme)}
-        {...borderProps(layer.effects, ctx.theme)}
-        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
-      />
+      {coffin ? (
+        <KonvaShape
+          fill={resolveColor(layer.fill, ctx.theme)}
+          {...borderProps(layer.effects, ctx.theme, w, h)}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+          sceneFunc={(c, shape) => {
+            coffinPathH(c, w, h);
+            c.fillStrokeShape(shape);
+          }}
+        />
+      ) : (
+        <Rect
+          width={w}
+          height={h}
+          cornerRadius={layer.cornerRadius}
+          fill={resolveColor(layer.fill, ctx.theme)}
+          {...borderProps(layer.effects, ctx.theme)}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        />
+      )}
       <Circle
-        x={h * 0.24 + avatarSize / 2}
+        x={headInset + h * 0.24 + avatarSize / 2}
         y={h / 2}
         radius={avatarSize / 2}
         fill={resolveColor("@primary", ctx.theme)}

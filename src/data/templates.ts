@@ -198,6 +198,7 @@ function alert(
   o: BaseOpts & {
     fill?: string;
     cornerRadius?: number;
+    boxShape?: "rect" | "coffin";
     fontFamily?: string;
     titleColor?: string;
     subtitleColor?: string;
@@ -211,6 +212,7 @@ function alert(
     subtitle,
     fill: o.fill ?? "@surface/90",
     cornerRadius: o.cornerRadius ?? 20,
+    boxShape: o.boxShape ?? "rect",
     fontFamily: o.fontFamily ?? "Bebas Neue",
     titleColor: o.titleColor ?? "@accent",
     subtitleColor: o.subtitleColor ?? "@text",
@@ -874,12 +876,12 @@ const BASE_TEMPLATES: BaseTemplate[] = [
       alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "Tier 1 · welcome aboard", {
         fontFamily: "Orbitron",
         cornerRadius: 8,
-        fill: "@accent/95",
-        titleColor: "@background",
-        subtitleColor: "@background/85",
+        fill: "@surface/95",
+        titleColor: "@accent",
+        subtitleColor: "@text",
         effects: {
-          glow: { enabled: true, color: "@glow", strength: 42 },
-          border: { enabled: true, color: "@accent", width: 1, radius: 8 },
+          glow: { enabled: true, color: "@glow", strength: 46 },
+          border: { enabled: true, color: "@accent", width: 2, radius: 8 },
         },
         animation: anim("bounce", { duration: 1100 }),
       }),
@@ -1605,6 +1607,8 @@ interface FamilyStyle {
   windowChrome?: boolean;
   /** Chat panel silhouette. */
   chatShape?: "rect" | "coffin";
+  /** Alert plate silhouette. A sideways coffin for gothic families. */
+  alertShape?: "rect" | "coffin";
   /**
    * Lift scene copy clear of a busy lower third. Cloud families own their
    * bottom half; the answer is to move the words, not to crop the sky.
@@ -1730,12 +1734,22 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       alert("Alert", { x: 560, y: 400, width: 800, height: 240 }, title, subtitle, {
         fontFamily: f.display,
         cornerRadius: f.radius,
-        fill: hero ? "@accent/95" : "@surface/92",
-        titleColor: hero ? "@background" : "@accent",
-        subtitleColor: hero ? "@background/85" : "@text",
+        boxShape: f.alertShape ?? "rect",
+        // Both alerts sit on the family's dark plate so they read as part of the
+        // overlay, not a bright slab pasted over it. The hero (subscriber) is
+        // set apart by an accent border and a stronger glow, not by inverting
+        // to a near-white fill.
+        fill: hero ? "@surface/95" : "@surface/92",
+        titleColor: "@accent",
+        subtitleColor: "@text",
         effects: {
-          glow: { enabled: true, color: "@glow", strength: hero ? 42 : 34 },
-          border: { enabled: true, color: "@border", width: 1, radius: f.radius },
+          glow: { enabled: true, color: "@glow", strength: hero ? 46 : 34 },
+          border: {
+            enabled: true,
+            color: hero ? "@accent" : "@border",
+            width: hero ? 2 : 1,
+            radius: f.radius,
+          },
         },
         animation: anim(hero ? "bounce" : "elastic", { duration: 1150 }),
       }),
@@ -2148,6 +2162,7 @@ const HALLOWED_NIGHT: FamilyStyle = {
   headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
   plateShape: "rect",
   chatShape: "coffin",
+  alertShape: "coffin",
   // The graveyard owns the bottom third; the copy clears its fence line.
   contentOffsetY: -175,
   scene: () => [
@@ -2604,6 +2619,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
       alert("Follower alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW FOLLOWER", "AwesomeViewer", {
         fontFamily: "Cinzel Decorative",
         cornerRadius: 10,
+        boxShape: "coffin",
         titleColor: "@accent",
         effects: {
           glow: { enabled: true, color: "@glow", strength: 36 },
@@ -2625,15 +2641,16 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
       alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "Welcome to the coven", {
         fontFamily: "Cinzel Decorative",
         cornerRadius: 10,
-        // Accent is contrast-gated against the background, so dark-on-accent
-        // text is readable in every palette; a deep-burgundy primary would
-        // swallow it.
-        fill: "@accent/95",
-        titleColor: "@background",
-        subtitleColor: "@background/85",
+        boxShape: "coffin",
+        // Stays on the dark plate so it reads as gothic, not a bright slab.
+        // Accent title is contrast-gated against the background, and surface
+        // tracks the background's darkness, so it's readable in every palette.
+        fill: "@surface/95",
+        titleColor: "@accent",
+        subtitleColor: "@text",
         effects: {
-          glow: { enabled: true, color: "@glow", strength: 44 },
-          border: { enabled: true, color: "@accent", width: 1, radius: 10 },
+          glow: { enabled: true, color: "@glow", strength: 46 },
+          border: { enabled: true, color: "@accent", width: 2, radius: 10 },
         },
         animation: anim("elastic", { duration: 1200 }),
       }),
@@ -3086,12 +3103,12 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
       alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "You're amazing — thank you!", {
         fontFamily: "Poppins",
         cornerRadius: 28,
-        fill: "@accent/95",
-        titleColor: "@background",
-        subtitleColor: "@background/85",
+        fill: "@surface/95",
+        titleColor: "@accent",
+        subtitleColor: "@text",
         effects: {
-          glow: { enabled: true, color: "@glow", strength: 40 },
-          border: { enabled: true, color: "@accent", width: 1, radius: 28 },
+          glow: { enabled: true, color: "@glow", strength: 46 },
+          border: { enabled: true, color: "@accent", width: 2, radius: 28 },
         },
         animation: anim("bounce", { duration: 1100 }),
       }),

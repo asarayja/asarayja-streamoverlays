@@ -485,6 +485,8 @@ export interface AlertLayer extends LayerBase {
   type: "alert";
   fill: ColorValue;
   cornerRadius: number;
+  /** Plate silhouette. A sideways coffin is the gothic alert. */
+  boxShape?: "rect" | "coffin";
   fontFamily: string;
   title: string;
   subtitle: string;
