@@ -2416,11 +2416,6 @@ const OVERDRIVE: FamilyStyle = {
       shape: "shard",
       fill: "@primary/30",
     }),
-    shape("Shard — accent", { x: 1360, y: -80, width: 80, height: 1240 }, {
-      shape: "shard",
-      fill: "@accent",
-      effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
-    }),
     shape("Shard — left", { x: -280, y: -80, width: 540, height: 1240 }, {
       shape: "shard",
       fill: "@surface",
