@@ -316,7 +316,7 @@ const DEFS: PaletteDef[] = [
     theme: {
       primary: "#5E102A",
       secondary: "#24142F",
-      accent: "#C2224F",
+      accent: "#C93055",
       background: "#0b0a0f",
       text: "#F1E8ED",
       border: "#71616D",
@@ -466,7 +466,32 @@ const DEFS: PaletteDef[] = [
   // softened saturation, neutral backgrounds, text/accent pairs that pass the
   // contrast gate. Every one is a complete pack across the pride family.
   {
+    id: "progress-pride",
+    name: "Progress Pride",
+    collection: "pride",
+    subStyle: "Progress Pride",
+    // The Progress flag's chevron colours joined onto the classic six — the
+    // full inclusive stripe set, not a three-colour abbreviation.
+    flag: ["#FFFFFF", "#F5A9B8", "#5BCEFA", "#613915", "#141414", "#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
+    tags: ["RGB", "Dark"],
+    theme: {
+      primary: "#d9486b",
+      secondary: "#5bcefa",
+      accent: "#f2b33d",
+      accentSecondary: "#66bb7a",
+      background: "#111015",
+      text: "#f7f7fa",
+      border: "#6f6a78",
+      glow: "#e8875f",
+      shadow: "#000000",
+      success: "#66bb7a",
+      warning: "#f2b33d",
+      error: "#d9486b",
+    },
+  },
+  {
     id: "rainbow-spectrum",
+    flag: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
     name: "Rainbow Spectrum",
     collection: "pride",
     subStyle: "Classic Pride",
@@ -488,6 +513,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "crystal-pride",
+    flag: ["#CDEBF7", "#DDE7FA", "#EAF4FB", "#E7DCF6", "#F4D9EC", "#CFF0E8"],
     name: "Crystal Pride",
     collection: "pride",
     subStyle: "Crystal Pride",
@@ -506,6 +532,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "pastel-dream",
+    flag: ["#F7B7B7", "#F9D9A9", "#FBF3B9", "#BFE8C5", "#B7D4F5", "#D8C4EE"],
     name: "Pastel Dream",
     collection: "pride",
     subStyle: "Pastel Pride",
@@ -524,6 +551,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "neon-celebration",
+    flag: ["#FF2D55", "#FF9500", "#FFE800", "#2DFF6A", "#2D9BFF", "#B14DFF"],
     name: "Neon Celebration",
     collection: "pride",
     subStyle: "Neon Pride",
@@ -542,6 +570,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "trans-aurora",
+    flag: ["#5BCEFA", "#F5A9B8", "#FFFFFF", "#F5A9B8", "#5BCEFA"],
     name: "Trans Aurora",
     collection: "pride",
     subStyle: "Trans Pride",
@@ -560,6 +589,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "galaxy-pride",
+    flag: ["#FF5E8A", "#FFA75E", "#FFE85E", "#5EE0A0", "#5E9EFF", "#A05EFF"],
     name: "Galaxy Pride",
     collection: "pride",
     subStyle: "Cosmic Pride",
@@ -578,6 +608,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "soft-bloom",
+    flag: ["#EFB7C4", "#F4D3A9", "#F7EFC0", "#C9E3B8", "#B9D4E8", "#DFC4E6"],
     name: "Soft Bloom",
     collection: "pride",
     subStyle: "Soft Pride",
@@ -596,6 +627,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "modern-spectrum",
+    flag: ["#C25B5B", "#C2915B", "#C2B85B", "#5BA06B", "#5B7BA6", "#8A5BA6"],
     name: "Modern Spectrum",
     collection: "pride",
     subStyle: "Dark Pride",
@@ -614,6 +646,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "minimal-pride",
+    flag: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
     name: "Minimal Pride",
     collection: "pride",
     subStyle: "Minimal Pride",
@@ -633,6 +666,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "luxury-rainbow",
+    flag: ["#B3273F", "#C2762B", "#C2A83B", "#2E7D5B", "#2B5AA6", "#6B3B8F"],
     name: "Luxury Rainbow",
     collection: "pride",
     subStyle: "Luxury Pride",
@@ -652,6 +686,7 @@ const DEFS: PaletteDef[] = [
   },
   {
     id: "bi-pride",
+    flag: ["#D60270", "#D60270", "#9B4F96", "#0038A8", "#0038A8"],
     name: "Bi Pride",
     collection: "pride",
     subStyle: "Bisexual",

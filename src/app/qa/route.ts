@@ -11,6 +11,7 @@ const PAIRS: Array<{ fg: ThemeToken; bg: ThemeToken; target: number }> = [
   { fg: "textSecondary", bg: "background", target: 4.5 },
   { fg: "textSecondary", bg: "surface", target: 4.5 },
   { fg: "accent", bg: "background", target: 3 },
+  { fg: "accent", bg: "surface", target: 3 },
   { fg: "border", bg: "background", target: 1.6 },
   { fg: "success", bg: "surface", target: 3 },
   { fg: "warning", bg: "surface", target: 3 },

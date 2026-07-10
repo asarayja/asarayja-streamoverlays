@@ -79,6 +79,8 @@ export interface Palette {
    * sub-style naturally lives on the palette, not the template.
    */
   subStyle?: string;
+  /** Authentic flag stripe colours for pride packs; substituted into flag layers. */
+  flag?: string[];
   theme: Theme;
 }
 
@@ -240,6 +242,7 @@ export const DEFAULT_EFFECTS: Effects = {
 export const LAYER_TYPES = [
   "background",
   "shape",
+  "flag",
   "text",
   "image",
   "logo",
@@ -279,6 +282,21 @@ export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";
   shape: ShapeKind;
   fill: ColorValue;
+  cornerRadius: number;
+}
+
+/**
+ * A striped flag bar. Stripes are literal hex colours — deliberately outside
+ * the token system, because a pride flag's colours are *the flag's*, not the
+ * theme's. Each pride palette carries its authentic stripe set and the
+ * variant builder substitutes it in, so the Trans Aurora pack flies the trans
+ * flag while the surrounding design stays in the harmonised palette.
+ */
+export interface FlagLayer extends LayerBase {
+  type: "flag";
+  stripes: string[];
+  /** Axis the stripes are stacked along. */
+  stackDirection: "vertical" | "horizontal";
   cornerRadius: number;
 }
 
@@ -389,6 +407,7 @@ export interface ParticleLayer extends LayerBase {
 
 export type Layer =
   | ShapeLayer
+  | FlagLayer
   | TextLayer
   | ImageLayer
   | FrameLayer
@@ -413,6 +432,7 @@ type Fields<T> = Omit<T, "type">;
 
 export type LayerPatch = Partial<
   Fields<ShapeLayer> &
+    Fields<FlagLayer> &
     Fields<TextLayer> &
     Fields<ImageLayer> &
     Fields<FrameLayer> &
@@ -497,6 +517,7 @@ export type GothicStyle = (typeof GOTHIC_STYLES)[number];
 
 export const PRIDE_STYLES = [
   "Classic Pride",
+  "Progress Pride",
   "Trans Pride",
   "Bisexual",
   "Pastel Pride",

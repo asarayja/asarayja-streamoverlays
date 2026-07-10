@@ -44,7 +44,8 @@ export default function ProfilePage() {
   const renderProfile = useRenderProfile();
   const [previewRef, previewSize] = useElementSize<HTMLDivElement>();
   const [saved, setSaved] = useState(false);
-  const time = useClock(true, 8000);
+  // Unbounded: entry animations play once, ambient motion continues forever.
+  const time = useClock(true);
 
   const template = TEMPLATES.find((t) => t.id === PREVIEW_TEMPLATE_ID) ?? TEMPLATES[0];
 

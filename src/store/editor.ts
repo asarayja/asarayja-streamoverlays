@@ -48,6 +48,8 @@ interface EditorState {
   removeSelected: () => void;
   duplicateSelected: () => void;
   reorder: (id: string, toIndex: number) => void;
+  /** Replace the whole paint order in one undoable step — drag & drop commits here. */
+  setLayersOrder: (orderedIds: string[]) => void;
   bringToFront: (id: string) => void;
   sendToBack: (id: string) => void;
   toggleVisible: (id: string) => void;
@@ -127,6 +129,16 @@ function makeLayer(type: LayerType, index: number): Layer {
     case "shape":
     case "background":
       return { ...base, type, shape: "rect", fill: "@primary", cornerRadius: 12 };
+    case "flag":
+      return {
+        ...base,
+        type: "flag",
+        width: 600,
+        height: 24,
+        stripes: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
+        stackDirection: "horizontal",
+        cornerRadius: 12,
+      };
     case "image":
     case "logo":
     case "video":
@@ -305,6 +317,17 @@ export const useEditorStore = create<EditorState>()((set, get) => {
         const [moved] = next.splice(from, 1);
         next.splice(Math.max(0, Math.min(next.length, toIndex)), 0, moved);
         return next;
+      });
+    },
+
+    setLayersOrder: (orderedIds) => {
+      pushHistory();
+      mapLayers((layers) => {
+        const byId = new Map(layers.map((l) => [l.id, l]));
+        const next = orderedIds.map((id) => byId.get(id)).filter((l): l is Layer => Boolean(l));
+        // Anything missing from the requested order (shouldn't happen) survives at the bottom.
+        const seen = new Set(orderedIds);
+        return [...layers.filter((l) => !seen.has(l.id)), ...next];
       });
     },
 

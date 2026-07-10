@@ -19,6 +19,7 @@ import type {
   ChatBoxLayer,
   Easing,
   Effects,
+  FlagLayer,
   FrameLayer,
   ImageLayer,
   Layer,
@@ -484,6 +485,69 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
               onChange={(cornerRadius) => live({ cornerRadius })}
             />
           )}
+        </Section>
+      );
+    }
+
+    case "flag": {
+      const flag = layer as FlagLayer;
+      const setStripe = (index: number, value: string, discrete: boolean) => {
+        const stripes = flag.stripes.slice();
+        stripes[index] = value;
+        (discrete ? commit : live)({ stripes });
+      };
+      return (
+        <Section title="Flag">
+          <Field label="Stripes" hint={`${flag.stripes.length} colours`}>
+            <div className="space-y-1.5">
+              {flag.stripes.map((stripe, index) => (
+                <div key={index} className="flex items-center gap-1.5">
+                  <ColorInput
+                    value={stripe}
+                    resolved={stripe}
+                    onChange={(value) => setStripe(index, value, false)}
+                    onCommit={(value) => setStripe(index, value, true)}
+                  />
+                  <button
+                    title="Remove stripe"
+                    disabled={flag.stripes.length <= 2}
+                    onClick={() => commit({ stripes: flag.stripes.filter((_, i) => i !== index) })}
+                    className="shrink-0 rounded p-1 text-zinc-600 transition-colors hover:bg-white/10 hover:text-red-400 disabled:opacity-25"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Field>
+          <button
+            onClick={() => commit({ stripes: [...flag.stripes, flag.stripes.at(-1) ?? "#ffffff"] })}
+            className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-white/20"
+          >
+            + Add stripe
+          </button>
+          <Field label="Direction">
+            <Segmented
+              value={flag.stackDirection}
+              onChange={(stackDirection) => commit({ stackDirection })}
+              options={[
+                { value: "horizontal", label: "Side by side" },
+                { value: "vertical", label: "Stacked" },
+              ]}
+            />
+          </Field>
+          <Slider
+            label="Corner radius"
+            min={0}
+            max={100}
+            value={flag.cornerRadius}
+            onBegin={beginGesture}
+            onChange={(cornerRadius) => live({ cornerRadius })}
+          />
+          <p className="text-[11px] leading-relaxed text-zinc-600">
+            Stripe colours are literal — a flag&apos;s colours belong to the flag, not the theme, so
+            they survive palette swaps.
+          </p>
         </Section>
       );
     }

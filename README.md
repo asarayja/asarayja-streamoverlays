@@ -42,10 +42,11 @@ single rule for free:
 - **Never type your name twice.** Fill in the channel profile once; every template you open is
   already populated.
 
-It also means the 501 templates in the gallery are generated at module load: 18 core designs ×
-15 core palettes, plus two complete design *families* — gothic and pride, 11 screens each —
-expanded across their own palettes (10 gothic packs, 11 pride packs). Collections pair with
-their own palettes: a neon esports palette on a Victorian mourning frame helps nobody.
+It also means the 662 templates in the gallery are generated at module load: 28 core designs ×
+15 core palettes (including the 11-screen Neon Grid family), plus two complete themed design
+*families* — gothic and pride, 11 screens each — expanded across their own palettes (10 gothic
+packs, 12 pride packs). Collections pair with their own palettes: a neon esports palette on a
+Victorian mourning frame helps nobody.
 
 ## Colour, done properly
 
@@ -61,7 +62,9 @@ their own palettes: a neon esports palette on a Victorian mourning frame helps n
   from them (surfaces, secondary text, glow, border) — one colour change restyles the family
   (`cascade` in `lib/theme.ts`).
 - **Shipped palettes are gated.** `GET /qa` runs every shipped palette through the same contrast
-  checks plus the dark-background band; all 36 pass. The named spec palettes (Dark Goth, Pastel
+  checks plus the dark-background band; all 37 pass — including accent-on-surface (chat
+  usernames) and the rule that brand fills carrying text use `@accent` (contrast-gated against
+  `@background`), never a deep `@primary` that would swallow it. The named spec palettes (Dark Goth, Pastel
   Goth, Cyber Goth, Minimal, Fantasy) are hand-authored.
 
 ## Packs: palette × family = every screen in one identity
@@ -79,18 +82,27 @@ blackletter channel marks on scenes, square-ish corners, ornament hairlines, and
 decor particles — bats, moths, petals, fog. Several packs are tuned to published gothic palettes
 (piktochart.com/blog/gothic-color-palette).
 
-**Pride family** (11 packs): rounded glass panels, a gradient ribbon as the signature ornament,
-Poppins display, and confetti/hearts/light-ray/star particles. Flag identities are carried by
-the palettes — Classic, Trans, Bi, Pastel, Neon, Crystal, Cosmic, Soft, Dark, Minimal, Luxury —
-harmonised onto neutral backgrounds rather than raw flag stripes. Decor layers are named
-`Decor — …` so they can be toggled, recoloured or deleted like any other layer.
+**Pride family** (12 packs): rounded glass panels, Poppins display, and
+confetti/hearts/light-ray/star particles. The signature ornament is a real **flag layer**:
+stripes are literal hex colours — a flag's colours belong to the flag, not the theme — and each
+pride palette carries its authentic stripe set (classic six, trans five, bi ratios, the full
+eleven-stripe Progress flag), substituted into flag layers at expansion. The surrounding design
+stays in the harmonised palette; stripes are editable per-stripe in the properties panel and
+survive palette swaps. Decor layers are named `Decor — …` so they toggle like any other layer.
 
-## Animation semantics: elements animate in place
+**Neon Grid family** (core): the same eleven screens in the core collection's esports language,
+so "search Neon Grid" surfaces a complete matching set across all fifteen core palettes.
+
+## Animation semantics: elements animate in place, playback never restarts
 
 Persistent widgets — camera frames, chat boxes, social bars — never fly in. They animate *in and
 around themselves*: glow breathing, floating, flicker. Transient elements — alerts, scene
 headlines — are the ones that enter with slide/bounce/elastic, because appearing is their job.
-This is an authoring convention enforced across every shipped template.
+
+The live/OBS clock is **unbounded**, not looped: entry animations play once and hold their
+settled pose, while ambient presets and particles are periodic functions of time and run forever
+without a seam. A looping clock replays every entrance each cycle — on stream that reads as "the
+video keeps restarting".
 
 ## The second idea: animation is a pure function of time
 
@@ -117,7 +129,7 @@ src/
     zip.ts            Minimal store-only ZIP writer
   data/
     templates.ts      Base templates (core + gothic) + variant expansion
-    palettes.ts       36 shipping palettes: 15 core + 10 gothic packs + 11 pride packs
+    palettes.ts       37 shipping palettes: 15 core + 10 gothic packs + 12 pride packs
     fonts.ts          Google Fonts catalogue
   components/
     overlay/          The renderer. LayerNode.tsx paints every layer type.
@@ -161,6 +173,9 @@ burned into their stream. Same for social bars: a platform with no handle is dro
 
 **The camera frame's fill is a studio-only placeholder.** OBS composites the browser source *above*
 your webcam, so any fill would tint it. In `live` mode the interior is fully transparent.
+
+**Layers reorder by drag.** The Layers panel rows are HTML5-draggable; a drop commits one
+`setLayersOrder` history entry, so a whole drag is a single undo step.
 
 **`hasHydrated()` is not the same as "no projects".** The editor derives "project not found" from a
 `hydrated` flag on the store, not from an empty array, or it 404s on every refresh.

@@ -241,6 +241,27 @@ function social(
   };
 }
 
+function flag(
+  name: string,
+  box: Box,
+  o: BaseOpts & {
+    stripes?: string[];
+    stackDirection?: "vertical" | "horizontal";
+    cornerRadius?: number;
+  } = {},
+): LayerSpec {
+  return {
+    ...common(name, o),
+    ...box,
+    type: "flag",
+    // Classic six as the authored default; the variant builder substitutes the
+    // palette's authentic flag at expansion time.
+    stripes: o.stripes ?? ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
+    stackDirection: o.stackDirection ?? "horizontal",
+    cornerRadius: o.cornerRadius ?? 4,
+  };
+}
+
 function particles(
   name: string,
   o: BaseOpts & {
@@ -276,6 +297,13 @@ interface BaseTemplate {
   category: TemplateCategory;
   tags: StyleTag[];
   collection: Collection;
+  /**
+   * Core design family. Screens of the same family share one visual identity
+   * and compose their names as "<family> — <screen>", so searching the family
+   * name surfaces the whole matching set. Themed collections don't need this —
+   * their pack name is the palette.
+   */
+  family?: string;
   layers: LayerSpec[];
 }
 
@@ -288,10 +316,11 @@ const BASE_TEMPLATES: BaseTemplate[] = [
   /* ------------------------------- Gameplay ------------------------------- */
   {
     id: "neon-grid",
-    name: "Neon Grid",
+    name: "Gameplay",
     category: "Gameplay",
     tags: ["Esports"],
     collection: "core",
+    family: "Neon Grid",
     layers: [
       shape("Top bar", { x: 0, y: 0, width: 1920, height: 76 }, {
         fill: "@surface/90",
@@ -336,6 +365,389 @@ const BASE_TEMPLATES: BaseTemplate[] = [
       social("Socials", { x: 640, y: 980, width: 640, height: 56 }, {
         platforms: ["twitch", "discord", "instagram", "x"],
         animation: anim("fade", { duration: 900, delay: 600 }),
+      }),
+    ],
+  },
+
+  /* ------------------------ Neon Grid family screens ----------------------- */
+  // The rest of the Neon Grid pack: same Orbitron/Inter type, glowing accent
+  // hairlines and corner-cut frames as the gameplay screen above, so searching
+  // "Neon Grid" surfaces a complete matching set.
+  {
+    id: "neon-starting",
+    name: "Starting Soon",
+    category: "Starting Soon",
+    tags: ["Esports", "Neon"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/30", angle: 160 } },
+      }),
+      particles("Decor — Grid dust", { kind: "dots", count: 50, size: 3, speed: 0.5, color: "@glow", opacity: 0.6 }),
+      shape("Decor — Top line", { x: 360, y: 430, width: 1200, height: 3 }, {
+        fill: "@accent",
+        effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+        animation: anim("shimmer", { duration: 3400 }),
+      }),
+      text("Headline", { x: 210, y: 470, width: 1500, height: 130 }, "STARTING SOON", {
+        fontFamily: "Orbitron",
+        fontSize: 96,
+        fontWeight: 900,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 12,
+        effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+        animation: anim("zoom", { duration: 900, easing: "backOut" }),
+      }),
+      shape("Decor — Bottom line", { x: 360, y: 622, width: 1200, height: 3 }, {
+        fill: "@accent",
+        effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+        animation: anim("shimmer", { duration: 3400, delay: 600 }),
+      }),
+      text("Channel name", { x: 310, y: 660, width: 1300, height: 66 }, "{{CHANNEL_NAME}}", {
+        fontFamily: "Orbitron",
+        fontSize: 46,
+        fontWeight: 700,
+        align: "center",
+        fill: "@accent",
+        letterSpacing: 4,
+        textTransform: "uppercase",
+        animation: anim("fade", { duration: 900, delay: 400 }),
+      }),
+      text("Slogan", { x: 360, y: 750, width: 1200, height: 38 }, "{{SLOGAN}}", {
+        fontFamily: "Inter",
+        fontSize: 24,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 900, delay: 700 }),
+      }),
+      social("Socials", { x: 460, y: 900, width: 1000, height: 56 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram"],
+        animation: anim("slide", { direction: "up", duration: 800, delay: 900 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-brb",
+    name: "Be Right Back",
+    category: "BRB",
+    tags: ["Esports", "Neon"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/25", angle: 200 } },
+      }),
+      particles("Decor — Grid dust", { kind: "dots", count: 40, size: 3, speed: 0.4, color: "@glow", opacity: 0.5 }),
+      frame("Decor — Frame", { x: 560, y: 380, width: 800, height: 320 }, {
+        fill: "@surface/60",
+        strokeColor: "@accent",
+        strokeWidth: 3,
+        cornerRadius: 6,
+        corners: true,
+        effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+        animation: anim("glow", { duration: 3600 }),
+      }),
+      text("Headline", { x: 560, y: 450, width: 800, height: 90 }, "BE RIGHT BACK", {
+        fontFamily: "Orbitron",
+        fontSize: 60,
+        fontWeight: 900,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 6,
+        animation: anim("fade", { duration: 1000 }),
+      }),
+      text("Sub", { x: 560, y: 560, width: 800, height: 36 }, "{{CHANNEL_NAME}} · hold the line", {
+        fontFamily: "Inter",
+        fontSize: 22,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 1000, delay: 400 }),
+      }),
+      social("Socials", { x: 560, y: 880, width: 800, height: 56 }, {
+        platforms: ["twitch", "discord", "x"],
+        animation: anim("fade", { duration: 900, delay: 700 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-ending",
+    name: "Stream Ending",
+    category: "Stream Ending",
+    tags: ["Esports", "Neon"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@accent/20", angle: 45 } },
+      }),
+      particles("Decor — Stars", { kind: "stars", count: 60, size: 3, speed: 0.4, color: "@glow", opacity: 0.7 }),
+      img("Logo", { x: 860, y: 170, width: 200, height: 200 }, "{{LOGO}}", {
+        logo: true,
+        animation: anim("zoom", { duration: 900, easing: "backOut" }),
+      }),
+      text("Headline", { x: 210, y: 430, width: 1500, height: 130 }, "THANKS FOR WATCHING", {
+        fontFamily: "Orbitron",
+        fontSize: 88,
+        fontWeight: 900,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 8,
+        effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+        animation: anim("slide", { direction: "up", duration: 900, delay: 200 }),
+      }),
+      text("Channel name", { x: 310, y: 590, width: 1300, height: 64 }, "{{CHANNEL_NAME}}", {
+        fontFamily: "Orbitron",
+        fontSize: 42,
+        fontWeight: 700,
+        align: "center",
+        fill: "@accent",
+        letterSpacing: 4,
+        textTransform: "uppercase",
+        animation: anim("fade", { duration: 900, delay: 500 }),
+      }),
+      social("Socials", { x: 310, y: 760, width: 1300, height: 60 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram", "x"],
+        animation: anim("slide", { direction: "up", duration: 900, delay: 800 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-offline",
+    name: "Offline",
+    category: "Offline",
+    tags: ["Esports", "Minimal"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 180 } },
+      }),
+      particles("Decor — Grid dust", { kind: "dots", count: 30, size: 3, speed: 0.3, color: "@glow", opacity: 0.5 }),
+      frame("Card", { x: 660, y: 330, width: 600, height: 420 }, {
+        fill: "@surface/80",
+        strokeColor: "@border",
+        strokeWidth: 1,
+        cornerRadius: 8,
+        corners: true,
+        animation: anim("glow", { duration: 4200 }),
+        effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+      }),
+      img("Logo", { x: 880, y: 370, width: 160, height: 160 }, "{{LOGO}}", {
+        logo: true,
+        animation: anim("fade", { duration: 900, delay: 200 }),
+      }),
+      text("Headline", { x: 660, y: 560, width: 600, height: 60 }, "OFFLINE", {
+        fontFamily: "Orbitron",
+        fontSize: 44,
+        fontWeight: 900,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 10,
+        animation: anim("fade", { duration: 900, delay: 350 }),
+      }),
+      text("Sub", { x: 660, y: 640, width: 600, height: 36 }, "{{CHANNEL_NAME}} is recharging", {
+        fontFamily: "Inter",
+        fontSize: 20,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 900, delay: 500 }),
+      }),
+      social("Socials", { x: 660, y: 690, width: 600, height: 44 }, {
+        platforms: ["twitch", "discord", "x"],
+        fontSize: 18,
+        animation: anim("fade", { duration: 900, delay: 650 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-chatting",
+    name: "Just Chatting",
+    category: "Just Chatting",
+    tags: ["Esports"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 135 } },
+      }),
+      particles("Decor — Grid dust", { kind: "dots", count: 40, size: 3, speed: 0.4, color: "@glow", opacity: 0.5 }),
+      frame("Webcam", { x: 90, y: 140, width: 1020, height: 574 }, {
+        camera: true,
+        strokeColor: "@primary",
+        strokeWidth: 4,
+        cornerRadius: 8,
+        corners: true,
+        effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+        animation: anim("glow", { duration: 4200 }),
+      }),
+      shape("Name plate", { x: 90, y: 760, width: 640, height: 84 }, {
+        fill: "@surface/90",
+        cornerRadius: 6,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 6 } },
+      }),
+      text("Display name", { x: 130, y: 780, width: 560, height: 48 }, "{{DISPLAY_NAME}}", {
+        fontFamily: "Orbitron",
+        fontSize: 36,
+        fontWeight: 700,
+        fill: "@text",
+        letterSpacing: 2,
+      }),
+      text("Slogan", { x: 92, y: 870, width: 900, height: 36 }, "{{SLOGAN}}", {
+        fontFamily: "Inter",
+        fontSize: 24,
+        fontWeight: 400,
+        fill: "@textSecondary",
+      }),
+      chatbox("Chat", { x: 1180, y: 140, width: 650, height: 740 }, {
+        cornerRadius: 8,
+        rows: 9,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 8 } },
+      }),
+      social("Socials", { x: 90, y: 950, width: 1000, height: 56 }, {
+        platforms: ["twitch", "youtube", "instagram", "discord"],
+        animation: anim("fade", { duration: 900, delay: 400 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-webcam",
+    name: "Webcam Frame",
+    category: "Webcam Frames",
+    tags: ["Esports"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      frame("Camera", { x: 320, y: 120, width: 1280, height: 720 }, {
+        camera: true,
+        strokeColor: "@accent",
+        strokeWidth: 4,
+        cornerRadius: 8,
+        corners: true,
+        effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+        animation: anim("glow", { duration: 4200 }),
+      }),
+      shape("Name plate", { x: 660, y: 880, width: 600, height: 70 }, {
+        fill: "@surface/90",
+        cornerRadius: 6,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 6 } },
+      }),
+      text("Display name", { x: 660, y: 898, width: 600, height: 40 }, "{{DISPLAY_NAME}}", {
+        fontFamily: "Orbitron",
+        fontSize: 30,
+        fontWeight: 700,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 3,
+        textTransform: "uppercase",
+      }),
+    ],
+  },
+  {
+    id: "neon-chatbox",
+    name: "Chat Box",
+    category: "Chat Boxes",
+    tags: ["Esports", "Minimal"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      text("Chat title", { x: 1400, y: 58, width: 460, height: 42 }, "LIVE CHAT", {
+        fontFamily: "Orbitron",
+        fontSize: 24,
+        fontWeight: 700,
+        align: "center",
+        fill: "@accent",
+        letterSpacing: 8,
+        animation: anim("fade", { duration: 800 }),
+      }),
+      shape("Decor — Line", { x: 1430, y: 106, width: 400, height: 2 }, {
+        fill: "@accent",
+        effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+        animation: anim("shimmer", { duration: 4200 }),
+      }),
+      chatbox("Chat", { x: 1400, y: 126, width: 460, height: 834 }, {
+        cornerRadius: 8,
+        rows: 10,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 8 } },
+      }),
+    ],
+  },
+  {
+    id: "neon-follower",
+    name: "Follower Alert",
+    category: "Alerts",
+    tags: ["Esports", "Neon"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      alert("Follower alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW FOLLOWER", "AwesomeViewer", {
+        fontFamily: "Orbitron",
+        cornerRadius: 8,
+        titleColor: "@accent",
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 36 },
+          border: { enabled: true, color: "@border", width: 1, radius: 8 },
+        },
+        animation: anim("elastic", { duration: 1200 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-subscriber",
+    name: "Subscriber Alert",
+    category: "Alerts",
+    tags: ["Esports", "Neon"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "Tier 1 · welcome aboard", {
+        fontFamily: "Orbitron",
+        cornerRadius: 8,
+        fill: "@accent/95",
+        titleColor: "@background",
+        subtitleColor: "@background/85",
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 42 },
+          border: { enabled: true, color: "@accent", width: 1, radius: 8 },
+        },
+        animation: anim("bounce", { duration: 1100 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-socialbar",
+    name: "Social Bar",
+    category: "Social Bars",
+    tags: ["Esports", "Minimal"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      shape("Decor — Line", { x: 460, y: 946, width: 1000, height: 2 }, {
+        fill: "@accent/70",
+        effects: { glow: { enabled: true, color: "@glow", strength: 10 } },
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
+      social("Socials", { x: 460, y: 962, width: 1000, height: 60 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram", "x"],
+        pill: true,
+        pillColor: "@surface/90",
+        gap: 20,
+        fontSize: 22,
+        animation: anim("fade", { duration: 900 }),
       }),
     ],
   },
@@ -817,10 +1229,10 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     collection: "core",
     layers: [
       alert("Sub alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUB", "Tier 1 · Thank you!", {
-        fill: "@primary/90",
+        fill: "@accent/95",
         cornerRadius: 8,
-        titleColor: "@text",
-        subtitleColor: "@background",
+        titleColor: "@background",
+        subtitleColor: "@background/85",
         effects: { glow: { enabled: true, color: "@glow", strength: 50 } },
         animation: anim("bounce", { duration: 1100 }),
       }),
@@ -950,7 +1362,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         fill: "@textSecondary",
       }),
       shape("Live pill", { x: 1740, y: 22, width: 140, height: 40 }, {
-        fill: "@primary",
+        fill: "@accent",
         cornerRadius: 20,
         animation: anim("pulse", { duration: 2000 }),
       }),
@@ -959,7 +1371,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         fontSize: 18,
         fontWeight: 800,
         align: "center",
-        fill: "@text",
+        fill: "@background",
       }),
       frame("Webcam", { x: 44, y: 660, width: 500, height: 281 }, {
         camera: true,
@@ -1416,9 +1828,12 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
       alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "Welcome to the coven", {
         fontFamily: "Cinzel Decorative",
         cornerRadius: 10,
-        fill: "@primary/90",
-        titleColor: "@text",
-        subtitleColor: "@text",
+        // Accent is contrast-gated against the background, so dark-on-accent
+        // text is readable in every palette; a deep-burgundy primary would
+        // swallow it.
+        fill: "@accent/95",
+        titleColor: "@background",
+        subtitleColor: "@background/85",
         effects: {
           glow: { enabled: true, color: "@glow", strength: 44 },
           border: { enabled: true, color: "@accent", width: 1, radius: 10 },
@@ -1488,13 +1903,9 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
         animation: anim("zoom", { duration: 900, easing: "backOut" }),
       }),
-      shape("Decor — Ribbon", { x: 660, y: 596, width: 600, height: 8 }, {
-        cornerRadius: 4,
-        fill: "@primary",
-        effects: {
-          gradient: { enabled: true, from: "@primary", to: "@accent", angle: 0 },
-          glow: { enabled: true, color: "@glow", strength: 16 },
-        },
+      flag("Decor — Pride flag", { x: 640, y: 594, width: 640, height: 12 }, {
+        cornerRadius: 6,
+        effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
         animation: anim("shimmer", { duration: 3600 }),
       }),
       text("Channel name", { x: 310, y: 650, width: 1300, height: 76 }, "{{CHANNEL_NAME}}", {
@@ -1595,10 +2006,8 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
         animation: anim("slide", { direction: "up", duration: 900, delay: 200 }),
       }),
-      shape("Decor — Ribbon", { x: 660, y: 586, width: 600, height: 8 }, {
-        cornerRadius: 4,
-        fill: "@primary",
-        effects: { gradient: { enabled: true, from: "@primary", to: "@accent", angle: 0 } },
+      flag("Decor — Pride flag", { x: 640, y: 584, width: 640, height: 12 }, {
+        cornerRadius: 6,
         animation: anim("shimmer", { duration: 3600 }),
       }),
       text("Channel name", { x: 310, y: 630, width: 1300, height: 70 }, "{{CHANNEL_NAME}}", {
@@ -1680,10 +2089,8 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         effects: { border: { enabled: true, color: "@border", width: 1, radius: 18 } },
         animation: anim("slide", { direction: "up", duration: 700 }),
       }),
-      shape("Decor — Ribbon", { x: 40, y: 96, width: 1840, height: 4 }, {
-        cornerRadius: 2,
-        fill: "@primary",
-        effects: { gradient: { enabled: true, from: "@primary", to: "@accent", angle: 0 } },
+      flag("Decor — Pride flag", { x: 40, y: 98, width: 1840, height: 6 }, {
+        cornerRadius: 3,
         animation: anim("shimmer", { duration: 4200 }),
       }),
       img("Logo", { x: 62, y: 40, width: 40, height: 40 }, "{{LOGO}}", { logo: true }),
@@ -1805,6 +2212,10 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         align: "center",
         fill: "@text",
       }),
+      flag("Decor — Pride flag", { x: 810, y: 964, width: 300, height: 8 }, {
+        cornerRadius: 4,
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
     ],
   },
 
@@ -1870,9 +2281,9 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
       alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "You're amazing — thank you!", {
         fontFamily: "Poppins",
         cornerRadius: 28,
-        fill: "@primary/90",
-        titleColor: "@text",
-        subtitleColor: "@text",
+        fill: "@accent/95",
+        titleColor: "@background",
+        subtitleColor: "@background/85",
         effects: {
           glow: { enabled: true, color: "@glow", strength: 40 },
           border: { enabled: true, color: "@accent", width: 1, radius: 28 },
@@ -1889,10 +2300,8 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     tags: ["Minimal"],
     collection: "pride",
     layers: [
-      shape("Decor — Ribbon", { x: 460, y: 948, width: 1000, height: 4 }, {
-        cornerRadius: 2,
-        fill: "@primary",
-        effects: { gradient: { enabled: true, from: "@primary", to: "@accent", angle: 0 } },
+      flag("Decor — Pride flag", { x: 460, y: 946, width: 1000, height: 6 }, {
+        cornerRadius: 3,
         animation: anim("shimmer", { duration: 4600 }),
       }),
       social("Socials", { x: 460, y: 966, width: 1000, height: 60 }, {
@@ -1919,18 +2328,29 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
  */
 function buildVariant(base: BaseTemplate, palette: Palette): Template {
   const tags = new Set<StyleTag>([...base.tags, ...paletteTags(palette.id)]);
+  // Pack naming: themed collections compose the palette in ("Midnight
+  // Cathedral — Gameplay"); core families compose their family name in
+  // ("Neon Grid — Starting Soon"); one-off core designs keep their own name.
+  const name =
+    base.collection !== "core"
+      ? `${palette.name} — ${base.name}`
+      : base.family
+        ? `${base.family} — ${base.name}`
+        : base.name;
   return {
     id: `${base.id}--${palette.id}`,
-    // Themed collections compose the pack name in: "Midnight Cathedral —
-    // Starting Soon" and "Midnight Cathedral — Gameplay" visibly belong
-    // together. Core designs keep their own names.
-    name: base.collection === "core" ? base.name : `${palette.name} — ${base.name}`,
+    name,
     category: base.category,
     tags: [...tags],
     collection: base.collection,
     subStyle: palette.subStyle,
     paletteId: palette.id,
-    layers: base.layers.map((spec, i) => ({ ...spec, id: `${base.id}-l${i}` }) as Layer),
+    layers: base.layers.map((spec, i) => {
+      const layer = { ...spec, id: `${base.id}-l${i}` } as Layer;
+      // Flags fly the palette's authentic stripes, not the authored default.
+      if (layer.type === "flag" && palette.flag) layer.stripes = palette.flag;
+      return layer;
+    }),
   };
 }
 

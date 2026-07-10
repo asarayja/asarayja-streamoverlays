@@ -8,6 +8,8 @@ import {
   Copy,
   Eye,
   EyeOff,
+  Flag,
+  GripVertical,
   Image as ImageIcon,
   LayoutTemplate,
   Layers as LayersIcon,
@@ -53,6 +55,7 @@ const TABS: Array<{ id: Tab; label: string; icon: typeof LayersIcon }> = [
 const LAYER_ICONS: Record<LayerType, typeof Square> = {
   background: Square,
   shape: Square,
+  flag: Flag,
   text: Type,
   image: ImageIcon,
   logo: ImageIcon,
@@ -68,6 +71,7 @@ const LAYER_ICONS: Record<LayerType, typeof Square> = {
 const ADDABLE: LayerType[] = [
   "text",
   "shape",
+  "flag",
   "image",
   "logo",
   "frame",
@@ -228,19 +232,34 @@ function LayersTab() {
   const toggleVisible = useEditorStore((s) => s.toggleVisible);
   const toggleLock = useEditorStore((s) => s.toggleLock);
   const reorder = useEditorStore((s) => s.reorder);
+  const setLayersOrder = useEditorStore((s) => s.setLayersOrder);
   const removeSelected = useEditorStore((s) => s.removeSelected);
   const duplicateSelected = useEditorStore((s) => s.duplicateSelected);
   const renameLayer = useEditorStore((s) => s.renameLayer);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ id: string; below: boolean } | null>(null);
 
   if (!project) return null;
 
   // Topmost layer paints last, so the list reads top-down like every other editor.
   const ordered = [...project.layers].reverse();
 
+  /** Commit a drag: rebuild the display order, then hand the reverse to the store. */
+  const completeDrag = () => {
+    if (dragId && dropTarget && dragId !== dropTarget.id) {
+      const display = ordered.map((l) => l.id).filter((id) => id !== dragId);
+      const at = display.indexOf(dropTarget.id);
+      display.splice(dropTarget.below ? at + 1 : at, 0, dragId);
+      setLayersOrder(display.reverse());
+    }
+    setDragId(null);
+    setDropTarget(null);
+  };
+
   return (
     <div>
-      <PanelHeader title="Layers" subtitle={`${project.layers.length} layers · top of list draws on top`} />
+      <PanelHeader title="Layers" subtitle={`${project.layers.length} layers · drag to reorder · top of list draws on top`} />
 
       <div className="flex gap-1.5 border-b border-white/[0.06] px-4 py-2.5">
         <Button onClick={duplicateSelected} disabled={selectedIds.length === 0} className="flex-1 !px-2 !py-1.5 text-xs">
@@ -258,14 +277,38 @@ function LayersTab() {
           const selected = selectedIds.includes(layer.id);
           const Icon = LAYER_ICONS[layer.type];
 
+          const isDropTarget = dropTarget?.id === layer.id && dragId !== layer.id;
           return (
             <li
               key={layer.id}
+              draggable
+              onDragStart={(e) => {
+                setDragId(layer.id);
+                e.dataTransfer.effectAllowed = "move";
+              }}
+              onDragOver={(e) => {
+                if (!dragId || dragId === layer.id) return;
+                e.preventDefault();
+                const box = e.currentTarget.getBoundingClientRect();
+                setDropTarget({ id: layer.id, below: e.clientY > box.top + box.height / 2 });
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                completeDrag();
+              }}
+              onDragEnd={() => {
+                setDragId(null);
+                setDropTarget(null);
+              }}
               className={cx(
-                "group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors",
+                "group flex cursor-grab items-center gap-2 rounded-lg px-2 py-1.5 transition-colors active:cursor-grabbing",
                 selected ? "bg-brand-500/15 ring-1 ring-brand-400/40" : "hover:bg-white/[0.04]",
+                dragId === layer.id && "opacity-40",
+                isDropTarget && !dropTarget!.below && "shadow-[0_-2px_0_0_theme(colors.brand.400)]",
+                isDropTarget && dropTarget!.below && "shadow-[0_2px_0_0_theme(colors.brand.400)]",
               )}
             >
+              <GripVertical className="size-3 shrink-0 text-zinc-700 group-hover:text-zinc-500" />
               <Icon className={cx("size-3.5 shrink-0", selected ? "text-brand-400" : "text-zinc-600")} />
 
               {editingId === layer.id ? (

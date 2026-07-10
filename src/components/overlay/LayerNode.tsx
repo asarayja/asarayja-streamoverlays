@@ -21,6 +21,7 @@ import type {
   ChannelProfile,
   ChatBoxLayer,
   Effects,
+  FlagLayer,
   FrameLayer,
   Gradient,
   ImageLayer,
@@ -187,6 +188,60 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
   return <Line closed points={polygonPoints(layer.shape, w, h)} {...paint} />;
+}
+
+/** Fallback when a flag layer somehow has no stripes: the classic six. */
+const CLASSIC_RAINBOW = ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+
+function FlagContent({ layer, ctx, glowBoost }: { layer: FlagLayer; ctx: RenderContext; glowBoost: number }) {
+  const { width: w, height: h } = layer;
+  const stripes = layer.stripes.length > 0 ? layer.stripes : CLASSIC_RAINBOW;
+  const n = stripes.length;
+  const vertical = layer.stackDirection === "vertical";
+  const r = Math.min(layer.cornerRadius, w / 2, h / 2);
+
+  return (
+    <Group listening={false}>
+      {/* Underlay carries glow/shadow — a clipped group cannot. */}
+      {(layer.effects.glow.enabled || layer.effects.shadow.enabled) && (
+        <Rect
+          width={w}
+          height={h}
+          cornerRadius={r}
+          fill={stripes[Math.floor(n / 2)]}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        />
+      )}
+      <Group
+        clipFunc={(c) => {
+          c.beginPath();
+          c.moveTo(r, 0);
+          c.arcTo(w, 0, w, h, r);
+          c.arcTo(w, h, 0, h, r);
+          c.arcTo(0, h, 0, 0, r);
+          c.arcTo(0, 0, w, 0, r);
+          c.closePath();
+        }}
+      >
+        {stripes.map((stripe, i) =>
+          vertical ? (
+            <Rect key={i} x={0} y={(h / n) * i} width={w} height={h / n + 1} fill={stripe} />
+          ) : (
+            <Rect key={i} x={(w / n) * i} y={0} width={w / n + 1} height={h} fill={stripe} />
+          ),
+        )}
+      </Group>
+      {layer.effects.border.enabled && (
+        <Rect
+          width={w}
+          height={h}
+          cornerRadius={r}
+          stroke={resolveColor(layer.effects.border.color, ctx.theme)}
+          strokeWidth={layer.effects.border.width}
+        />
+      )}
+    </Group>
+  );
 }
 
 function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx: RenderContext; reveal: number; glowBoost: number }) {
@@ -814,6 +869,8 @@ function Content({ layer, ctx, reveal, glowBoost }: { layer: Layer; ctx: RenderC
     case "shape":
     case "background":
       return <ShapeContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
+    case "flag":
+      return <FlagContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
     case "text":
       return <TextContent layer={layer} ctx={ctx} reveal={reveal} glowBoost={glowBoost} />;
     case "image":

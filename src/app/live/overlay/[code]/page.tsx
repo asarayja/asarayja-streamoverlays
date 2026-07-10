@@ -26,11 +26,16 @@ export default function LiveOverlayPage({ params }: { params: Promise<{ code: st
   const [payload, setPayload] = useState<SharePayload | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "missing">("loading");
 
-  const loopMs = 6000;
   // The project's motion switch travels with the payload: off means OBS gets
   // the settled still frame instead of a running clock.
+  //
+  // The clock is deliberately unbounded. A looping clock replays every entry
+  // animation each cycle — on stream that reads as "the video keeps
+  // restarting". Unbounded, entries play once and hold their settled pose
+  // while ambient presets (glow, float, fog, particles) run forever; they are
+  // periodic functions of time, so they never jump.
   const motion = payload?.project.animationsEnabled !== false;
-  const clock = useClock(status === "ready" && motion, loopMs);
+  const clock = useClock(status === "ready" && motion);
   const time = motion ? clock : SETTLED_TIME;
 
   useEffect(() => {
