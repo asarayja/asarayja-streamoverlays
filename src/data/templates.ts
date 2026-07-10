@@ -380,6 +380,7 @@ function chip(
     fontSize?: number;
     cornerRadius?: number;
     icon?: "heart" | "star" | "none";
+    split?: boolean;
   } = {},
 ): LayerSpec {
   return {
@@ -395,6 +396,7 @@ function chip(
     fontSize: o.fontSize ?? 16,
     cornerRadius: o.cornerRadius ?? 26,
     icon: o.icon ?? "heart",
+    split: o.split ?? false,
   };
 }
 
@@ -1693,6 +1695,8 @@ interface FamilyStyle {
   windowChrome?: boolean;
   /** Chat panel silhouette. */
   chatShape?: "rect" | "coffin";
+  /** Event badges render as two-part pills (icon cap + text block). */
+  chipSplit?: boolean;
   /** Alert plate silhouette. A sideways coffin for gothic families. */
   alertShape?: "rect" | "coffin";
   /**
@@ -2035,6 +2039,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         chip(label, { x: 60, y: 300 + i * 76, width: 420, height: 52 }, label, "pixel_wren", {
           fontFamily: f.body,
           cornerRadius: f.radius,
+          split: f.chipSplit,
           effects: { border: { enabled: true, color: "@border", width: 1, radius: f.radius } },
           animation: anim("slide", { direction: "left", duration: 700, delay: i * 120 }),
         }),
@@ -2768,6 +2773,60 @@ const MECHA: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** Cyber Pill (spec theme C): streamlined sci-fi — a dark teal ground, neon
+    accents, panels with a green-to-blue gradient edge, and two-part pill
+    infobars (icon cap + italic text block). Colour follows the palette. */
+const CYBER_PILL: FamilyStyle = {
+  id: "cyberpill",
+  name: "Cyber Pill",
+  tags: ["Neon", "Sci-Fi", "Dark"],
+  display: "Exo 2",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 26,
+  frameRadius: 26,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    gradientStroke: { enabled: true, from: "@accent", to: "@secondary", angle: 30, width: 3 },
+    glow: { enabled: true, color: "@glow", strength: 28 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  plateShape: "rect",
+  chipSplit: true,
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 150 } },
+    }),
+    shape("Glow — ambient", { x: 560, y: 260, width: 800, height: 560 }, {
+      shape: "ellipse",
+      fill: "@accent/10",
+      effects: { glow: { enabled: true, color: "@glow", strength: 100 } },
+    }),
+    // Streamlined neon accent bars framing the copy.
+    shape("Accent — top", { x: 700, y: 388, width: 520, height: 8 }, {
+      shape: "rect",
+      cornerRadius: 4,
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+    }),
+    shape("Accent — bottom", { x: 810, y: 792, width: 300, height: 8 }, {
+      shape: "rect",
+      cornerRadius: 4,
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+    }),
+    particles("Decor — Droplets", { kind: "bokeh", count: 14, size: 5, speed: 0.32, color: "@accent", opacity: 0.3 }),
+    particles("Decor — Sparks", { kind: "embers", count: 18, size: 2, speed: 0.5, color: "@accent", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   HALLOWED_NIGHT,
   ASTRAL_DECK,
@@ -2781,6 +2840,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   MOONLIT_GROVE,
   PLASMA,
   MECHA,
+  CYBER_PILL,
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);

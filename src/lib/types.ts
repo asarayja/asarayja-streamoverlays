@@ -429,6 +429,8 @@ export interface ChipLayer extends LayerBase {
   fontSize: number;
   cornerRadius: number;
   icon: "heart" | "star" | "none";
+  /** Two-part pill: an icon cap on the left, a dark text block on the right. */
+  split?: boolean;
 }
 
 export type TextTransform = "none" | "uppercase" | "lowercase";

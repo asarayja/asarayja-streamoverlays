@@ -166,6 +166,7 @@ function makeLayer(type: LayerType, index: number): Layer {
         fontSize: 16,
         cornerRadius: 26,
         icon: "heart",
+        split: false,
       };
     case "icon":
       return {

@@ -1886,6 +1886,56 @@ function ChipContent({ layer, ctx, glowBoost }: { layer: ChipLayer; ctx: RenderC
   const value = resolveText(layer.value, ctx.profile, missingMode(ctx.mode));
   const labelWidth = measureText(label, layer.fontSize, layer.fontFamily, 700) + layer.fontSize * 0.3 * label.length;
 
+  // Two-part pill: a rounded icon cap (the accent) beside a dark text block.
+  if (layer.split) {
+    const capW = h * 1.2;
+    const gap = h * 0.14;
+    const blockX = capW + gap;
+    const blockW = Math.max(1, w - blockX);
+    const text = value ? `${label}  ${value}` : label;
+    return (
+      <Group listening={false}>
+        <Rect
+          x={0}
+          y={0}
+          width={capW}
+          height={h}
+          cornerRadius={h * 0.5}
+          fill={resolveColor(layer.labelColor, ctx.theme)}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        />
+        {hasIcon && (
+          <Group x={capW / 2} y={h / 2}>
+            {CHIP_ICONS[layer.icon](h * 0.26, resolveColor("@background", ctx.theme))}
+          </Group>
+        )}
+        <Rect
+          x={blockX}
+          y={0}
+          width={blockW}
+          height={h}
+          cornerRadius={h * 0.34}
+          {...fillProps(layer.fill, layer.effects, ctx.theme, blockW, h)}
+          {...borderProps(layer.effects, ctx.theme, blockW, h)}
+        />
+        <Text
+          x={blockX + h * 0.42}
+          width={blockW - h * 0.7}
+          height={h}
+          verticalAlign="middle"
+          text={text}
+          fontFamily={layer.fontFamily}
+          fontSize={layer.fontSize}
+          fontStyle="italic 700"
+          letterSpacing={1}
+          fill={resolveColor(layer.valueColor, ctx.theme)}
+          wrap="none"
+          ellipsis
+        />
+      </Group>
+    );
+  }
+
   return (
     <Group listening={false}>
       <Rect
