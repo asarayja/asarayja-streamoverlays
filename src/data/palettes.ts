@@ -518,6 +518,29 @@ const DEFS: PaletteDef[] = [
       shadow: "#000000",
     },
   },
+  // A pastel-goth sibling: a dusk-plum night (a touch lighter than near-black)
+  // with soft pink, lavender and mint. The background stays dark enough that
+  // the graveyard still silhouettes and the pastel moon, bats and webs read
+  // against it — pastel colours, not a light theme.
+  {
+    id: "pastel-hollow",
+    name: "Pastel Hollow",
+    collection: "core",
+    tags: ["Pink", "Purple", "Dark", "Cozy"],
+    theme: {
+      primary: "#e89ac4",
+      secondary: "#a99ae0",
+      accent: "#e0d3f2",
+      accentSecondary: "#a9e5d2",
+      background: "#150f1c",
+      surface: "#241a30",
+      text: "#f8f2fb",
+      border: "#6a5a80",
+      glow: "#c9a0e8",
+      shadow: "#000000",
+    },
+  },
+
   // A blood-red sibling: the same near-black night, but red-dominant with a
   // bone-white accent so bats, webs and ghosts stay white against it.
   {
