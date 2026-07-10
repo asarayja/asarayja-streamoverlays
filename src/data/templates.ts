@@ -2488,6 +2488,74 @@ const LIQUID_NEON: FamilyStyle = {
   contentOffsetY: -60,
 };
 
+/** Hex Storm: a honeycomb field under sharp lightning cuts on near-black,
+    electric azure/cyan. Spec theme E. Colour follows the palette. */
+const HEX_STORM: FamilyStyle = {
+  id: "hexstorm",
+  name: "Hex Storm",
+  tags: ["Esports", "Neon", "Sci-Fi"],
+  display: "Rajdhani",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  displayItalic: true,
+  body: "Rajdhani",
+  radius: 2,
+  frameRadius: 2,
+  corners: true,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 2 },
+    glow: { enabled: true, color: "@glow", strength: 32 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 32 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 135 } },
+    }),
+    // Honeycomb field across the whole frame, brighter in opposite corners.
+    shape("Hex field", FULL, { shape: "hexmesh", fill: "@primary/14" }),
+    shape("Hex glow — TL", { x: -80, y: -80, width: 660, height: 480 }, {
+      shape: "hexmesh",
+      fill: "@primary/26",
+      effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+    }),
+    shape("Hex glow — BR", { x: 1340, y: 620, width: 660, height: 520 }, {
+      shape: "hexmesh",
+      fill: "@primary/26",
+      effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+    }),
+    // A dark angled panel on the right, then bright cyan lightning cuts.
+    shape("Shard — panel", { x: 1160, y: -80, width: 960, height: 1240 }, {
+      shape: "shard",
+      fill: "@surface",
+      opacity: 0.72,
+    }),
+    shape("Bolt — main", { x: 1300, y: -80, width: 46, height: 1240 }, {
+      shape: "shard",
+      fill: "@glow",
+      effects: { glow: { enabled: true, color: "@glow", strength: 44 } },
+    }),
+    shape("Bolt — left", { x: 150, y: -80, width: 32, height: 1240 }, {
+      shape: "shard",
+      fill: "@accent",
+      opacity: 0.85,
+      effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+    }),
+    particles("Decor — Sparks", { kind: "embers", count: 30, size: 2.5, speed: 0.6, color: "@accent", opacity: 0.6 }),
+  ],
+  overlayDecor: () => [
+    shape("Hex corner", { x: 1560, y: -30, width: 400, height: 280 }, {
+      shape: "hexmesh",
+      fill: "@primary/20",
+    }),
+  ],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   HALLOWED_NIGHT,
   ASTRAL_DECK,
@@ -2497,6 +2565,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   STARLIT_SERENITY,
   OVERDRIVE,
   LIQUID_NEON,
+  HEX_STORM,
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);

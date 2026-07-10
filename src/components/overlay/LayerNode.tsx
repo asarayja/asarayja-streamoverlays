@@ -173,7 +173,9 @@ function polygonPoints(shape: string, w: number, h: number): number[] {
 
 /** A honeycomb lattice: pointy-top hexagon outlines tiled across the box. */
 function hexMeshPath(c: Konva.Context, w: number, h: number) {
-  const R = Math.max(14, Math.min(w, h) * 0.11); // circumradius
+  // Circumradius: scales with the box but capped so a full-screen field tiles
+  // into a fine honeycomb rather than a few giant cells.
+  const R = Math.max(14, Math.min(34, Math.min(w, h) * 0.11));
   const dx = R * 1.5;
   const dy = R * Math.sqrt(3);
   c.beginPath();
