@@ -35,8 +35,8 @@ import type {
   Theme,
 } from "@/lib/types";
 
-const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "moon", "crescent", "plaque", "scanlines"];
-const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs"];
+const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "moon", "crescent", "plaque", "scanlines", "web", "drip", "graveyard", "chain"];
+const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs", "ghosts", "bokeh"];
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
 
 export function RightPanel() {
@@ -236,6 +236,25 @@ export function RightPanel() {
               onChange={(angle) => patchEffects({ gradient: { ...layer.effects.gradient, angle } }, false)}
             />
           </>
+        )}
+
+        <Toggle
+          label="Gloss"
+          checked={layer.effects.gloss?.enabled ?? false}
+          onChange={(enabled) =>
+            patchEffects({ gloss: { strength: layer.effects.gloss?.strength ?? 0.8, enabled } })
+          }
+        />
+        {layer.effects.gloss?.enabled && (
+          <Slider
+            label="Gloss strength"
+            min={0.1}
+            max={1}
+            step={0.05}
+            value={layer.effects.gloss.strength}
+            onBegin={beginGesture}
+            onChange={(strength) => patchEffects({ gloss: { enabled: true, strength } }, false)}
+          />
         )}
 
         <Toggle

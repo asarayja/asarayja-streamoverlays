@@ -240,6 +240,17 @@ export interface Emboss {
   depth: number;
 }
 
+/**
+ * The moulded-plastic look: a specular sweep across the top of a shape and a
+ * darkened lip along the bottom. What makes a candy-gothic pill read as an
+ * object rather than a flat rectangle.
+ */
+export interface Gloss {
+  enabled: boolean;
+  /** 0..1 — opacity of the highlight. */
+  strength: number;
+}
+
 export interface Effects {
   shadow: Shadow;
   glow: Glow;
@@ -248,6 +259,7 @@ export interface Effects {
   gradient: Gradient;
   gradientStroke?: GradientStroke;
   emboss?: Emboss;
+  gloss?: Gloss;
 }
 
 export const DEFAULT_EFFECTS: Effects = {
@@ -314,7 +326,15 @@ export type ShapeKind =
   /** Ornate bracket plaque — the alert/panel silhouette of holo packs. */
   | "plaque"
   /** Horizontal CRT lines across the box. */
-  | "scanlines";
+  | "scanlines"
+  /** A corner spiderweb: spokes with sagging catenary threads. */
+  | "web"
+  /** A panel whose bottom edge melts into hanging drips. */
+  | "drip"
+  /** Graveyard horizon: hill, fence, crosses, a leaning headstone. */
+  | "graveyard"
+  /** A hanging chain of links ending in a pendant. */
+  | "chain";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";
@@ -487,7 +507,11 @@ export type ParticleKind =
   | "clouds"
   | "shootingStars"
   /** Blurred mesh-gradient orbs cycling through the theme's brand hues. */
-  | "blobs";
+  | "blobs"
+  /** Drifting sheeted ghosts. */
+  | "ghosts"
+  /** Out-of-focus lights: soft discs with a brighter rim. */
+  | "bokeh";
 
 export interface ParticleLayer extends LayerBase {
   type: "particle";

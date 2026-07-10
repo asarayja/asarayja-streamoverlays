@@ -2095,7 +2095,86 @@ const STARLIT_SERENITY: FamilyStyle = {
   contentOffsetY: -130,
 };
 
+
+/** Hallowed Night: near-black graveyard, cratered moon, white bats and ghosts. */
+const HALLOWED_NIGHT: FamilyStyle = {
+  id: "hallowed",
+  name: "Hallowed Night",
+  tags: ["Horror", "Dark", "Fantasy"],
+  display: "Cinzel Decorative",
+  displayWeight: 700,
+  displayTracking: 6,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 12,
+  frameRadius: 12,
+  corners: false,
+  strokeWidth: 3,
+  frameEffects: {
+    border: { enabled: true, color: "@border", width: 2, radius: 12 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  plateShape: "rect",
+  // The graveyard owns the bottom third; the copy clears its fence line.
+  contentOffsetY: -175,
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@secondary/26", angle: 190 } },
+    }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 12, size: 5, speed: 0.5, color: "@primary" }),
+    particles("Decor — Stars", { kind: "stars", count: 54, size: 2.5, speed: 0.14, color: "@accent", opacity: 0.7 }),
+    // The moon is the light source, so it hangs opposite the graveyard's crosses.
+    shape("Decor — Moon", { x: 1520, y: 90, width: 210, height: 210 }, {
+      shape: "moon",
+      moonPhase: 1,
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 60 } },
+      animation: anim("float", { duration: 7000, intensity: 0.4 }),
+    }),
+    particles("Decor — Fog", { kind: "fog", count: 8, size: 5, speed: 0.5, color: "@secondary" }),
+    // A silhouette must be darker than the light behind it. The sky's gradient
+    // lifts toward @secondary at the bottom, so plain @background reads as the
+    // shape of a hill rather than a flat band laid over it.
+    shape("Decor — Graveyard", { x: 0, y: 720, width: 1920, height: 360 }, {
+      shape: "graveyard",
+      fill: "@background",
+    }),
+    particles("Decor — Bats", { kind: "bats", count: 9, size: 6, speed: 0.8, color: "@accent", opacity: 0.85 }),
+    particles("Decor — Ghosts", { kind: "ghosts", count: 4, size: 14, speed: 0.6, color: "@accent" }),
+    shape("Decor — Web left", { x: 0, y: 0, width: 300, height: 260 }, {
+      shape: "web",
+      fill: "@accent/55",
+      cornerRadius: 1.6,
+    }),
+    shape("Decor — Web right", { x: 1620, y: 0, width: 300, height: 260 }, {
+      shape: "web",
+      fill: "@accent/55",
+      cornerRadius: 1.6,
+      rotation: 90,
+    }),
+    shape("Decor — Chain", { x: 316, y: 0, width: 34, height: 280 }, {
+      shape: "chain",
+      fill: "@accent/75",
+      cornerRadius: 2.6,
+      animation: anim("wave", { duration: 6000, intensity: 0.5 }),
+    }),
+  ],
+  overlayDecor: () => [
+    shape("Decor — Web left", { x: 0, y: 0, width: 260, height: 220 }, {
+      shape: "web",
+      fill: "@accent/45",
+      cornerRadius: 1.4,
+    }),
+    particles("Decor — Bats", { kind: "bats", count: 6, size: 5, speed: 0.7, color: "@accent", opacity: 0.7 }),
+    particles("Decor — Ghosts", { kind: "ghosts", count: 2, size: 12, speed: 0.5, color: "@accent" }),
+  ],
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  HALLOWED_NIGHT,
   ASTRAL_DECK,
   PIXEL_WINDOWS,
   COZY_CLOUDS,

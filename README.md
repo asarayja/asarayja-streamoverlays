@@ -100,6 +100,10 @@ survive palette swaps. Decor layers are named `Decor — …` so they toggle lik
 **Neon Grid family** (core): the same eleven screens in the core collection's esports language,
 so "search Neon Grid" surfaces a complete matching set across all fifteen core palettes.
 
+**Hallowed Night** is the gothic family built from those primitives: a cratered full moon over a
+graveyard silhouette, white bats and sheeted ghosts drifting across a near-black red-and-purple
+sky, corner spiderwebs and a hanging chain. It ships with the **Crimson Hollow** palette.
+
 **Five generated families** — Astral Deck (sci-fi HUD), Pixel Windows (Y2K chrome), Cozy Clouds,
 Holo Glass and Starlit Serenity — are not hand-written screens at all. Each declares a
 `FamilyStyle` (type, radii, ground, ornament) and `familyScreens()` emits all fifteen screens from
@@ -197,6 +201,10 @@ across the frame would tint the webcam too.
 **Chat rows are studio-only.** The sample names are a preview affordance like the CAMERA label.
 `live` mode renders the chat frame empty, so an exported PNG carries no fake chat and the real chat
 widget layers cleanly on top in OBS.
+
+**A silhouette must be darker than the light behind it.** The graveyard horizon reads as a hill
+only because it is filled with `@background` while the sky's gradient lifts toward `@secondary`
+below. Filled a shade lighter, it reads as a flat band laid over the scene.
 
 **Konva applies group opacity per child.** Overlapping translucent circles inside a group seam along
 every intersection — which is why the clouds are drawn as a single path whose subpaths union under

@@ -225,6 +225,18 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     return <Ellipse x={w / 2} y={h / 2} radiusX={w / 2} radiusY={h / 2} {...paint} />;
   }
   if (layer.shape === "rect") {
+    const gloss = layer.effects.gloss;
+    if (gloss?.enabled) {
+      return (
+        <Group listening={false}>
+          <Rect width={w} height={h} cornerRadius={layer.cornerRadius} {...paint} />
+          <KonvaShape
+            listening={false}
+            sceneFunc={(c) => drawGloss(c, w, h, Math.min(layer.cornerRadius, w / 2, h / 2), gloss.strength)}
+          />
+        </Group>
+      );
+    }
     return <Rect width={w} height={h} cornerRadius={layer.cornerRadius} {...paint} />;
   }
   if (layer.shape === "line") {
@@ -298,11 +310,245 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "web") {
+    const stroke = fill ?? resolveColor(layer.fill, ctx.theme);
+    return (
+      <KonvaShape
+        stroke={stroke}
+        strokeWidth={Math.max(1, layer.cornerRadius || 1.4)}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        sceneFunc={(c, shape) => {
+          webPath(c, w, h);
+          c.strokeShape(shape);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "drip") {
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          dripPath(c, w, h, Math.min(layer.cornerRadius, w / 2, h / 2));
+          c.fillStrokeShape(shape);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "graveyard") {
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          graveyardPath(c, w, h);
+          c.fillStrokeShape(shape);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "chain") {
+    const stroke = fill ?? resolveColor(layer.fill, ctx.theme);
+    return (
+      <KonvaShape
+        stroke={stroke}
+        strokeWidth={Math.max(1, layer.cornerRadius || 2)}
+        fill={stroke}
+        fillAfterStrokeEnabled
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        sceneFunc={(c, shape) => {
+          chainPath(c, w, h);
+          c.strokeShape(shape);
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "plaque") {
     return <KonvaShape {...paint} sceneFunc={(c, shape) => { plaquePath(c, w, h); c.fillStrokeShape(shape); }} />;
   }
 
   return <Line closed points={polygonPoints(layer.shape, w, h)} {...paint} />;
+}
+
+
+/**
+ * A corner spiderweb: straight spokes from the anchor, and threads that sag
+ * inward between them. The sag is what separates a web from a dartboard.
+ */
+function webPath(c: Konva.Context, w: number, h: number) {
+  const spokes = 7;
+  const rings = 5;
+  const R = Math.hypot(w, h);
+  c.beginPath();
+  for (let i = 0; i <= spokes; i++) {
+    const a = (i / spokes) * (Math.PI / 2);
+    c.moveTo(0, 0);
+    c.lineTo(Math.cos(a) * R, Math.sin(a) * R);
+  }
+  for (let r = 1; r <= rings; r++) {
+    const rad = (r / rings) * R * 0.92;
+    for (let i = 0; i < spokes; i++) {
+      const a1 = (i / spokes) * (Math.PI / 2);
+      const a2 = ((i + 1) / spokes) * (Math.PI / 2);
+      const am = (a1 + a2) / 2;
+      const sag = rad * 0.82;
+      c.moveTo(Math.cos(a1) * rad, Math.sin(a1) * rad);
+      c.quadraticCurveTo(Math.cos(am) * sag, Math.sin(am) * sag, Math.cos(a2) * rad, Math.sin(a2) * rad);
+    }
+  }
+}
+
+/** A panel whose bottom melts. Drips are teardrops — they swell before the tip. */
+function dripPath(c: Konva.Context, w: number, h: number, r: number) {
+  const lip = h * 0.66;
+  const lobes = 5;
+  const TAU = Math.PI * 2;
+  c.beginPath();
+  c.moveTo(r, 0);
+  c.arcTo(w, 0, w, h, r);
+  c.lineTo(w, lip);
+  for (let i = lobes - 1; i >= 0; i--) {
+    const x1 = (w * (i + 1)) / lobes;
+    const x0 = (w * i) / lobes;
+    const mid = (x0 + x1) / 2;
+    const depth = lip + (0.06 + noise(i * 3.7) * 0.16) * h;
+    const bulge = (x1 - x0) * 0.34;
+    c.bezierCurveTo(x1 - bulge * 0.2, lip + (depth - lip) * 0.35, mid + bulge, depth - (depth - lip) * 0.18, mid, depth);
+    c.bezierCurveTo(mid - bulge, depth - (depth - lip) * 0.18, x0 + bulge * 0.2, lip + (depth - lip) * 0.35, x0, lip);
+  }
+  c.lineTo(0, r);
+  c.arcTo(0, 0, w, 0, r);
+  c.closePath();
+  for (let i = 0; i < 3; i++) {
+    const dx = w * (0.18 + noise(i * 5.1) * 0.64);
+    const dy = lip + h * (0.3 + noise(i * 7.3) * 0.16);
+    const dr = w * (0.012 + noise(i * 9.7) * 0.014);
+    c.moveTo(dx + dr, dy);
+    c.arc(dx, dy, dr, 0, TAU, false);
+  }
+}
+
+/**
+ * Graveyard horizon. Everything is planted *on* the hill curve — a headstone
+ * hovering above the ground is the tell of a silhouette assembled by eye.
+ */
+function graveyardPath(c: Konva.Context, w: number, h: number) {
+  const hillY = (t: number) => h * 0.66 - Math.sin(t * Math.PI) * h * 0.26 - Math.sin(t * Math.PI * 2.7) * h * 0.04;
+
+  c.beginPath();
+  c.moveTo(0, h);
+  c.lineTo(0, hillY(0));
+  for (let i = 1; i <= 60; i++) c.lineTo((w * i) / 60, hillY(i / 60));
+  c.lineTo(w, h);
+  c.closePath();
+
+  const bar = (cx: number, cy: number, bw: number, bh: number) => {
+    c.moveTo(cx - bw / 2, cy);
+    c.lineTo(cx + bw / 2, cy);
+    c.lineTo(cx + bw / 2, cy - bh);
+    c.lineTo(cx - bw / 2, cy - bh);
+    c.closePath();
+  };
+  const cross = (t: number, s: number) => {
+    const cx = w * t;
+    const cy = hillY(t) + 2;
+    bar(cx, cy, s * 0.22, s); // upright
+    bar(cx, cy - s * 0.72, s * 0.72, s * 0.2); // arms
+  };
+  const headstone = (t: number, s: number) => {
+    const cx = w * t;
+    const cy = hillY(t) + 2;
+    c.moveTo(cx - s * 0.32, cy);
+    c.lineTo(cx - s * 0.32, cy - s * 0.5);
+    c.arc(cx, cy - s * 0.5, s * 0.32, Math.PI, 0, false);
+    c.lineTo(cx + s * 0.32, cy);
+    c.closePath();
+  };
+
+  headstone(0.13, h * 0.34);
+  cross(0.26, h * 0.32);
+  cross(0.79, h * 0.26);
+
+  const t0 = 0.4;
+  const t1 = 0.62;
+  const ph = h * 0.2;
+  for (let i = 0; i < 8; i++) {
+    const t = t0 + (i / 7) * (t1 - t0);
+    const cx = w * t;
+    const cy = hillY(t) + 2;
+    const pw = w * 0.012;
+    c.moveTo(cx - pw, cy);
+    c.lineTo(cx - pw, cy - ph);
+    c.lineTo(cx, cy - ph - pw * 1.4);
+    c.lineTo(cx + pw, cy - ph);
+    c.lineTo(cx + pw, cy);
+    c.closePath();
+  }
+  for (const rail of [0.62, 0.86]) {
+    c.moveTo(w * t0, hillY(t0) - ph * rail);
+    for (let i = 1; i <= 20; i++) {
+      const t = t0 + (i / 20) * (t1 - t0);
+      c.lineTo(w * t, hillY(t) - ph * rail);
+    }
+    for (let i = 20; i >= 0; i--) {
+      const t = t0 + (i / 20) * (t1 - t0);
+      c.lineTo(w * t, hillY(t) - ph * rail + h * 0.016);
+    }
+    c.closePath();
+  }
+}
+
+/** Hanging chain: links overlap and alternate plane, ending in a pendant. */
+function chainPath(c: Konva.Context, w: number, h: number) {
+  const TAU = Math.PI * 2;
+  const pendant = w * 1.5;
+  const usable = Math.max(w, h - pendant);
+  const links = Math.max(3, Math.round(usable / (w * 0.62)));
+  const step = usable / links;
+  c.beginPath();
+  for (let i = 0; i < links; i++) {
+    const cy = step * i + step * 0.5;
+    const flat = i % 2 === 1;
+    const rx = flat ? w * 0.46 : w * 0.24;
+    c.moveTo(w / 2 + rx, cy);
+    c.ellipse(w / 2, cy, rx, step * 0.72, 0, 0, TAU, false);
+  }
+  const py = usable + w * 0.1;
+  c.moveTo(w / 2, py);
+  c.bezierCurveTo(w / 2 + w * 0.62, py + pendant * 0.35, w / 2 + w * 0.42, py + pendant * 0.86, w / 2, py + pendant * 0.92);
+  c.bezierCurveTo(w / 2 - w * 0.42, py + pendant * 0.86, w / 2 - w * 0.62, py + pendant * 0.35, w / 2, py);
+}
+
+/**
+ * The moulded-plastic sweep: a light wash over the top of a rounded box and a
+ * darkened lip along its bottom. Clipped to the box, so it never spills.
+ */
+function drawGloss(c: Konva.Context, w: number, h: number, r: number, strength: number) {
+  c.save();
+  c.beginPath();
+  c.moveTo(r, 0);
+  c.arcTo(w, 0, w, h, r);
+  c.arcTo(w, h, 0, h, r);
+  c.arcTo(0, h, 0, 0, r);
+  c.arcTo(0, 0, w, 0, r);
+  c.closePath();
+  c.clip();
+
+  const top = c.createLinearGradient(0, 0, 0, h * 0.55);
+  top.addColorStop(0, `rgba(255,255,255,${0.55 * strength})`);
+  top.addColorStop(1, "rgba(255,255,255,0)");
+  c.setAttr("fillStyle", top);
+  c.fillRect(0, 0, w, h * 0.55);
+
+  const lip = c.createLinearGradient(0, h * 0.6, 0, h);
+  lip.addColorStop(0, "rgba(0,0,0,0)");
+  lip.addColorStop(1, `rgba(0,0,0,${0.35 * strength})`);
+  c.setAttr("fillStyle", lip);
+  c.fillRect(0, h * 0.6, w, h * 0.4);
+  c.restore();
 }
 
 /**
@@ -1423,6 +1669,72 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
             fillRadialGradientEndPoint={{ x: 0, y: 0 }}
             fillRadialGradientEndRadius={radius}
             fillRadialGradientColorStops={[0, tone, 1, "rgba(0,0,0,0)"]}
+          />,
+        );
+        break;
+      }
+
+      case "ghosts": {
+        // A sheeted ghost: domed head, straight shoulders, a scalloped hem.
+        // It drifts upward, sways, and fades out before it wraps.
+        const rise = t * layer.speed * 26 * (0.5 + seedS);
+        const margin = layer.size * 8;
+        const y = h - (wrapAround(seedY * h + rise, h + margin * 2) - margin);
+        const x = seedX * w + Math.sin(t * (0.35 + seedS * 0.4) + i) * 34;
+        const g = layer.size * (1.6 + seedS * 1.1);
+        const eye = g * 0.16;
+        nodes.push(
+          <Group
+            key={i}
+            x={x}
+            y={y}
+            rotation={Math.sin(t * 0.5 + i) * 5}
+            opacity={(0.35 + seedS * 0.4) * edgeFade(y, h, layer.size * 10)}
+          >
+            <KonvaShape
+              fill={color}
+              sceneFunc={(c, shape) => {
+                const hem = g * 1.15;
+                c.beginPath();
+                c.arc(0, 0, g, Math.PI, 0, false);
+                c.lineTo(g, hem);
+                for (let k = 0; k < 4; k++) {
+                  const x0 = g - (k * 2 * g) / 4;
+                  const x1 = g - ((k + 1) * 2 * g) / 4;
+                  const mid = (x0 + x1) / 2;
+                  c.quadraticCurveTo(mid, hem + (k % 2 === 0 ? g * 0.42 : -g * 0.12), x1, hem);
+                }
+                c.lineTo(-g, 0);
+                c.closePath();
+                c.fillShape(shape);
+              }}
+            />
+            <Circle x={-g * 0.32} y={-g * 0.1} radius={eye} fill="rgba(0,0,0,0.75)" />
+            <Circle x={g * 0.32} y={-g * 0.1} radius={eye} fill="rgba(0,0,0,0.75)" />
+            <Ellipse x={0} y={g * 0.42} radiusX={eye * 0.7} radiusY={eye} fill="rgba(0,0,0,0.6)" />
+          </Group>,
+        );
+        break;
+      }
+
+      case "bokeh": {
+        // Out-of-focus lights: a soft disc with a brighter rim, because a
+        // defocused point source concentrates its light at the circle's edge.
+        const radius = layer.size * (6 + seedS * 14);
+        const x = seedX * w + Math.sin(t * 0.08 * layer.speed + i) * 40;
+        const y = seedY * h + Math.cos(t * 0.06 * layer.speed + i * 1.3) * 30;
+        nodes.push(
+          <Circle
+            key={i}
+            x={x}
+            y={y}
+            radius={radius}
+            opacity={0.06 + seedS * 0.14}
+            fillRadialGradientStartPoint={{ x: 0, y: 0 }}
+            fillRadialGradientStartRadius={0}
+            fillRadialGradientEndPoint={{ x: 0, y: 0 }}
+            fillRadialGradientEndRadius={radius}
+            fillRadialGradientColorStops={[0, withAlpha(color, 0.55), 0.82, withAlpha(color, 0.75), 1, withAlpha(color, 0)]}
           />,
         );
         break;

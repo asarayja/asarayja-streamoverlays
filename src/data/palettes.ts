@@ -495,6 +495,27 @@ const DEFS: PaletteDef[] = [
     },
   },
 
+  // Requested palette: red, purple and near-black, with a bone-white accent so
+  // bats, webs and ghosts read as white against the night.
+  {
+    id: "crimson-hollow",
+    name: "Crimson Hollow",
+    collection: "core",
+    tags: ["Red", "Purple", "Dark", "Horror"],
+    theme: {
+      primary: "#a8123a",
+      secondary: "#5b2a8f",
+      accent: "#efeaf6",
+      accentSecondary: "#c94f7c",
+      background: "#0d0910",
+      surface: "#1b1522",
+      text: "#f5f0f8",
+      border: "#5d4a6b",
+      glow: "#c81e4e",
+      shadow: "#000000",
+    },
+  },
+
   /* -------------------------------- Pride -------------------------------- */
   // The pride launch packs. Flag colours are harmonised per the design rules:
   // softened saturation, neutral backgrounds, text/accent pairs that pass the
