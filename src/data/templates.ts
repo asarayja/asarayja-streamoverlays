@@ -365,14 +365,14 @@ function particles(
     color?: string;
     size?: number;
     speed?: number;
+    /** Confine the particle field to a box. Defaults to the whole canvas. */
+    box?: Box;
   } = {},
 ): LayerSpec {
+  const box = o.box ?? { x: 0, y: 0, width: 1920, height: 1080 };
   return {
     ...common(name, o),
-    x: 0,
-    y: 0,
-    width: 1920,
-    height: 1080,
+    ...box,
     type: "particle",
     kind: o.kind ?? "dots",
     count: o.count ?? 60,
@@ -398,6 +398,15 @@ function particles(
  * `@secondary` scenes read violet, from one palette.
  */
 const FULL: Box = { x: 0, y: 0, width: 1920, height: 1080 };
+
+/**
+ * Overlay screens (gameplay, webcam, chat) put the game or camera in the
+ * centre. Roaming decor — bats, ghosts, hearts — must stay in the margins
+ * where the furniture lives (webcam bottom-left, chat right), never drifting
+ * across the play area. These two columns bracket the centre.
+ */
+const MARGIN_LEFT: Box = { x: 0, y: 120, width: 420, height: 960 };
+const MARGIN_RIGHT: Box = { x: 1500, y: 60, width: 420, height: 960 };
 
 /** Gothic ground: burgundy-tinted night, drifting fog, stars, ornament frame. */
 function gothicScene(): LayerSpec[] {
@@ -1998,7 +2007,8 @@ const PIXEL_WINDOWS: FamilyStyle = {
     particles("Decor — Hearts", { kind: "hearts", count: 9, size: 5, speed: 0.5, color: "@accent", opacity: 0.6 }),
   ],
   overlayDecor: () => [
-    particles("Decor — Hearts", { kind: "hearts", count: 6, size: 4, speed: 0.45, color: "@accent", opacity: 0.5 }),
+    particles("Decor — Hearts left", { kind: "hearts", count: 3, size: 4, speed: 0.45, color: "@accent", opacity: 0.5, box: MARGIN_LEFT }),
+    particles("Decor — Hearts right", { kind: "hearts", count: 3, size: 4, speed: 0.45, color: "@accent", opacity: 0.5, box: MARGIN_RIGHT }),
   ],
 };
 
@@ -2199,8 +2209,18 @@ const HALLOWED_NIGHT: FamilyStyle = {
       fill: "@accent/45",
       cornerRadius: 1.4,
     }),
-    particles("Decor — Bats", { kind: "bats", count: 6, size: 5, speed: 0.7, color: "@accent", opacity: 0.7 }),
-    particles("Decor — Ghosts", { kind: "ghosts", count: 2, size: 12, speed: 0.5, color: "@accent" }),
+    shape("Decor — Web right", { x: 1660, y: 0, width: 260, height: 220 }, {
+      shape: "web",
+      fill: "@accent/40",
+      cornerRadius: 1.4,
+      rotation: 90,
+    }),
+    // Confined to the side margins so they hover near the webcam and chat,
+    // never across the gameplay in the centre.
+    particles("Decor — Bats left", { kind: "bats", count: 3, size: 5, speed: 0.7, color: "@accent", opacity: 0.7, box: MARGIN_LEFT }),
+    particles("Decor — Bats right", { kind: "bats", count: 3, size: 5, speed: 0.7, color: "@accent", opacity: 0.6, box: MARGIN_RIGHT }),
+    particles("Decor — Ghost left", { kind: "ghosts", count: 1, size: 11, speed: 0.5, color: "@accent", box: MARGIN_LEFT }),
+    particles("Decor — Ghost right", { kind: "ghosts", count: 1, size: 11, speed: 0.5, color: "@accent", box: MARGIN_RIGHT }),
   ],
 };
 

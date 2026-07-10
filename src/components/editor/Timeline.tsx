@@ -29,16 +29,20 @@ export function Timeline() {
     if (!playing) return;
     originRef.current = performance.now() - time;
 
+    // The clock is unbounded, never wrapping back to zero. Ambient decor is a
+    // continuous function of absolute time, so wrapping time backwards makes
+    // every particle jump — which is exactly why a looping preview looked like
+    // the whole overlay was restarting. Entry animations play once and hold;
+    // "back to start" replays them. This matches the OBS view exactly.
     const tick = (now: number) => {
-      const elapsed = now - originRef.current;
-      setTime(elapsed >= duration ? elapsed % duration : elapsed);
+      setTime(now - originRef.current);
       frameRef.current = requestAnimationFrame(tick);
     };
     frameRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frameRef.current);
     // `time` is read once to resume; re-subscribing on every tick would reset it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, duration, setTime]);
+  }, [playing, setTime]);
 
   if (!project) return null;
 
@@ -63,7 +67,7 @@ export function Timeline() {
         </button>
 
         <span className="w-24 font-mono text-xs tabular-nums text-zinc-400">
-          {(time / 1000).toFixed(2)}s
+          {(Math.min(time, duration) / 1000).toFixed(2)}s
         </span>
 
         <input

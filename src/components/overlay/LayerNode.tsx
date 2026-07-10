@@ -1063,24 +1063,6 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
 
   return (
     <Group listening={false}>
-      {/* A camera window must be a hole through everything beneath it, not just
-          an unfilled shape. On a scene with a backdrop the backdrop would
-          otherwise sit inside the frame, and the real webcam — which OBS
-          composites *behind* the browser source — could never show through.
-          `destination-out` erases whatever this Konva layer has already
-          painted; the frame's stroke and glow are drawn afterwards, so they
-          survive and still bleed a little light onto the camera edge. */}
-      {isCameraHole && (
-        <KonvaShape
-          listening={false}
-          globalCompositeOperation="destination-out"
-          fill="#000"
-          sceneFunc={(c, shape) => {
-            framePath(c, layer, w, h);
-            c.fillShape(shape);
-          }}
-        />
-      )}
       {outline}
       {ctx.mode !== "live" && layer.type === "camera" && (
         <Text
@@ -1103,6 +1085,23 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
           <Line points={[w, h - cornerLen, w, h, w - cornerLen, h]} stroke={accent} strokeWidth={layer.strokeWidth * 1.6} lineCap="round" />
           <Line points={[cornerLen, h, 0, h, 0, h - cornerLen]} stroke={accent} strokeWidth={layer.strokeWidth * 1.6} lineCap="round" />
         </>
+      )}
+      {/* Punch the interior hole LAST. A camera window is a hole through
+          everything beneath it — the backdrop, the fog, and crucially the
+          frame's own glow, which blooms inward off the stroke. Punching after
+          the frame is drawn erases that inward bloom so the interior is truly
+          transparent (OBS composites the webcam behind it); the outward glow,
+          which lands outside this path, is untouched. */}
+      {isCameraHole && (
+        <KonvaShape
+          listening={false}
+          globalCompositeOperation="destination-out"
+          fill="#000"
+          sceneFunc={(c, shape) => {
+            framePath(c, layer, w, h);
+            c.fillShape(shape);
+          }}
+        />
       )}
     </Group>
   );
@@ -1416,19 +1415,6 @@ function WindowContent({ layer, ctx, glowBoost }: { layer: WindowLayer; ctx: Ren
 
   return (
     <Group listening={false}>
-      {/* Same hole as a camera frame: erase the body so OBS's webcam shows
-          through, then repaint the chrome on top. */}
-      {isCameraHole && (
-        <Rect
-          listening={false}
-          globalCompositeOperation="destination-out"
-          y={bar}
-          width={w}
-          height={h - bar}
-          cornerRadius={[0, 0, r, r]}
-          fill="#000"
-        />
-      )}
       <Rect
         width={w}
         height={h}
@@ -1514,6 +1500,19 @@ function WindowContent({ layer, ctx, glowBoost }: { layer: WindowLayer; ctx: Ren
           letterSpacing={4}
           fill={resolveColor("@border", ctx.theme)}
           opacity={0.5}
+        />
+      )}
+      {/* Punch the camera hole LAST — after the body, its inward glow, and the
+          gloss — so the interior below the title bar is truly transparent. */}
+      {isCameraHole && (
+        <Rect
+          listening={false}
+          globalCompositeOperation="destination-out"
+          y={bar}
+          width={w}
+          height={h - bar}
+          cornerRadius={[0, 0, r, r]}
+          fill="#000"
         />
       )}
     </Group>
