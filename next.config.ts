@@ -1,10 +1,19 @@
 import type { NextConfig } from "next";
 
+// GitHub project pages serve under /<repo>, so assets need that base — but only
+// for the Pages build (GITHUB_PAGES=true in the deploy workflow). Local builds
+// and `npx serve out` stay at the root.
+const repo = "/asarayja-streamoverlays";
+const onPages = process.env.GITHUB_PAGES === "true";
+
 const nextConfig: NextConfig = {
-  // Emit a fully static site to out/ — plain HTML/CSS/JS that any static host
-  // serves with no Node server. Runtime ids (editor, live, design detail) live
-  // in query strings so no dynamic route params are needed.
+  // Fully static site to out/ — plain HTML/CSS/JS, no Node server.
   output: "export",
+  // Emit dir/index.html for every route so any static host (GitHub Pages
+  // included) serves nested routes without special rewrites.
+  trailingSlash: true,
+  basePath: onPages ? repo : undefined,
+  assetPrefix: onPages ? repo : undefined,
 };
 
 export default nextConfig;
