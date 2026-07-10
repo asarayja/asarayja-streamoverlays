@@ -89,8 +89,24 @@ function build(): Design[] {
   const designs: Design[] = [];
   for (const [groupKey, all] of groups) {
     const palettes = [...new Set(all.map((t) => t.paletteId))];
+
+    // The design's identity tags are the ones shared by every colour variant
+    // (family tags), in authored order; the first is its defining vibe. The
+    // cover palette is the one whose own tags best match that identity, so a
+    // Horror family leads in a red/gothic palette, not whichever bg is darkest
+    // (which for the core set is a cold blue). Tie-break on the darkest bg.
+    const identity = all[0].tags.filter((tag) => all.every((t) => t.tags.includes(tag)));
+    const primary = identity[0];
+    const affinity = (id: string) => {
+      const tags = getPalette(id).tags ?? [];
+      let s = identity.reduce((n, tag) => n + (tags.includes(tag) ? 1 : 0), 0);
+      if (primary && tags.includes(primary)) s += 4;
+      return s;
+    };
     const coverPalette = [...palettes].sort(
-      (a, b) => luminance(getPalette(a).theme.background) - luminance(getPalette(b).theme.background),
+      (a, b) =>
+        affinity(b) - affinity(a) ||
+        luminance(getPalette(a).theme.background) - luminance(getPalette(b).theme.background),
     )[0];
     const inCover = all.filter((t) => t.paletteId === coverPalette);
     const cover = pickCover(inCover);
