@@ -1304,24 +1304,17 @@ function ChatRows({
   const rowHeight = fontSize * 2.4;
   const capacity = Math.max(1, Math.floor((h - pad * 2) / rowHeight));
   const rows = CHAT_SAMPLE.slice(0, Math.min(maxRows, capacity));
-  const avatar = fontSize * 0.62;
 
   return (
     <>
       {rows.map((row, i) => {
         const y = pad + i * rowHeight;
         const nameWidth = measureText(`${row.user}:`, fontSize, fontFamily, 700);
+        const messageX = pad + nameWidth + 8;
         return (
           <Group key={row.user} y={y}>
-            <Circle
-              x={pad + avatar}
-              y={fontSize * 0.7}
-              radius={avatar}
-              fill={resolveColor(i % 2 === 0 ? "@primary" : "@secondary", ctx.theme)}
-              opacity={0.85}
-            />
             <Text
-              x={pad + avatar * 2 + 10}
+              x={pad}
               text={`${row.user}:`}
               fontFamily={fontFamily}
               fontSize={fontSize}
@@ -1329,8 +1322,8 @@ function ChatRows({
               fill={resolveColor(usernameColor, ctx.theme)}
             />
             <Text
-              x={pad + avatar * 2 + 10 + nameWidth + 8}
-              width={w - (pad + avatar * 2 + 10 + nameWidth + 8) - pad}
+              x={messageX}
+              width={w - messageX - pad}
               text={row.message}
               fontFamily={fontFamily}
               fontSize={fontSize}
@@ -2033,7 +2026,9 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
             points={batPoints(size * 1.6, flap)}
             fill={color}
             tension={0.25}
-            opacity={0.5 + 0.5 * seedS}
+            // Fade in/out at the horizontal edges so the wrap is seamless
+            // instead of a bat teleporting from one side to the other.
+            opacity={(0.5 + 0.5 * seedS) * edgeFade(x, w, margin)}
           />,
         );
         break;

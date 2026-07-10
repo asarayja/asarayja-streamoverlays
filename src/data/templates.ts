@@ -217,7 +217,7 @@ function alert(
     fontFamily: o.fontFamily ?? "Bebas Neue",
     titleColor: o.titleColor ?? "@accent",
     subtitleColor: o.subtitleColor ?? "@text",
-    avatar: o.avatar ?? true,
+    avatar: o.avatar ?? false,
   };
 }
 
@@ -1828,9 +1828,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         fontFamily: f.display,
         cornerRadius: f.radius,
         boxShape: f.alertShape ?? "rect",
-        // The hero (subscriber) reads cleaner as a plain plate; the follower
-        // keeps the viewer-avatar disc.
-        avatar: !hero,
+        // No viewer-avatar disc on either alert — cleaner as a plain plate.
         // Both alerts sit on the family's dark plate so they read as part of the
         // overlay, not a bright slab pasted over it. The hero (subscriber) is
         // set apart by an accent border and a stronger glow, not by inverting
