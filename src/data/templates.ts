@@ -2802,26 +2802,46 @@ const CYBER_PILL: FamilyStyle = {
       fill: "@background",
       effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 150 } },
     }),
-    shape("Glow — ambient", { x: 560, y: 260, width: 800, height: 560 }, {
+    // A faint droplet / noise texture across the teal ground.
+    particles("Decor — Droplets", { kind: "bokeh", count: 26, size: 4, speed: 0.22, color: "@accent", opacity: 0.18 }),
+    // A soft teal wash along the floor for depth — wide and low so it reads as
+    // a gradient rise, not a blob.
+    shape("Glow — floor", { x: 120, y: 980, width: 1680, height: 320 }, {
       shape: "ellipse",
-      fill: "@accent/10",
-      effects: { glow: { enabled: true, color: "@glow", strength: 100 } },
+      fill: "@accent/12",
+      effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
     }),
-    // Streamlined neon accent bars framing the copy.
-    shape("Accent — top", { x: 700, y: 388, width: 520, height: 8 }, {
+    // Streamlined neon HUD frame with a green-to-blue gradient edge.
+    shape("HUD frame", { x: 54, y: 54, width: 1812, height: 972 }, {
       shape: "rect",
-      cornerRadius: 4,
+      fill: "@surface/0",
+      cornerRadius: 44,
+      effects: {
+        gradientStroke: { enabled: true, from: "@accent", to: "@secondary", angle: 35, width: 3 },
+        glow: { enabled: true, color: "@glow", strength: 22 },
+      },
+    }),
+    // Decorative pill buttons in a corner — the pack's signature capsule.
+    shape("Pill — cap", { x: 96, y: 96, width: 46, height: 46 }, {
+      shape: "rect",
+      cornerRadius: 23,
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+    }),
+    shape("Pill — bar", { x: 150, y: 104, width: 210, height: 30 }, {
+      shape: "rect",
+      cornerRadius: 15,
+      fill: "@surface/85",
+      effects: { border: { enabled: true, color: "@accent", width: 1.5, radius: 15 } },
+    }),
+    // Slim neon accent bars framing the headline.
+    shape("Accent — top", { x: 710, y: 392, width: 500, height: 6 }, {
+      shape: "rect",
+      cornerRadius: 3,
       fill: "@accent",
       effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
     }),
-    shape("Accent — bottom", { x: 810, y: 792, width: 300, height: 8 }, {
-      shape: "rect",
-      cornerRadius: 4,
-      fill: "@accent",
-      effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
-    }),
-    particles("Decor — Droplets", { kind: "bokeh", count: 14, size: 5, speed: 0.32, color: "@accent", opacity: 0.3 }),
-    particles("Decor — Sparks", { kind: "embers", count: 18, size: 2, speed: 0.5, color: "@accent", opacity: 0.4 }),
+    particles("Decor — Sparks", { kind: "embers", count: 16, size: 2, speed: 0.5, color: "@accent", opacity: 0.4 }),
   ],
   overlayDecor: () => [],
   contentOffsetY: 0,
