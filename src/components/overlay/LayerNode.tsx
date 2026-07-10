@@ -111,6 +111,17 @@ function gradientProps(gradient: Gradient, theme: Theme, w: number, h: number) {
   };
 }
 
+/**
+ * A solid fill, or a per-layer linear gradient when the layer opts into one.
+ * Works on any Konva node with a fill — text, alert plates, goal bars — so
+ * every part can carry its own gradient, not just background shapes.
+ */
+function fillProps(color: string, effects: Effects, theme: Theme, w: number, h: number) {
+  return effects.gradient.enabled
+    ? gradientProps(effects.gradient, theme, w, h)
+    : { fill: resolveColor(color, theme) };
+}
+
 function borderProps(effects: Effects, theme: Theme, w = 0, h = 0) {
   // A gradient stroke outranks a flat border — it is the more specific choice,
   // and Konva can only paint one stroke per shape.
@@ -152,8 +163,9 @@ function polygonPoints(shape: string, w: number, h: number): number[] {
     case "line":
       return [0, h / 2, w, h / 2];
     case "shard":
-      // A right-leaning parallelogram: the diagonal ribbon of an esports scene.
-      return [w * 0.32, 0, w, 0, w * 0.68, h, 0, h];
+      // A parallelogram leaning top-left → bottom-right, the way esports
+      // diagonals sweep. (Top edge sits left, bottom edge sits right.)
+      return [0, 0, w * 0.68, 0, w, h, w * 0.32, h];
     default:
       return [0, 0, w, 0, w, h, 0, h];
   }
@@ -971,7 +983,7 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
   return (
     <Text
       {...common}
-      fill={resolveColor(layer.fill, ctx.theme)}
+      {...fillProps(layer.fill, layer.effects, ctx.theme, layer.width, layer.height)}
       {...shadowProps(layer.effects, ctx.theme, glowBoost)}
     />
   );
@@ -1260,7 +1272,7 @@ function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: R
     <Group listening={false}>
       {coffin ? (
         <KonvaShape
-          fill={resolveColor(layer.fill, ctx.theme)}
+          {...fillProps(layer.fill, layer.effects, ctx.theme, w, h)}
           {...borderProps(layer.effects, ctx.theme, w, h)}
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
           sceneFunc={(c, shape) => {
@@ -1273,7 +1285,7 @@ function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: R
           width={w}
           height={h}
           cornerRadius={layer.cornerRadius}
-          fill={resolveColor(layer.fill, ctx.theme)}
+          {...fillProps(layer.fill, layer.effects, ctx.theme, w, h)}
           {...borderProps(layer.effects, ctx.theme, w, h)}
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         />
@@ -1318,7 +1330,7 @@ function AlertContent({ layer, ctx, glowBoost }: { layer: AlertLayer; ctx: Rende
     <Group listening={false}>
       {coffin ? (
         <KonvaShape
-          fill={resolveColor(layer.fill, ctx.theme)}
+          {...fillProps(layer.fill, layer.effects, ctx.theme, w, h)}
           {...borderProps(layer.effects, ctx.theme, w, h)}
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
           sceneFunc={(c, shape) => {
@@ -1331,7 +1343,7 @@ function AlertContent({ layer, ctx, glowBoost }: { layer: AlertLayer; ctx: Rende
           width={w}
           height={h}
           cornerRadius={layer.cornerRadius}
-          fill={resolveColor(layer.fill, ctx.theme)}
+          {...fillProps(layer.fill, layer.effects, ctx.theme, w, h)}
           {...borderProps(layer.effects, ctx.theme)}
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         />
@@ -1387,7 +1399,6 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
   const trackColor = resolveColor(layer.trackColor, ctx.theme);
   const labelColor = resolveColor(layer.labelColor, ctx.theme);
   const valueColor = resolveColor(layer.valueColor, ctx.theme);
-  const fill = resolveColor(layer.fill, ctx.theme);
 
   if (layer.goalStyle === "ring") {
     const cx = w / 2;
@@ -1476,7 +1487,7 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
     <Group listening={false}>
       {coffin ? (
         <KonvaShape
-          fill={fill}
+          {...fillProps(layer.fill, layer.effects, ctx.theme, w, h)}
           {...borderProps(layer.effects, ctx.theme, w, h)}
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
           sceneFunc={(c, s) => {
@@ -1486,7 +1497,7 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
         />
       ) : plaque ? (
         <KonvaShape
-          fill={fill}
+          {...fillProps(layer.fill, layer.effects, ctx.theme, w, h)}
           {...borderProps(layer.effects, ctx.theme, w, h)}
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
           sceneFunc={(c, s) => {
@@ -1499,7 +1510,7 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
           width={w}
           height={h}
           cornerRadius={layer.cornerRadius}
-          fill={fill}
+          {...fillProps(layer.fill, layer.effects, ctx.theme, w, h)}
           {...borderProps(layer.effects, ctx.theme)}
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         />
@@ -1797,7 +1808,7 @@ function ChipContent({ layer, ctx, glowBoost }: { layer: ChipLayer; ctx: RenderC
         width={w}
         height={h}
         cornerRadius={layer.cornerRadius}
-        fill={resolveColor(layer.fill, ctx.theme)}
+        {...fillProps(layer.fill, layer.effects, ctx.theme, w, h)}
         {...borderProps(layer.effects, ctx.theme, w, h)}
         {...shadowProps(layer.effects, ctx.theme, glowBoost)}
       />
