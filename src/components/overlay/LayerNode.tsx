@@ -171,6 +171,19 @@ function polygonPoints(shape: string, w: number, h: number): number[] {
   }
 }
 
+/**
+ * A flowing curved blade: a swoosh from the lower-left tip to the upper-right
+ * tip, bulging in the middle — the plasma ribbon. Fill it with a chrome
+ * gradient or a glowing colour and it reads as a sweep of energy.
+ */
+function ribbonPath(c: Konva.Context, w: number, h: number) {
+  c.beginPath();
+  c.moveTo(0, h);
+  c.quadraticCurveTo(w * 0.26, h * 0.16, w, 0);
+  c.quadraticCurveTo(w * 0.7, h * 0.6, 0, h);
+  c.closePath();
+}
+
 /** A honeycomb lattice: pointy-top hexagon outlines tiled across the box. */
 function hexMeshPath(c: Konva.Context, w: number, h: number) {
   const R = Math.max(14, Math.min(w, h) * 0.11); // circumradius
@@ -424,6 +437,18 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
         sceneFunc={(c, shape) => {
           hexMeshPath(c, w, h);
           c.strokeShape(shape);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "ribbon") {
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          ribbonPath(c, w, h);
+          c.fillStrokeShape(shape);
         }}
       />
     );
