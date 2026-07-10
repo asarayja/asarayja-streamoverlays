@@ -502,16 +502,39 @@ const DEFS: PaletteDef[] = [
     name: "Crimson Hollow",
     collection: "core",
     tags: ["Red", "Purple", "Dark", "Horror"],
+    // Red, purple and near-black. The secondary is a warm red-violet, not the
+    // blue-violet it used to be — the fog reads purple, in family with the
+    // crimson, rather than drifting cold and blue.
     theme: {
       primary: "#a8123a",
-      secondary: "#5b2a8f",
+      secondary: "#853088",
       accent: "#efeaf6",
       accentSecondary: "#c94f7c",
       background: "#0d0910",
       surface: "#1b1522",
       text: "#f5f0f8",
-      border: "#5d4a6b",
+      border: "#6a4a6b",
       glow: "#c81e4e",
+      shadow: "#000000",
+    },
+  },
+  // A blood-red sibling: the same near-black night, but red-dominant with a
+  // bone-white accent so bats, webs and ghosts stay white against it.
+  {
+    id: "blood-moon",
+    name: "Blood Moon",
+    collection: "core",
+    tags: ["Red", "Dark", "Horror"],
+    theme: {
+      primary: "#b31229",
+      secondary: "#7a1f3a",
+      accent: "#f3e4e6",
+      accentSecondary: "#e0556a",
+      background: "#11090a",
+      surface: "#231517",
+      text: "#f8eeef",
+      border: "#6e4548",
+      glow: "#e01e34",
       shadow: "#000000",
     },
   },
