@@ -33,7 +33,7 @@ import type {
 } from "@/lib/types";
 
 const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line"];
-const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog"];
+const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays"];
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
 
 export function RightPanel() {
@@ -278,6 +278,13 @@ export function RightPanel() {
           </Select>
         </Field>
 
+        {(layer.animation.preset === "glow" || layer.animation.preset === "shimmer") &&
+          !layer.effects.glow.enabled && (
+            <p className="text-[11px] leading-relaxed text-amber-400/80">
+              This preset pulses the glow effect, which is currently off. Enable Glow under Effects
+              to see it.
+            </p>
+          )}
         {layer.animation.preset !== "none" && (
           <>
             <Slider

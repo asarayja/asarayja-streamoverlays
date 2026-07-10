@@ -10,8 +10,8 @@ import { TopNav } from "@/components/site/TopNav";
 import { Button, Chip, Select, TextInput, cx } from "@/components/ui";
 import { useProfileStore, useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
-import { GOTHIC_STYLES, STYLE_TAGS, TEMPLATE_CATEGORIES } from "@/lib/types";
-import type { Collection, GothicStyle, StyleTag, Template, TemplateCategory } from "@/lib/types";
+import { GOTHIC_STYLES, PRIDE_STYLES, STYLE_TAGS, TEMPLATE_CATEGORIES } from "@/lib/types";
+import type { Collection, StyleTag, Template, TemplateCategory } from "@/lib/types";
 
 const PAGE_SIZE = 24;
 
@@ -23,7 +23,7 @@ export default function GalleryPage() {
 
   const [category, setCategory] = useState<TemplateCategory | "All">("All");
   const [collection, setCollection] = useState<Collection | "all">("all");
-  const [subStyle, setSubStyle] = useState<GothicStyle | "all">("all");
+  const [subStyle, setSubStyle] = useState<string>("all");
   const [tags, setTags] = useState<StyleTag[]>([]);
   const [paletteId, setPaletteId] = useState("all");
   const [query, setQuery] = useState("");
@@ -34,7 +34,7 @@ export default function GalleryPage() {
     const needle = query.trim().toLowerCase();
     return TEMPLATES.filter((t) => {
       if (collection !== "all" && t.collection !== collection) return false;
-      if (collection === "gothic" && subStyle !== "all" && t.subStyle !== subStyle) return false;
+      if (collection !== "all" && subStyle !== "all" && t.subStyle !== subStyle) return false;
       if (category !== "All" && t.category !== category) return false;
       if (paletteId !== "all" && t.paletteId !== paletteId) return false;
       if (tags.length > 0 && !tags.every((tag) => t.tags.includes(tag))) return false;
@@ -116,6 +116,7 @@ export default function GalleryPage() {
                 <option value="all">All collections</option>
                 <option value="core">Core</option>
                 <option value="gothic">Gothic</option>
+                <option value="pride">Pride</option>
               </Select>
             </div>
 
@@ -177,15 +178,15 @@ export default function GalleryPage() {
             {tags.length > 0 && <Chip onClick={() => { setTags([]); resetPaging(); }}>Clear ×</Chip>}
           </div>
 
-          {collection === "gothic" && (
+          {(collection === "gothic" || collection === "pride") && (
             <div className="mt-3 flex flex-wrap items-center gap-1.5">
               <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-600">
-                Gothic style
+                {collection === "gothic" ? "Gothic style" : "Pride style"}
               </span>
               <Chip active={subStyle === "all"} onClick={() => { setSubStyle("all"); resetPaging(); }}>
                 All
               </Chip>
-              {GOTHIC_STYLES.map((style) => (
+              {(collection === "gothic" ? GOTHIC_STYLES : PRIDE_STYLES).map((style) => (
                 <Chip
                   key={style}
                   active={subStyle === style}

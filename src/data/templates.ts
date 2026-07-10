@@ -4,7 +4,6 @@ import {
   type Animation,
   type Collection,
   type Effects,
-  type GothicStyle,
   type Layer,
   type LayerBase,
   type ParticleKind,
@@ -13,7 +12,7 @@ import {
   type TemplateCategory,
   type StyleTag,
 } from "@/lib/types";
-import { CORE_PALETTES, GOTHIC_PALETTES, paletteTags } from "./palettes";
+import { CORE_PALETTES, GOTHIC_PALETTES, PRIDE_PALETTES, paletteTags } from "./palettes";
 import type { Palette } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
@@ -277,7 +276,6 @@ interface BaseTemplate {
   category: TemplateCategory;
   tags: StyleTag[];
   collection: Collection;
-  subStyle?: GothicStyle;
   layers: LayerSpec[];
 }
 
@@ -994,24 +992,29 @@ const BASE_TEMPLATES: BaseTemplate[] = [
 
 
 /* -------------------------------------------------------------------------- */
-/*                            Gothic base templates                           */
+/*                            Gothic design family                            */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Authoring rules for the gothic collection:
- *  - Persistent widgets (camera, chat, social bars) animate in place — glow,
- *    float, flicker. Only transient elements (alerts, scene headlines) enter.
- *  - Blackletter faces are display-only; body text stays in a readable face.
- *  - Decor layers are named "Decor — …" so users can toggle them in Layers.
+ * One design language, eleven screens. Expanding the family across the ten
+ * gothic palettes yields ten complete packs — pick "Midnight Cathedral" and
+ * every screen from Starting Soon to the subscriber alert exists in that
+ * identity.
+ *
+ * Family rules (why packs read as one series):
+ *  - Type: Cinzel Decorative for display, UnifrakturMaguntia for the channel
+ *    mark on scenes, IM Fell English SC for flavour lines, Inter for UI text.
+ *  - Shape: square-ish corners (4–12px), ornament hairlines under bars.
+ *  - Motion: persistent widgets glow/float in place; alerts enter.
+ *  - Decor layers are named "Decor — …" so they toggle in the Layers panel.
  */
 const GOTHIC_TEMPLATES: BaseTemplate[] = [
   {
-    id: "midnight-cathedral-start",
-    name: "Midnight Cathedral — Starting Soon",
+    id: "gothic-starting-soon",
+    name: "Starting Soon",
     category: "Starting Soon",
     tags: ["Fantasy"],
     collection: "gothic",
-    subStyle: "Dark Goth",
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
@@ -1071,121 +1074,11 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
   },
 
   {
-    id: "crimson-vampire-gameplay",
-    name: "Crimson Vampire — Gameplay",
-    category: "Gameplay",
-    tags: ["Horror", "Dark"],
-    collection: "gothic",
-    subStyle: "Vampire Goth",
-    layers: [
-      shape("Top bar", { x: 0, y: 0, width: 1920, height: 78 }, {
-        fill: "@surface/92",
-        animation: anim("slide", { direction: "up", duration: 700 }),
-      }),
-      shape("Ornament line", { x: 0, y: 78, width: 1920, height: 3 }, {
-        fill: "@accent",
-        effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
-        animation: anim("shimmer", { duration: 4200 }),
-      }),
-      img("Logo", { x: 30, y: 15, width: 48, height: 48 }, "{{LOGO}}", { logo: true }),
-      text("Channel name", { x: 94, y: 18, width: 600, height: 42 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Cinzel Decorative",
-        fontSize: 30,
-        fontWeight: 700,
-        fill: "@text",
-        letterSpacing: 3,
-        textTransform: "uppercase",
-      }),
-      text("Slogan", { x: 96, y: 54, width: 600, height: 22 }, "{{SLOGAN}}", {
-        fontFamily: "IM Fell English SC",
-        fontSize: 15,
-        fontWeight: 400,
-        fill: "@textSecondary",
-      }),
-      particles("Decor — Bats", { kind: "bats", count: 7, size: 5, speed: 0.7, color: "@primary", opacity: 0.55 }),
-      particles("Decor — Petals", { kind: "petals", count: 14, size: 5, speed: 0.6, color: "@accent", opacity: 0.5 }),
-      frame("Webcam", { x: 40, y: 660, width: 480, height: 270 }, {
-        camera: true,
-        strokeColor: "@accent",
-        strokeWidth: 4,
-        cornerRadius: 10,
-        effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
-        animation: anim("glow", { duration: 3600 }),
-      }),
-      chatbox("Chat", { x: 1510, y: 130, width: 370, height: 590 }, {
-        cornerRadius: 12,
-        rows: 7,
-        effects: { border: { enabled: true, color: "@border", width: 1, radius: 12 } },
-      }),
-      social("Socials", { x: 620, y: 984, width: 680, height: 52 }, {
-        platforms: ["twitch", "discord", "instagram", "x"],
-        fontFamily: "Inter",
-        animation: anim("fade", { duration: 900, delay: 500 }),
-      }),
-    ],
-  },
-
-  {
-    id: "pastel-nightmare-chat",
-    name: "Pastel Nightmare — Just Chatting",
-    category: "Just Chatting",
-    tags: ["Pink", "Cozy"],
-    collection: "gothic",
-    subStyle: "Pastel Goth",
-    layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 135 } },
-      }),
-      particles("Decor — Stars", { kind: "stars", count: 60, size: 4, speed: 0.4, color: "@accent" }),
-      particles("Decor — Moths", { kind: "moths", count: 8, size: 5, speed: 0.8, color: "@primary", opacity: 0.75 }),
-      frame("Webcam", { x: 90, y: 140, width: 1020, height: 574 }, {
-        camera: true,
-        strokeColor: "@primary",
-        strokeWidth: 6,
-        cornerRadius: 32,
-        effects: { glow: { enabled: true, color: "@glow", strength: 34 } },
-        animation: anim("glow", { duration: 4200 }),
-      }),
-      shape("Name plate", { x: 90, y: 760, width: 640, height: 84 }, {
-        fill: "@surface/85",
-        cornerRadius: 42,
-        effects: { border: { enabled: true, color: "@border", width: 2, radius: 42 } },
-      }),
-      text("Display name", { x: 130, y: 778, width: 560, height: 50 }, "{{DISPLAY_NAME}}", {
-        fontFamily: "Grenze Gotisch",
-        fontSize: 42,
-        fontWeight: 700,
-        fill: "@text",
-      }),
-      text("Slogan", { x: 92, y: 870, width: 900, height: 36 }, "{{SLOGAN}}", {
-        fontFamily: "Inter",
-        fontSize: 24,
-        fontWeight: 400,
-        fill: "@textSecondary",
-      }),
-      chatbox("Chat", { x: 1180, y: 140, width: 650, height: 740 }, {
-        cornerRadius: 30,
-        rows: 9,
-        usernameColor: "@primary",
-        effects: { border: { enabled: true, color: "@border", width: 1, radius: 30 } },
-      }),
-      social("Socials", { x: 90, y: 950, width: 1000, height: 56 }, {
-        platforms: ["twitch", "tiktok", "instagram", "discord"],
-        iconColor: "@primary",
-        animation: anim("fade", { duration: 900, delay: 400 }),
-      }),
-    ],
-  },
-
-  {
-    id: "moonlit-witch-brb",
-    name: "Moonlit Witch — Be Right Back",
+    id: "gothic-brb",
+    name: "Be Right Back",
     category: "BRB",
     tags: ["Fantasy", "Purple"],
     collection: "gothic",
-    subStyle: "Witch Goth",
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
@@ -1194,7 +1087,6 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
       }),
       particles("Decor — Fog", { kind: "fog", count: 9, size: 5, speed: 0.7, color: "@primary" }),
       particles("Decor — Stars", { kind: "stars", count: 50, size: 3, speed: 0.3, color: "@accent" }),
-      // Moon phases: waxing to full to waning, the full moon glowing.
       shape("Decor — Phase 1", { x: 560, y: 240, width: 60, height: 60 }, { shape: "ellipse", fill: "@accent/30" }),
       shape("Decor — Phase 2", { x: 690, y: 225, width: 90, height: 90 }, { shape: "ellipse", fill: "@accent/55" }),
       shape("Decor — Full moon", { x: 830, y: 190, width: 160, height: 160 }, {
@@ -1231,12 +1123,11 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
   },
 
   {
-    id: "victorian-mourning-ending",
-    name: "Victorian Mourning — Stream Ending",
+    id: "gothic-ending",
+    name: "Stream Ending",
     category: "Stream Ending",
     tags: ["Fantasy", "Dark"],
     collection: "gothic",
-    subStyle: "Victorian Goth",
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
@@ -1279,122 +1170,183 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
   },
 
   {
-    id: "cyber-coven-package",
-    name: "Cyber Coven — Complete Package",
-    category: "Complete Stream Package",
-    tags: ["Cyberpunk", "Neon"],
+    id: "gothic-offline",
+    name: "Offline",
+    category: "Offline",
+    tags: ["Dark", "Minimal"],
     collection: "gothic",
-    subStyle: "Cyber Goth",
     layers: [
-      shape("Top bar", { x: 0, y: 0, width: 1920, height: 80 }, {
-        fill: "@surface/92",
-        animation: anim("slide", { direction: "up", duration: 700 }),
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/30", angle: 180 } },
       }),
-      shape("Glitch line", { x: 0, y: 80, width: 1920, height: 3 }, {
-        fill: "@accent",
-        effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
-        animation: anim("flicker", { duration: 2400 }),
+      particles("Decor — Fog", { kind: "fog", count: 8, size: 5, speed: 0.5, color: "@secondary" }),
+      particles("Decor — Stars", { kind: "stars", count: 36, size: 3, speed: 0.2, color: "@accent", opacity: 0.6 }),
+      img("Logo", { x: 860, y: 250, width: 200, height: 200 }, "{{LOGO}}", {
+        logo: true,
+        animation: anim("float", { duration: 6000, intensity: 0.5 }),
       }),
-      img("Logo", { x: 30, y: 16, width: 48, height: 48 }, "{{LOGO}}", { logo: true }),
-      text("Channel name", { x: 96, y: 18, width: 620, height: 44 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Grenze Gotisch",
-        fontSize: 34,
-        fontWeight: 700,
-        fill: "@text",
-        letterSpacing: 2,
-        textTransform: "uppercase",
-      }),
-      text("Slogan", { x: 98, y: 56, width: 620, height: 22 }, "{{SLOGAN}}", {
-        fontFamily: "Rajdhani",
-        fontSize: 15,
-        fontWeight: 400,
-        fill: "@textSecondary",
-        letterSpacing: 3,
-      }),
-      shape("Live pill", { x: 1744, y: 20, width: 140, height: 40 }, {
-        fill: "@primary",
-        cornerRadius: 4,
-        animation: anim("pulse", { duration: 2200 }),
-      }),
-      text("Live", { x: 1744, y: 28, width: 140, height: 26 }, "▚ LIVE", {
-        fontFamily: "Rajdhani",
-        fontSize: 19,
+      text("Headline", { x: 310, y: 520, width: 1300, height: 130 }, "OFFLINE", {
+        fontFamily: "Cinzel Decorative",
+        fontSize: 104,
         fontWeight: 700,
         align: "center",
         fill: "@text",
-        letterSpacing: 3,
+        letterSpacing: 16,
+        effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+        animation: anim("fade", { duration: 1600 }),
       }),
-      particles("Decor — Digital bats", { kind: "bats", count: 8, size: 5, speed: 1.1, color: "@secondary", opacity: 0.6 }),
-      frame("Webcam", { x: 44, y: 650, width: 500, height: 281 }, {
-        camera: true,
-        shape: "hexagon",
-        strokeColor: "@accent",
-        strokeWidth: 3,
-        corners: true,
-        effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
-        animation: anim("glow", { duration: 2600 }),
+      text("Sub", { x: 360, y: 690, width: 1200, height: 44 }, "{{CHANNEL_NAME}} shall return after dark", {
+        fontFamily: "IM Fell English SC",
+        fontSize: 28,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 1300, delay: 400 }),
       }),
-      chatbox("Chat", { x: 1496, y: 130, width: 384, height: 610 }, {
-        fontFamily: "Rajdhani",
-        cornerRadius: 8,
-        rows: 8,
-        usernameColor: "@secondary",
-        effects: { border: { enabled: true, color: "@border", width: 1, radius: 8 } },
-      }),
-      // Alerts are transient by nature — an entry animation is correct here.
-      alert("Alert", { x: 660, y: 120, width: 600, height: 180 }, "NEW FOLLOWER", "AwesomeViewer", {
-        fontFamily: "Grenze Gotisch",
-        cornerRadius: 8,
-        opacity: 0.97,
-        effects: { glow: { enabled: true, color: "@glow", strength: 34 } },
-        animation: anim("elastic", { duration: 1200, delay: 900 }),
-      }),
-      shape("Bottom bar", { x: 0, y: 1014, width: 1920, height: 66 }, {
-        fill: "@surface/92",
-        animation: anim("slide", { direction: "down", duration: 700, delay: 200 }),
-      }),
-      social("Socials", { x: 44, y: 1026, width: 900, height: 44 }, {
-        platforms: ["twitch", "youtube", "discord", "x", "tiktok"],
-        pill: false,
-        fontFamily: "Rajdhani",
-        fontSize: 21,
-        iconColor: "@secondary",
-        animation: anim("fade", { duration: 900, delay: 600 }),
+      social("Socials", { x: 510, y: 880, width: 900, height: 56 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram"],
+        animation: anim("fade", { duration: 1000, delay: 800 }),
       }),
     ],
   },
 
   {
-    id: "gothic-romance-cam",
-    name: "Gothic Romance — Webcam",
-    category: "Webcam Frames",
-    tags: ["Pink", "Dark"],
+    id: "gothic-gameplay",
+    name: "Gameplay",
+    category: "Gameplay",
+    tags: ["Dark"],
     collection: "gothic",
-    subStyle: "Romantic Goth",
+    layers: [
+      shape("Top bar", { x: 0, y: 0, width: 1920, height: 78 }, {
+        fill: "@surface/90",
+        animation: anim("slide", { direction: "up", duration: 700 }),
+      }),
+      shape("Ornament line", { x: 0, y: 78, width: 1920, height: 3 }, {
+        fill: "@accent",
+        effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+        animation: anim("shimmer", { duration: 4200 }),
+      }),
+      img("Logo", { x: 30, y: 15, width: 48, height: 48 }, "{{LOGO}}", { logo: true }),
+      text("Channel name", { x: 94, y: 18, width: 600, height: 42 }, "{{CHANNEL_NAME}}", {
+        fontFamily: "Cinzel Decorative",
+        fontSize: 30,
+        fontWeight: 700,
+        fill: "@text",
+        letterSpacing: 3,
+        textTransform: "uppercase",
+      }),
+      text("Slogan", { x: 96, y: 54, width: 600, height: 22 }, "{{SLOGAN}}", {
+        fontFamily: "IM Fell English SC",
+        fontSize: 15,
+        fontWeight: 400,
+        fill: "@textSecondary",
+      }),
+      particles("Decor — Bats", { kind: "bats", count: 7, size: 5, speed: 0.7, color: "@primary", opacity: 0.55 }),
+      particles("Decor — Petals", { kind: "petals", count: 14, size: 5, speed: 0.6, color: "@accent", opacity: 0.5 }),
+      frame("Webcam", { x: 40, y: 660, width: 480, height: 270 }, {
+        camera: true,
+        strokeColor: "@accent",
+        strokeWidth: 4,
+        cornerRadius: 10,
+        effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+        animation: anim("glow", { duration: 3600 }),
+      }),
+      chatbox("Chat", { x: 1510, y: 130, width: 370, height: 590 }, {
+        cornerRadius: 12,
+        rows: 7,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 12 } },
+      }),
+      social("Socials", { x: 620, y: 984, width: 680, height: 52 }, {
+        platforms: ["twitch", "discord", "instagram", "x"],
+        animation: anim("fade", { duration: 900, delay: 500 }),
+      }),
+    ],
+  },
+
+  {
+    id: "gothic-chatting",
+    name: "Just Chatting",
+    category: "Just Chatting",
+    tags: ["Cozy"],
+    collection: "gothic",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 135 } },
+      }),
+      particles("Decor — Stars", { kind: "stars", count: 60, size: 4, speed: 0.4, color: "@accent" }),
+      particles("Decor — Moths", { kind: "moths", count: 8, size: 5, speed: 0.8, color: "@primary", opacity: 0.75 }),
+      frame("Webcam", { x: 90, y: 140, width: 1020, height: 574 }, {
+        camera: true,
+        strokeColor: "@primary",
+        strokeWidth: 6,
+        cornerRadius: 12,
+        effects: { glow: { enabled: true, color: "@glow", strength: 34 } },
+        animation: anim("glow", { duration: 4200 }),
+      }),
+      shape("Name plate", { x: 90, y: 760, width: 640, height: 84 }, {
+        fill: "@surface/85",
+        cornerRadius: 8,
+        effects: { border: { enabled: true, color: "@border", width: 2, radius: 8 } },
+      }),
+      text("Display name", { x: 130, y: 778, width: 560, height: 50 }, "{{DISPLAY_NAME}}", {
+        fontFamily: "Cinzel Decorative",
+        fontSize: 40,
+        fontWeight: 700,
+        fill: "@text",
+      }),
+      text("Slogan", { x: 92, y: 870, width: 900, height: 36 }, "{{SLOGAN}}", {
+        fontFamily: "IM Fell English SC",
+        fontSize: 24,
+        fontWeight: 400,
+        fill: "@textSecondary",
+      }),
+      chatbox("Chat", { x: 1180, y: 140, width: 650, height: 740 }, {
+        cornerRadius: 12,
+        rows: 9,
+        usernameColor: "@accent",
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 12 } },
+      }),
+      social("Socials", { x: 90, y: 950, width: 1000, height: 56 }, {
+        platforms: ["twitch", "tiktok", "instagram", "discord"],
+        animation: anim("fade", { duration: 900, delay: 400 }),
+      }),
+    ],
+  },
+
+  {
+    id: "gothic-webcam",
+    name: "Webcam Frame",
+    category: "Webcam Frames",
+    tags: ["Dark"],
+    collection: "gothic",
     layers: [
       particles("Decor — Petals", { kind: "petals", count: 16, size: 6, speed: 0.6, color: "@primary", opacity: 0.65 }),
       frame("Decor — Outer lace", { x: 300, y: 100, width: 1320, height: 760 }, {
         fill: "transparent",
         strokeColor: "@border",
         strokeWidth: 1,
-        cornerRadius: 30,
+        cornerRadius: 14,
       }),
       frame("Camera", { x: 320, y: 120, width: 1280, height: 720 }, {
         camera: true,
         strokeColor: "@accent",
         strokeWidth: 5,
-        cornerRadius: 24,
+        cornerRadius: 10,
         effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
         animation: anim("glow", { duration: 4600 }),
       }),
       shape("Name plate", { x: 660, y: 880, width: 600, height: 72 }, {
         fill: "@surface/90",
-        cornerRadius: 36,
-        effects: { border: { enabled: true, color: "@border", width: 2, radius: 36 } },
+        cornerRadius: 8,
+        effects: { border: { enabled: true, color: "@border", width: 2, radius: 8 } },
       }),
-      text("Display name", { x: 660, y: 894, width: 600, height: 46 }, "{{DISPLAY_NAME}}", {
-        fontFamily: "Grenze Gotisch",
-        fontSize: 36,
+      text("Display name", { x: 660, y: 896, width: 600, height: 44 }, "{{DISPLAY_NAME}}", {
+        fontFamily: "Cinzel Decorative",
+        fontSize: 34,
         fontWeight: 700,
         align: "center",
         fill: "@text",
@@ -1403,15 +1355,44 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
   },
 
   {
-    id: "raven-manor-alert",
-    name: "Raven Manor — Follower Alert",
-    category: "Alerts",
-    tags: ["Dark", "Nordic"],
+    id: "gothic-chatbox",
+    name: "Chat Box",
+    category: "Chat Boxes",
+    tags: ["Dark", "Minimal"],
     collection: "gothic",
-    subStyle: "Gothic Horror",
+    layers: [
+      particles("Decor — Moths", { kind: "moths", count: 4, size: 4, speed: 0.6, color: "@accent", opacity: 0.5 }),
+      text("Chat title", { x: 1400, y: 58, width: 460, height: 46 }, "CHAT", {
+        fontFamily: "Cinzel Decorative",
+        fontSize: 28,
+        fontWeight: 700,
+        align: "center",
+        fill: "@accent",
+        letterSpacing: 10,
+        animation: anim("fade", { duration: 800 }),
+      }),
+      shape("Ornament line", { x: 1430, y: 108, width: 400, height: 2 }, {
+        fill: "@accent",
+        effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
+      chatbox("Chat", { x: 1400, y: 130, width: 460, height: 830 }, {
+        cornerRadius: 12,
+        rows: 10,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 12 } },
+      }),
+    ],
+  },
+
+  {
+    id: "gothic-follower",
+    name: "Follower Alert",
+    category: "Alerts",
+    tags: ["Dark"],
+    collection: "gothic",
     layers: [
       particles("Decor — Ravens", { kind: "bats", count: 10, size: 6, speed: 1.0, color: "@primary", opacity: 0.65 }),
-      alert("Follower alert", { x: 560, y: 400, width: 800, height: 240 }, "A RAVEN ARRIVES", "New follower · AwesomeViewer", {
+      alert("Follower alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW FOLLOWER", "AwesomeViewer", {
         fontFamily: "Cinzel Decorative",
         cornerRadius: 10,
         titleColor: "@accent",
@@ -1420,6 +1401,507 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
           border: { enabled: true, color: "@border", width: 1, radius: 10 },
         },
         animation: anim("bounce", { duration: 1100 }),
+      }),
+    ],
+  },
+
+  {
+    id: "gothic-subscriber",
+    name: "Subscriber Alert",
+    category: "Alerts",
+    tags: ["Dark"],
+    collection: "gothic",
+    layers: [
+      particles("Decor — Petals", { kind: "petals", count: 18, size: 6, speed: 1.2, color: "@accent", opacity: 0.7 }),
+      alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "Welcome to the coven", {
+        fontFamily: "Cinzel Decorative",
+        cornerRadius: 10,
+        fill: "@primary/90",
+        titleColor: "@text",
+        subtitleColor: "@text",
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 44 },
+          border: { enabled: true, color: "@accent", width: 1, radius: 10 },
+        },
+        animation: anim("elastic", { duration: 1200 }),
+      }),
+    ],
+  },
+
+  {
+    id: "gothic-socialbar",
+    name: "Social Bar",
+    category: "Social Bars",
+    tags: ["Dark", "Minimal"],
+    collection: "gothic",
+    layers: [
+      shape("Ornament line", { x: 460, y: 948, width: 1000, height: 2 }, {
+        fill: "@accent/60",
+        animation: anim("shimmer", { duration: 5200 }),
+      }),
+      social("Socials", { x: 460, y: 964, width: 1000, height: 60 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram", "x"],
+        pill: true,
+        pillColor: "@surface/90",
+        gap: 20,
+        fontSize: 22,
+        animation: anim("fade", { duration: 900 }),
+      }),
+    ],
+  },
+];
+
+/* -------------------------------------------------------------------------- */
+/*                             Pride design family                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Modern, soft, celebratory. Family rules: rounded glass panels (radius
+ * 20–28, `@surface` fills with hairline borders), a gradient ribbon as the
+ * signature ornament, Poppins display over Inter body, and decor drawn from
+ * confetti/hearts/rays/stars particles. Not limited to rainbow colours — the
+ * palette carries the flag identity.
+ */
+const PRIDE_TEMPLATES: BaseTemplate[] = [
+  {
+    id: "pride-starting-soon",
+    name: "Starting Soon",
+    category: "Starting Soon",
+    tags: ["Cozy"],
+    collection: "pride",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/25", angle: 160 } },
+      }),
+      particles("Decor — Light rays", { kind: "rays", count: 7, size: 5, speed: 1, color: "@glow" }),
+      particles("Decor — Stars", { kind: "stars", count: 50, size: 3, speed: 0.3, color: "@accent", opacity: 0.8 }),
+      particles("Decor — Confetti", { kind: "confetti", count: 24, size: 5, speed: 0.5, color: "@accent", opacity: 0.75 }),
+      text("Headline", { x: 210, y: 430, width: 1500, height: 140 }, "STARTING SOON", {
+        fontFamily: "Poppins",
+        fontSize: 110,
+        fontWeight: 800,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 4,
+        effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+        animation: anim("zoom", { duration: 900, easing: "backOut" }),
+      }),
+      shape("Decor — Ribbon", { x: 660, y: 596, width: 600, height: 8 }, {
+        cornerRadius: 4,
+        fill: "@primary",
+        effects: {
+          gradient: { enabled: true, from: "@primary", to: "@accent", angle: 0 },
+          glow: { enabled: true, color: "@glow", strength: 16 },
+        },
+        animation: anim("shimmer", { duration: 3600 }),
+      }),
+      text("Channel name", { x: 310, y: 650, width: 1300, height: 76 }, "{{CHANNEL_NAME}}", {
+        fontFamily: "Poppins",
+        fontSize: 54,
+        fontWeight: 700,
+        align: "center",
+        fill: "@accent",
+        animation: anim("fade", { duration: 900, delay: 400 }),
+      }),
+      text("Slogan", { x: 360, y: 750, width: 1200, height: 40 }, "{{SLOGAN}}", {
+        fontFamily: "Inter",
+        fontSize: 26,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 900, delay: 700 }),
+      }),
+      social("Socials", { x: 460, y: 900, width: 1000, height: 56 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram", "tiktok"],
+        animation: anim("slide", { direction: "up", duration: 800, delay: 900 }),
+      }),
+    ],
+  },
+
+  {
+    id: "pride-brb",
+    name: "Be Right Back",
+    category: "BRB",
+    tags: ["Cozy"],
+    collection: "pride",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/25", angle: 200 } },
+      }),
+      particles("Decor — Clouds", { kind: "fog", count: 8, size: 5, speed: 0.8, color: "@accentSecondary" }),
+      particles("Decor — Hearts", { kind: "hearts", count: 12, size: 6, speed: 0.6, color: "@primary", opacity: 0.7 }),
+      img("Profile", { x: 830, y: 240, width: 260, height: 260 }, "{{PROFILE_IMAGE}}", {
+        fit: "cover",
+        cornerRadius: 130,
+        effects: {
+          border: { enabled: true, color: "@accent", width: 6, radius: 130 },
+          glow: { enabled: true, color: "@glow", strength: 30 },
+        },
+        animation: anim("float", { duration: 5000 }),
+      }),
+      text("Headline", { x: 260, y: 570, width: 1400, height: 120 }, "BE RIGHT BACK", {
+        fontFamily: "Poppins",
+        fontSize: 96,
+        fontWeight: 800,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 3,
+        animation: anim("fade", { duration: 1100 }),
+      }),
+      text("Sub", { x: 360, y: 720, width: 1200, height: 44 }, "{{CHANNEL_NAME}} will be back shortly", {
+        fontFamily: "Inter",
+        fontSize: 28,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 1100, delay: 400 }),
+      }),
+      social("Socials", { x: 560, y: 890, width: 800, height: 56 }, {
+        platforms: ["twitch", "instagram", "discord"],
+        animation: anim("fade", { duration: 1000, delay: 700 }),
+      }),
+    ],
+  },
+
+  {
+    id: "pride-ending",
+    name: "Stream Ending",
+    category: "Stream Ending",
+    tags: ["Cozy"],
+    collection: "pride",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/30", angle: 45 } },
+      }),
+      particles("Decor — Confetti", { kind: "confetti", count: 50, size: 6, speed: 1, color: "@accent" }),
+      particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.4, color: "@accentSecondary", opacity: 0.7 }),
+      img("Logo", { x: 860, y: 170, width: 200, height: 200 }, "{{LOGO}}", {
+        logo: true,
+        animation: anim("zoom", { duration: 900, easing: "backOut" }),
+      }),
+      text("Headline", { x: 210, y: 430, width: 1500, height: 130 }, "THANKS FOR WATCHING", {
+        fontFamily: "Poppins",
+        fontSize: 92,
+        fontWeight: 800,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 3,
+        effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+        animation: anim("slide", { direction: "up", duration: 900, delay: 200 }),
+      }),
+      shape("Decor — Ribbon", { x: 660, y: 586, width: 600, height: 8 }, {
+        cornerRadius: 4,
+        fill: "@primary",
+        effects: { gradient: { enabled: true, from: "@primary", to: "@accent", angle: 0 } },
+        animation: anim("shimmer", { duration: 3600 }),
+      }),
+      text("Channel name", { x: 310, y: 630, width: 1300, height: 70 }, "{{CHANNEL_NAME}}", {
+        fontFamily: "Poppins",
+        fontSize: 48,
+        fontWeight: 700,
+        align: "center",
+        fill: "@accent",
+        animation: anim("fade", { duration: 900, delay: 500 }),
+      }),
+      social("Socials", { x: 310, y: 780, width: 1300, height: 60 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram", "tiktok", "x"],
+        animation: anim("slide", { direction: "up", duration: 900, delay: 800 }),
+      }),
+    ],
+  },
+
+  {
+    id: "pride-offline",
+    name: "Offline",
+    category: "Offline",
+    tags: ["Minimal", "Cozy"],
+    collection: "pride",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/20", angle: 180 } },
+      }),
+      particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.25, color: "@accent", opacity: 0.6 }),
+      shape("Card", { x: 610, y: 290, width: 700, height: 500 }, {
+        fill: "@surface/90",
+        cornerRadius: 28,
+        effects: {
+          border: { enabled: true, color: "@border", width: 1, radius: 28 },
+          shadow: { enabled: true, color: "@shadow", blur: 60, offsetY: 20, opacity: 0.5 },
+        },
+        animation: anim("scale", { duration: 900 }),
+      }),
+      img("Logo", { x: 870, y: 340, width: 180, height: 180 }, "{{LOGO}}", {
+        logo: true,
+        animation: anim("fade", { duration: 900, delay: 300 }),
+      }),
+      text("Headline", { x: 660, y: 560, width: 600, height: 64 }, "OFFLINE", {
+        fontFamily: "Poppins",
+        fontSize: 48,
+        fontWeight: 800,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 8,
+        animation: anim("fade", { duration: 900, delay: 400 }),
+      }),
+      text("Sub", { x: 660, y: 640, width: 600, height: 40 }, "{{CHANNEL_NAME}} is resting — back soon", {
+        fontFamily: "Inter",
+        fontSize: 22,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 900, delay: 550 }),
+      }),
+      social("Socials", { x: 660, y: 700, width: 600, height: 48 }, {
+        platforms: ["twitch", "discord", "instagram"],
+        fontSize: 20,
+        animation: anim("fade", { duration: 900, delay: 700 }),
+      }),
+    ],
+  },
+
+  {
+    id: "pride-gameplay",
+    name: "Gameplay",
+    category: "Gameplay",
+    tags: ["Minimal"],
+    collection: "pride",
+    layers: [
+      shape("Top bar", { x: 40, y: 28, width: 1840, height: 64 }, {
+        fill: "@surface/85",
+        cornerRadius: 18,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 18 } },
+        animation: anim("slide", { direction: "up", duration: 700 }),
+      }),
+      shape("Decor — Ribbon", { x: 40, y: 96, width: 1840, height: 4 }, {
+        cornerRadius: 2,
+        fill: "@primary",
+        effects: { gradient: { enabled: true, from: "@primary", to: "@accent", angle: 0 } },
+        animation: anim("shimmer", { duration: 4200 }),
+      }),
+      img("Logo", { x: 62, y: 40, width: 40, height: 40 }, "{{LOGO}}", { logo: true }),
+      text("Channel name", { x: 118, y: 42, width: 600, height: 36 }, "{{CHANNEL_NAME}}", {
+        fontFamily: "Poppins",
+        fontSize: 26,
+        fontWeight: 700,
+        fill: "@text",
+      }),
+      text("Slogan", { x: 120, y: 72, width: 600, height: 18 }, "{{SLOGAN}}", {
+        fontFamily: "Inter",
+        fontSize: 13,
+        fontWeight: 400,
+        fill: "@textSecondary",
+      }),
+      particles("Decor — Stars", { kind: "stars", count: 24, size: 3, speed: 0.3, color: "@accent", opacity: 0.5 }),
+      frame("Webcam", { x: 40, y: 660, width: 480, height: 270 }, {
+        camera: true,
+        strokeColor: "@accent",
+        strokeWidth: 4,
+        cornerRadius: 20,
+        effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+        animation: anim("glow", { duration: 4200 }),
+      }),
+      chatbox("Chat", { x: 1500, y: 140, width: 380, height: 580 }, {
+        cornerRadius: 20,
+        rows: 7,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 20 } },
+      }),
+      social("Socials", { x: 620, y: 984, width: 680, height: 52 }, {
+        platforms: ["twitch", "discord", "instagram", "tiktok"],
+        animation: anim("fade", { duration: 900, delay: 500 }),
+      }),
+    ],
+  },
+
+  {
+    id: "pride-chatting",
+    name: "Just Chatting",
+    category: "Just Chatting",
+    tags: ["Cozy"],
+    collection: "pride",
+    layers: [
+      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 135 } },
+      }),
+      particles("Decor — Hearts", { kind: "hearts", count: 10, size: 5, speed: 0.5, color: "@primary", opacity: 0.6 }),
+      particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.3, color: "@accent", opacity: 0.7 }),
+      frame("Webcam", { x: 90, y: 140, width: 1020, height: 574 }, {
+        camera: true,
+        strokeColor: "@accent",
+        strokeWidth: 5,
+        cornerRadius: 28,
+        effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+        animation: anim("glow", { duration: 4600 }),
+      }),
+      shape("Name plate", { x: 90, y: 760, width: 640, height: 84 }, {
+        fill: "@surface/85",
+        cornerRadius: 42,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 42 } },
+      }),
+      text("Display name", { x: 134, y: 780, width: 560, height: 48 }, "{{DISPLAY_NAME}}", {
+        fontFamily: "Poppins",
+        fontSize: 38,
+        fontWeight: 700,
+        fill: "@text",
+      }),
+      text("Slogan", { x: 92, y: 870, width: 900, height: 36 }, "{{SLOGAN}}", {
+        fontFamily: "Inter",
+        fontSize: 24,
+        fontWeight: 400,
+        fill: "@textSecondary",
+      }),
+      chatbox("Chat", { x: 1180, y: 140, width: 650, height: 740 }, {
+        cornerRadius: 28,
+        rows: 9,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 28 } },
+      }),
+      social("Socials", { x: 90, y: 950, width: 1000, height: 56 }, {
+        platforms: ["twitch", "tiktok", "instagram", "discord"],
+        animation: anim("fade", { duration: 900, delay: 400 }),
+      }),
+    ],
+  },
+
+  {
+    id: "pride-webcam",
+    name: "Webcam Frame",
+    category: "Webcam Frames",
+    tags: ["Minimal"],
+    collection: "pride",
+    layers: [
+      particles("Decor — Hearts", { kind: "hearts", count: 10, size: 5, speed: 0.5, color: "@primary", opacity: 0.6 }),
+      frame("Decor — Halo frame", { x: 296, y: 96, width: 1328, height: 768 }, {
+        fill: "transparent",
+        strokeColor: "@border",
+        strokeWidth: 1,
+        cornerRadius: 32,
+      }),
+      frame("Camera", { x: 320, y: 120, width: 1280, height: 720 }, {
+        camera: true,
+        strokeColor: "@accent",
+        strokeWidth: 5,
+        cornerRadius: 24,
+        effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+        animation: anim("glow", { duration: 4600 }),
+      }),
+      shape("Name plate", { x: 660, y: 880, width: 600, height: 72 }, {
+        fill: "@surface/90",
+        cornerRadius: 36,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 36 } },
+      }),
+      text("Display name", { x: 660, y: 898, width: 600, height: 42 }, "{{DISPLAY_NAME}}", {
+        fontFamily: "Poppins",
+        fontSize: 32,
+        fontWeight: 700,
+        align: "center",
+        fill: "@text",
+      }),
+    ],
+  },
+
+  {
+    id: "pride-chatbox",
+    name: "Chat Box",
+    category: "Chat Boxes",
+    tags: ["Minimal"],
+    collection: "pride",
+    layers: [
+      particles("Decor — Stars", { kind: "stars", count: 16, size: 3, speed: 0.3, color: "@accent", opacity: 0.5 }),
+      shape("Title pill", { x: 1560, y: 58, width: 140, height: 44 }, {
+        fill: "@surface/90",
+        cornerRadius: 22,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 22 } },
+        animation: anim("fade", { duration: 800 }),
+      }),
+      text("Chat title", { x: 1560, y: 68, width: 140, height: 28 }, "CHAT", {
+        fontFamily: "Poppins",
+        fontSize: 20,
+        fontWeight: 700,
+        align: "center",
+        fill: "@accent",
+        letterSpacing: 4,
+      }),
+      chatbox("Chat", { x: 1400, y: 120, width: 460, height: 840 }, {
+        cornerRadius: 24,
+        rows: 10,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 24 } },
+      }),
+    ],
+  },
+
+  {
+    id: "pride-follower",
+    name: "Follower Alert",
+    category: "Alerts",
+    tags: ["Cozy"],
+    collection: "pride",
+    layers: [
+      particles("Decor — Confetti", { kind: "confetti", count: 36, size: 5, speed: 1.4, color: "@accent" }),
+      alert("Follower alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW FOLLOWER", "Welcome to the family", {
+        fontFamily: "Poppins",
+        cornerRadius: 28,
+        titleColor: "@accent",
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 34 },
+          border: { enabled: true, color: "@border", width: 1, radius: 28 },
+        },
+        animation: anim("elastic", { duration: 1200 }),
+      }),
+    ],
+  },
+
+  {
+    id: "pride-subscriber",
+    name: "Subscriber Alert",
+    category: "Alerts",
+    tags: ["Cozy"],
+    collection: "pride",
+    layers: [
+      particles("Decor — Hearts", { kind: "hearts", count: 16, size: 6, speed: 1.2, color: "@primary", opacity: 0.8 }),
+      alert("Subscriber alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUBSCRIBER", "You're amazing — thank you!", {
+        fontFamily: "Poppins",
+        cornerRadius: 28,
+        fill: "@primary/90",
+        titleColor: "@text",
+        subtitleColor: "@text",
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 40 },
+          border: { enabled: true, color: "@accent", width: 1, radius: 28 },
+        },
+        animation: anim("bounce", { duration: 1100 }),
+      }),
+    ],
+  },
+
+  {
+    id: "pride-socialbar",
+    name: "Social Bar",
+    category: "Social Bars",
+    tags: ["Minimal"],
+    collection: "pride",
+    layers: [
+      shape("Decor — Ribbon", { x: 460, y: 948, width: 1000, height: 4 }, {
+        cornerRadius: 2,
+        fill: "@primary",
+        effects: { gradient: { enabled: true, from: "@primary", to: "@accent", angle: 0 } },
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
+      social("Socials", { x: 460, y: 966, width: 1000, height: 60 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram", "tiktok"],
+        pill: true,
+        pillColor: "@surface/90",
+        gap: 20,
+        fontSize: 22,
+        animation: anim("fade", { duration: 900 }),
       }),
     ],
   },
@@ -1435,16 +1917,19 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
  * different `paletteId` — no per-variant artwork, and adding a palette adds a
  * full set of templates for free.
  */
-function buildVariant(base: BaseTemplate, paletteId: string): Template {
-  const tags = new Set<StyleTag>([...base.tags, ...paletteTags(paletteId)]);
+function buildVariant(base: BaseTemplate, palette: Palette): Template {
+  const tags = new Set<StyleTag>([...base.tags, ...paletteTags(palette.id)]);
   return {
-    id: `${base.id}--${paletteId}`,
-    name: base.name,
+    id: `${base.id}--${palette.id}`,
+    // Themed collections compose the pack name in: "Midnight Cathedral —
+    // Starting Soon" and "Midnight Cathedral — Gameplay" visibly belong
+    // together. Core designs keep their own names.
+    name: base.collection === "core" ? base.name : `${palette.name} — ${base.name}`,
     category: base.category,
     tags: [...tags],
     collection: base.collection,
-    subStyle: base.subStyle,
-    paletteId,
+    subStyle: palette.subStyle,
+    paletteId: palette.id,
     layers: base.layers.map((spec, i) => ({ ...spec, id: `${base.id}-l${i}` }) as Layer),
   };
 }
@@ -1456,12 +1941,13 @@ function buildVariant(base: BaseTemplate, paletteId: string): Template {
  * frame helps nobody.
  */
 function expand(bases: BaseTemplate[], palettes: Palette[]): Template[] {
-  return palettes.flatMap((palette) => bases.map((base) => buildVariant(base, palette.id)));
+  return palettes.flatMap((palette) => bases.map((base) => buildVariant(base, palette)));
 }
 
 export const TEMPLATES: Template[] = [
   ...expand(BASE_TEMPLATES, CORE_PALETTES),
   ...expand(GOTHIC_TEMPLATES, GOTHIC_PALETTES),
+  ...expand(PRIDE_TEMPLATES, PRIDE_PALETTES),
 ];
 
 const TEMPLATE_BY_ID = new Map(TEMPLATES.map((t) => [t.id, t]));

@@ -72,7 +72,13 @@ export interface Palette {
   id: string;
   name: string;
   tags: string[];
-  collection: "core" | "gothic";
+  collection: Collection;
+  /**
+   * Pack identity within a themed collection (gothic/pride). A collection is
+   * one design family; palette × family = a complete, coherent pack, so the
+   * sub-style naturally lives on the palette, not the template.
+   */
+  subStyle?: string;
   theme: Theme;
 }
 
@@ -361,12 +367,16 @@ export type ParticleKind =
   | "embers"
   | "snow"
   | "bubbles"
-  // Gothic decor. Same deterministic engine — a bat at time t is always the
+  // Themed decor. Same deterministic engine — a bat at time t is always the
   // same bat, so exports and OBS agree.
   | "bats"
   | "moths"
   | "petals"
-  | "fog";
+  | "fog"
+  // Pride decor.
+  | "confetti"
+  | "hearts"
+  | "rays";
 
 export interface ParticleLayer extends LayerBase {
   type: "particle";
@@ -422,6 +432,7 @@ export const TEMPLATE_CATEGORIES = [
   "Starting Soon",
   "BRB",
   "Stream Ending",
+  "Offline",
   "Webcam Frames",
   "Alerts",
   "Chat Boxes",
@@ -458,10 +469,16 @@ export type StyleTag = (typeof STYLE_TAGS)[number];
 
 /**
  * Collections split the library into visual families. Core templates expand
- * across the core palettes, gothic templates across the gothic ones — a neon
- * esports palette on a Victorian mourning frame helps nobody.
+ * across the core palettes, gothic across the gothic ones, pride across the
+ * pride ones — a neon esports palette on a Victorian mourning frame helps
+ * nobody.
+ *
+ * Within gothic and pride, every base template is one *screen* of a shared
+ * design family (Starting Soon, BRB, Gameplay, alerts, …). Expanding the
+ * family across a collection's palettes yields complete packs: every screen
+ * of "Midnight Cathedral" exists, in the same visual identity.
  */
-export type Collection = "core" | "gothic";
+export type Collection = "core" | "gothic" | "pride";
 
 export const GOTHIC_STYLES = [
   "Dark Goth",
@@ -478,6 +495,22 @@ export const GOTHIC_STYLES = [
 
 export type GothicStyle = (typeof GOTHIC_STYLES)[number];
 
+export const PRIDE_STYLES = [
+  "Classic Pride",
+  "Trans Pride",
+  "Bisexual",
+  "Pastel Pride",
+  "Neon Pride",
+  "Crystal Pride",
+  "Cosmic Pride",
+  "Soft Pride",
+  "Dark Pride",
+  "Minimal Pride",
+  "Luxury Pride",
+] as const;
+
+export type PrideStyle = (typeof PRIDE_STYLES)[number];
+
 /**
  * Everything is free and every template works both ways: exported as a still
  * (settled pose) or played animated. There is deliberately no premium flag and
@@ -490,8 +523,8 @@ export interface Template {
   category: TemplateCategory;
   tags: StyleTag[];
   collection: Collection;
-  /** Sub-style filter within the gothic collection. */
-  subStyle?: GothicStyle;
+  /** Pack sub-style, inherited from the variant's palette. */
+  subStyle?: string;
   /** Palette this variant ships with; the user can swap it instantly. */
   paletteId: string;
   layers: Layer[];

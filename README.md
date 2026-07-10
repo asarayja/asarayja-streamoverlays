@@ -42,10 +42,10 @@ single rule for free:
 - **Never type your name twice.** Fill in the channel profile once; every template you open is
   already populated.
 
-It also means the 404 templates in the gallery are generated at module load: 18 core designs ×
-18 core palettes plus 8 gothic designs × 10 gothic palettes. Collections pair with their own
-palettes — a neon esports palette on a Victorian mourning frame helps nobody. Adding a gothic
-palette adds 8 finished gothic templates.
+It also means the 501 templates in the gallery are generated at module load: 18 core designs ×
+15 core palettes, plus two complete design *families* — gothic and pride, 11 screens each —
+expanded across their own palettes (10 gothic packs, 11 pride packs). Collections pair with
+their own palettes: a neon esports palette on a Victorian mourning frame helps nobody.
 
 ## Colour, done properly
 
@@ -60,23 +60,30 @@ palette adds 8 finished gothic templates.
 - **Linked colours.** Editing background, text, accent or primary cascades to the tones derived
   from them (surfaces, secondary text, glow, border) — one colour change restyles the family
   (`cascade` in `lib/theme.ts`).
-- **Shipped palettes are gated.** `GET /qa` runs every shipped palette through the same checks;
-  all 28 pass all pairs. The named spec palettes (Dark Goth, Pastel Goth, Cyber Goth, Minimal,
-  Fantasy) are hand-authored, and three Pride palettes ship with flag colours harmonised onto
-  neutral backgrounds. Several gothic packs are tuned to published gothic palettes
-  (piktochart.com/blog/gothic-color-palette).
+- **Shipped palettes are gated.** `GET /qa` runs every shipped palette through the same contrast
+  checks plus the dark-background band; all 36 pass. The named spec palettes (Dark Goth, Pastel
+  Goth, Cyber Goth, Minimal, Fantasy) are hand-authored.
 
-## The Gothic collection
+## Packs: palette × family = every screen in one identity
 
-A second template family with its own palettes (Midnight Cathedral, Pastel Nightmare, Crimson
-Vampire, Moonlit Witch, Victorian Mourning, Cyber Coven, Haunted Garden, Gothic Romance, Raven
-Manor, Candy Coffin), its own display faces (blackletter and gothic serifs, display-only — body
-text stays readable), and sub-style filtering in the gallery (Dark Goth, Pastel Goth, Victorian,
-Vampire, Witch, Cyber Goth, …).
+Gothic and pride templates are not standalone designs — each collection is **one design family
+with eleven screens**: Starting Soon, Be Right Back, Stream Ending, Offline, Gameplay, Just
+Chatting, Webcam Frame, Chat Box, Follower Alert, Subscriber Alert, Social Bar. Expanding a
+family across its palettes yields complete packs: filter the gallery by the "Midnight Cathedral"
+palette and all eleven screens exist, named "Midnight Cathedral — …", sharing fonts, corner
+radii, ornament and motion rules. The pack sub-style (Dark Goth, Trans Pride, …) lives on the
+palette, because the palette *is* the pack identity.
 
-Gothic decor is built from deterministic particle systems — bats, moths, falling petals, drifting
-fog — drawn from Konva primitives, not licensed artwork. Decor layers are named `Decor — …` so
-they can be toggled, recoloured, resized or deleted like any other layer.
+**Gothic family** (10 packs): Cinzel Decorative display over IM Fell English SC and Inter,
+blackletter channel marks on scenes, square-ish corners, ornament hairlines, and deterministic
+decor particles — bats, moths, petals, fog. Several packs are tuned to published gothic palettes
+(piktochart.com/blog/gothic-color-palette).
+
+**Pride family** (11 packs): rounded glass panels, a gradient ribbon as the signature ornament,
+Poppins display, and confetti/hearts/light-ray/star particles. Flag identities are carried by
+the palettes — Classic, Trans, Bi, Pastel, Neon, Crystal, Cosmic, Soft, Dark, Minimal, Luxury —
+harmonised onto neutral backgrounds rather than raw flag stripes. Decor layers are named
+`Decor — …` so they can be toggled, recoloured or deleted like any other layer.
 
 ## Animation semantics: elements animate in place
 
@@ -110,7 +117,7 @@ src/
     zip.ts            Minimal store-only ZIP writer
   data/
     templates.ts      Base templates (core + gothic) + variant expansion
-    palettes.ts       28 shipping palettes: 18 core (incl. 3 Pride) + 10 gothic packs
+    palettes.ts       36 shipping palettes: 15 core + 10 gothic packs + 11 pride packs
     fonts.ts          Google Fonts catalogue
   components/
     overlay/          The renderer. LayerNode.tsx paints every layer type.
@@ -131,6 +138,14 @@ the font catalogue is a plain `<link>` in the root layout rather than `next/font
 CSS variable the canvas can't see). Stages remount once `document.fonts.ready` resolves.
 
 **Canvas gives a shape exactly one shadow.** Glow and drop-shadow compete for it; glow wins.
+
+**The glow effect toggle is the single source of truth.** The glow/shimmer animation presets only
+*amplify* an enabled glow effect — they never conjure one. Turning glow off kills it even while a
+glow animation is running on the layer.
+
+**Dark backgrounds live in one darkness band.** Every dark palette's background sits at HSL
+lightness 0.035–0.09 — never pure black (crushes on stream), never drifting grey — and `GET /qa`
+enforces the band alongside the contrast pairs.
 
 **Konva drops text lines that overflow a fixed height.** Text layer boxes have to fit their content.
 

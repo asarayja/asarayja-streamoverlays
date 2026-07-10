@@ -56,6 +56,10 @@ const missingMode = (mode: RenderMode): MissingFieldMode => (mode === "live" ? "
 /**
  * Canvas gives a node exactly one shadow, so glow and drop-shadow compete for
  * it. Glow wins when both are on — it is the effect users reach for.
+ *
+ * The animation system's `glowBoost` only *amplifies* an enabled glow effect;
+ * it never conjures one. The effect toggle is the single source of truth —
+ * turning glow off must kill it even while a glow/shimmer preset is running.
  */
 function shadowProps(effects: Effects, theme: Theme, glowBoost: number) {
   if (effects.glow.enabled) {
@@ -74,15 +78,6 @@ function shadowProps(effects: Effects, theme: Theme, glowBoost: number) {
       shadowOpacity: effects.shadow.opacity,
       shadowOffsetX: effects.shadow.offsetX,
       shadowOffsetY: effects.shadow.offsetY,
-    };
-  }
-  if (glowBoost > 0) {
-    return {
-      shadowColor: resolveColor("@glow", theme),
-      shadowBlur: glowBoost,
-      shadowOpacity: 1,
-      shadowOffsetX: 0,
-      shadowOffsetY: 0,
     };
   }
   return {};
@@ -696,6 +691,73 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
             fillRadialGradientEndPoint={{ x: 0, y: 0 }}
             fillRadialGradientEndRadius={radius}
             fillRadialGradientColorStops={[0, color, 1, "rgba(0,0,0,0)"]}
+          />,
+        );
+        break;
+      }
+
+      case "confetti": {
+        // Multi-tone by design: pieces cycle through the theme's brand tokens,
+        // so confetti follows a palette swap like everything else.
+        const tones = [
+          color,
+          resolveColor("@primary", ctx.theme),
+          resolveColor("@secondary", ctx.theme),
+          resolveColor("@accentSecondary", ctx.theme),
+        ];
+        const fall = t * layer.speed * 90 * (0.5 + seedS);
+        const y = ((seedY * h + fall) % (h + 30)) - 15;
+        const x = ((seedX * w + Math.sin(t * (0.8 + seedS) + i) * 50) % w + w) % w;
+        nodes.push(
+          <Rect
+            key={i}
+            x={x}
+            y={y}
+            width={size * 1.6}
+            height={size * 0.9}
+            offsetX={size * 0.8}
+            offsetY={size * 0.45}
+            rotation={(t * 180 * layer.speed + i * 71) % 360}
+            fill={tones[i % tones.length]}
+            opacity={opacity}
+          />,
+        );
+        break;
+      }
+
+      case "hearts": {
+        // Drift upward with a sway, fading as they rise.
+        const rise = t * layer.speed * 45 * (0.5 + seedS);
+        const y = h - (((seedY * h + rise) % (h + 40)) - 20);
+        const x = ((seedX * w + Math.sin(t * (0.6 + seedS) + i) * 40) % w + w) % w;
+        const s = size * (0.8 + seedS);
+        const fade = 0.25 + 0.75 * (y / h);
+        nodes.push(
+          <Group key={i} x={x} y={y} rotation={Math.sin(t + i) * 14} opacity={opacity * fade}>
+            <Circle x={-0.52 * s} y={-0.35 * s} radius={0.6 * s} fill={color} />
+            <Circle x={0.52 * s} y={-0.35 * s} radius={0.6 * s} fill={color} />
+            <Line closed points={[-1.05 * s, -0.08 * s, 1.05 * s, -0.08 * s, 0, 1.25 * s]} fill={color} />
+          </Group>,
+        );
+        break;
+      }
+
+      case "rays": {
+        // Light beams sweeping slowly from above the top edge.
+        const cx = w / 2;
+        const angle = (seedX - 0.5) * 110 + Math.sin(t * 0.15 * layer.speed + i) * 14;
+        const length = h * 1.5;
+        const halfWidth = 20 + seedS * 70;
+        nodes.push(
+          <Line
+            key={i}
+            x={cx}
+            y={-60}
+            closed
+            rotation={angle}
+            points={[0, 0, -halfWidth, length, halfWidth, length]}
+            fill={color}
+            opacity={0.035 + seedS * 0.06}
           />,
         );
         break;
