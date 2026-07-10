@@ -81,8 +81,17 @@ export function Select({ className, children, ...props }: React.SelectHTMLAttrib
     <select
       {...props}
       className={cx(
-        "w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-100",
+        "w-full appearance-none rounded-lg border border-white/10 bg-black/30 py-2 pl-3 pr-8 text-sm text-zinc-100",
         "focus:border-brand-500/60 focus:outline-none",
+        // The popup is painted by the OS, and it only takes a handful of
+        // properties. Setting them on the options themselves is the only way
+        // to stop the list rendering as white-on-white.
+        "[&>optgroup]:bg-ink-900 [&>optgroup]:font-semibold [&>optgroup]:text-zinc-500",
+        "[&>option]:bg-ink-900 [&>option]:py-2 [&>option]:text-zinc-100",
+        "[&>optgroup>option]:bg-ink-900 [&>optgroup>option]:text-zinc-100",
+        // `appearance-none` removes the native arrow; `.select-chevron` in
+        // globals.css paints ours.
+        "select-chevron",
         className,
       )}
     >

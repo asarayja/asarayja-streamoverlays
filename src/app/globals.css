@@ -95,6 +95,16 @@ input[type="range"] {
   accent-color: #8b5cf6;
 }
 
+/* The select chevron. It lives here rather than in an arbitrary Tailwind
+   value because a data URL contains spaces, and Tailwind splits the class on
+   them — the utility silently never matches and no image is emitted. */
+.select-chevron {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2371717a' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M4 6.5 8 10.5 12 6.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 14px;
+}
+
 @keyframes rise {
   from {
     opacity: 0;

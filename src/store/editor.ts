@@ -166,6 +166,16 @@ function makeLayer(type: LayerType, index: number): Layer {
         cornerRadius: 26,
         icon: "heart",
       };
+    case "icon":
+      return {
+        ...base,
+        type: "icon",
+        width: 120,
+        height: 120,
+        symbol: "moon",
+        fill: "@accent",
+        strokeWidth: 2,
+      };
     case "flag":
       return {
         ...base,

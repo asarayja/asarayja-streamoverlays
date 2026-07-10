@@ -10,14 +10,18 @@ import {
   Slider,
   TextInput,
   Toggle,
+  cx,
 } from "@/components/ui";
 import { resolveColor } from "@/lib/theme";
 import { ANIMATION_PRESETS, EASINGS } from "@/lib/types";
+import { ICON_GROUPS, ICONS } from "@/data/icons";
+import type { IconName } from "@/data/icons";
 import type {
   AlertLayer,
   AnimationPreset,
   ChatBoxLayer,
   ChipLayer,
+  IconLayer,
   WindowLayer,
   Easing,
   Effects,
@@ -35,7 +39,7 @@ import type {
   Theme,
 } from "@/lib/types";
 
-const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "moon", "crescent", "plaque", "scanlines", "web", "drip", "graveyard", "chain"];
+const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "moon", "crescent", "coffin", "plaque", "scanlines", "web", "drip", "graveyard", "chain"];
 const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs", "ghosts", "bokeh"];
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
 
@@ -592,6 +596,48 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
       );
     }
 
+    case "icon": {
+      const ico = layer as IconLayer;
+      return (
+        <Section title="Icon">
+          <Field label="Symbol">
+            <Select value={ico.symbol} onChange={(e) => commit({ symbol: e.target.value })}>
+              {ICON_GROUPS.map(({ group, names }) => (
+                <optgroup key={group} label={group}>
+                  {names.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </Select>
+          </Field>
+          <IconPreview symbol={ico.symbol} colour={resolveColor(ico.fill, theme)} />
+          <ColorField
+            label="Colour"
+            theme={theme}
+            value={ico.fill}
+            onChange={(fill) => live({ fill })}
+            onCommit={(fill) => commit({ fill })}
+          />
+          <Slider
+            label="Outline weight"
+            min={0.5}
+            max={4}
+            step={0.1}
+            value={ico.strokeWidth}
+            onBegin={beginGesture}
+            onChange={(strokeWidth) => live({ strokeWidth })}
+          />
+          <p className="text-[11px] leading-relaxed text-zinc-600">
+            Icons are plain paths, so the colour is a theme token like any other fill — recolour the
+            theme and every icon follows.
+          </p>
+        </Section>
+      );
+    }
+
     case "window": {
       const win = layer as WindowLayer;
       return (
@@ -771,6 +817,16 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
       const chat = layer as ChatBoxLayer;
       return (
         <Section title="Chat box">
+          <Field label="Panel shape">
+            <Segmented
+              value={chat.boxShape ?? "rect"}
+              onChange={(boxShape) => commit({ boxShape })}
+              options={[
+                { value: "rect", label: "Rounded" },
+                { value: "coffin", label: "Coffin" },
+              ]}
+            />
+          </Field>
           <ColorField
             label="Background"
             theme={theme}
@@ -989,6 +1045,40 @@ function NumberField({
         className="font-mono text-xs"
       />
     </Field>
+  );
+}
+
+/** The catalogue, drawn at a glance. Picking an icon by name alone is guesswork. */
+function IconPreview({ symbol, colour }: { symbol: string; colour: string }) {
+  return (
+    <div className="grid grid-cols-8 gap-1 rounded-lg border border-white/[0.06] bg-black/20 p-2">
+      {ICON_GROUPS.flatMap(({ names }) => names).map((name) => {
+        const def = ICONS[name as IconName];
+        const active = name === symbol;
+        const outlined = "stroke" in def && def.stroke;
+        return (
+          <span
+            key={name}
+            title={name}
+            className={cx(
+              "grid aspect-square place-items-center rounded",
+              active && "bg-brand-500/25 ring-1 ring-brand-400/50",
+            )}
+          >
+            <svg viewBox="0 0 24 24" className="size-4">
+              <path
+                d={def.d}
+                fill={outlined ? "none" : active ? colour : "#8b8794"}
+                stroke={outlined ? (active ? colour : "#8b8794") : undefined}
+                strokeWidth={outlined ? 2 * (("strokeScale" in def && def.strokeScale) || 1) : 0}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        );
+      })}
+    </div>
   );
 }
 

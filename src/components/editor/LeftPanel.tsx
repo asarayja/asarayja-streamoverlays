@@ -12,6 +12,7 @@ import {
   GripVertical,
   AppWindow,
   Tag,
+  Sticker,
   Image as ImageIcon,
   LayoutTemplate,
   Layers as LayersIcon,
@@ -39,7 +40,7 @@ import { uid } from "@/lib/id";
 import { fileToDataUrl } from "@/lib/image";
 import { PLACEHOLDERS } from "@/lib/placeholders";
 import { ANIMATION_PRESETS, DEFAULT_ANIMATION, DEFAULT_EFFECTS } from "@/lib/types";
-import type { AnimationPreset, Layer, LayerType, TextLayer } from "@/lib/types";
+import type { AnimationPreset, Layer, LayerPatch, LayerType, TextLayer } from "@/lib/types";
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
 
 type Tab = "templates" | "add" | "layers" | "colors" | "text" | "animate" | "uploads";
@@ -58,6 +59,7 @@ const LAYER_ICONS: Record<LayerType, typeof Square> = {
   background: Square,
   shape: Square,
   flag: Flag,
+  icon: Sticker,
   window: AppWindow,
   chip: Tag,
   text: Type,
@@ -76,6 +78,7 @@ const ADDABLE: LayerType[] = [
   "text",
   "shape",
   "flag",
+  "icon",
   "window",
   "chip",
   "image",
@@ -204,6 +207,21 @@ function TemplatesTab() {
 
 /* ----------------------------------- Add ---------------------------------- */
 
+/**
+ * Decor shapes worth reaching for directly. They are all `shape` layers, but
+ * "add a shape then change its Kind to moon" is not a thing anyone discovers.
+ */
+const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch }> = [
+  { label: "Moon", patch: { shape: "moon", width: 220, height: 220, moonPhase: 1, craters: true, fill: "@accent" } },
+  { label: "Crescent", patch: { shape: "crescent", width: 180, height: 180, fill: "@accent" } },
+  { label: "Spiderweb", patch: { shape: "web", width: 300, height: 260, fill: "@accent/55", cornerRadius: 1.6 } },
+  { label: "Chain", patch: { shape: "chain", width: 30, height: 300, fill: "@accent/80" } },
+  { label: "Coffin", patch: { shape: "coffin", width: 260, height: 420, fill: "@surface/90" } },
+  { label: "Graveyard", patch: { shape: "graveyard", width: 1920, height: 360, fill: "@background" } },
+  { label: "Drip panel", patch: { shape: "drip", width: 520, height: 240, cornerRadius: 14, fill: "@primary" } },
+  { label: "Plaque", patch: { shape: "plaque", width: 480, height: 160, fill: "@surface/92" } },
+];
+
 function AddTab() {
   const addLayer = useEditorStore((s) => s.addLayer);
 
@@ -224,6 +242,25 @@ function AddTab() {
             </button>
           );
         })}
+      </div>
+
+      <div className="border-t border-white/[0.06] px-4 py-4">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Decor</p>
+        <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
+          Shapes with their own geometry. Every one takes its colour from a theme token, and the
+          moon has a phase and craters you can edit.
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {DECOR_PRESETS.map(({ label, patch }) => (
+            <button
+              key={label}
+              onClick={() => addLayer("shape", patch as Partial<Layer>)}
+              className="rounded-xl border border-white/[0.06] bg-white/[0.02] py-2.5 text-[11px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

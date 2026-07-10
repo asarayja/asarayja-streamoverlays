@@ -8,11 +8,13 @@ import {
   Group,
   Image as KonvaImage,
   Line,
+  Path,
   Rect,
   Shape as KonvaShape,
   Star,
   Text,
 } from "react-konva";
+import { ICONS, type IconName } from "@/data/icons";
 import { sample } from "@/lib/animation";
 import { measureText } from "@/lib/measure";
 import { resolveSrc, resolveText, type MissingFieldMode } from "@/lib/placeholders";
@@ -25,6 +27,7 @@ import type {
   Effects,
   FlagLayer,
   FrameLayer,
+  IconLayer,
   WindowLayer,
   Gradient,
   ImageLayer,
@@ -351,16 +354,35 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
 
   if (layer.shape === "chain") {
     const stroke = fill ?? resolveColor(layer.fill, ctx.theme);
+    const linkWidth = Math.max(1.6, w * 0.13);
+    return (
+      <Group listening={false} {...shadowProps(layer.effects, ctx.theme, glowBoost)}>
+        <KonvaShape
+          stroke={stroke}
+          strokeWidth={linkWidth}
+          sceneFunc={(c, shape) => {
+            chainPath(c, w, h);
+            c.strokeShape(shape);
+          }}
+        />
+        <KonvaShape
+          fill={stroke}
+          sceneFunc={(c, shape) => {
+            pendantPath(c, w, h);
+            c.fillShape(shape);
+          }}
+        />
+      </Group>
+    );
+  }
+
+  if (layer.shape === "coffin") {
     return (
       <KonvaShape
-        stroke={stroke}
-        strokeWidth={Math.max(1, layer.cornerRadius || 2)}
-        fill={stroke}
-        fillAfterStrokeEnabled
-        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        {...paint}
         sceneFunc={(c, shape) => {
-          chainPath(c, w, h);
-          c.strokeShape(shape);
+          coffinPath(c, w, h);
+          c.fillStrokeShape(shape);
         }}
       />
     );
@@ -501,25 +523,69 @@ function graveyardPath(c: Konva.Context, w: number, h: number) {
   }
 }
 
-/** Hanging chain: links overlap and alternate plane, ending in a pendant. */
+/**
+ * A chain reads as a chain only when its links *interlock*: alternate a
+ * face-on ring with an edge-on one, overlap them, and stroke them as rings.
+ * Filled, evenly spaced ovals read as loose beads.
+ */
 function chainPath(c: Konva.Context, w: number, h: number) {
   const TAU = Math.PI * 2;
-  const pendant = w * 1.5;
+  const pendant = w * 1.9;
   const usable = Math.max(w, h - pendant);
-  const links = Math.max(3, Math.round(usable / (w * 0.62)));
-  const step = usable / links;
+  const linkHeight = w * 0.86;
+  const step = linkHeight * 0.62; // < linkHeight, so consecutive links overlap
+  const links = Math.max(3, Math.floor(usable / step));
+
   c.beginPath();
   for (let i = 0; i < links; i++) {
-    const cy = step * i + step * 0.5;
-    const flat = i % 2 === 1;
-    const rx = flat ? w * 0.46 : w * 0.24;
+    const cy = step * i + linkHeight / 2;
+    const faceOn = i % 2 === 0;
+    const rx = faceOn ? w * 0.4 : w * 0.15;
     c.moveTo(w / 2 + rx, cy);
-    c.ellipse(w / 2, cy, rx, step * 0.72, 0, 0, TAU, false);
+    c.ellipse(w / 2, cy, rx, linkHeight * 0.46, 0, 0, TAU, false);
   }
-  const py = usable + w * 0.1;
-  c.moveTo(w / 2, py);
-  c.bezierCurveTo(w / 2 + w * 0.62, py + pendant * 0.35, w / 2 + w * 0.42, py + pendant * 0.86, w / 2, py + pendant * 0.92);
-  c.bezierCurveTo(w / 2 - w * 0.42, py + pendant * 0.86, w / 2 - w * 0.62, py + pendant * 0.35, w / 2, py);
+}
+
+/** The cross pendant that finishes a chain. Filled, unlike the stroked links. */
+function pendantPath(c: Konva.Context, w: number, h: number) {
+  const pendant = w * 1.9;
+  const usable = Math.max(w, h - pendant);
+  const step = w * 0.86 * 0.62;
+  const links = Math.max(3, Math.floor(usable / step));
+  const cy = step * links + pendant * 0.42;
+  const s = w * 0.95;
+  const a = s * 0.17;
+  const arm = s * 0.52;
+  const up = s * 0.3;
+  const cx = w / 2;
+
+  c.beginPath();
+  c.moveTo(cx - a, cy - s * 0.62);
+  c.lineTo(cx + a, cy - s * 0.62);
+  c.lineTo(cx + a, cy - up);
+  c.lineTo(cx + arm, cy - up);
+  c.lineTo(cx + arm, cy - up + a * 1.5);
+  c.lineTo(cx + a, cy - up + a * 1.5);
+  c.lineTo(cx + a * 0.7, cy + s * 0.75);
+  c.lineTo(cx, cy + s * 0.95);
+  c.lineTo(cx - a * 0.7, cy + s * 0.75);
+  c.lineTo(cx - a, cy - up + a * 1.5);
+  c.lineTo(cx - arm, cy - up + a * 1.5);
+  c.lineTo(cx - arm, cy - up);
+  c.lineTo(cx - a, cy - up);
+  c.closePath();
+}
+
+/** A casket: narrow head, widest at the shoulders, tapering to the foot. */
+function coffinPath(c: Konva.Context, w: number, h: number) {
+  c.beginPath();
+  c.moveTo(w * 0.3, 0);
+  c.lineTo(w * 0.7, 0);
+  c.lineTo(w, h * 0.24);
+  c.lineTo(w * 0.86, h);
+  c.lineTo(w * 0.14, h);
+  c.lineTo(0, h * 0.24);
+  c.closePath();
 }
 
 /**
@@ -734,6 +800,33 @@ function FlagContent({ layer, ctx, glowBoost }: { layer: FlagLayer; ctx: RenderC
   );
 }
 
+/** A catalogue icon, scaled from its 24x24 grid into the layer's box. */
+function IconContent({ layer, ctx, glowBoost }: { layer: IconLayer; ctx: RenderContext; glowBoost: number }) {
+  const def = ICONS[layer.symbol as IconName] ?? ICONS.star;
+  const scale = Math.min(layer.width, layer.height) / 24;
+  const dx = (layer.width - 24 * scale) / 2;
+  const dy = (layer.height - 24 * scale) / 2;
+  const colour = resolveColor(layer.fill, ctx.theme);
+  const outlined = "stroke" in def && def.stroke;
+
+  return (
+    <Path
+      x={dx}
+      y={dy}
+      scaleX={scale}
+      scaleY={scale}
+      data={def.d}
+      fill={outlined ? undefined : colour}
+      stroke={outlined ? colour : undefined}
+      strokeWidth={outlined ? layer.strokeWidth * (("strokeScale" in def && def.strokeScale) || 1) : 0}
+      lineCap="round"
+      lineJoin="round"
+      strokeScaleEnabled={false}
+      {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+    />
+  );
+}
+
 function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx: RenderContext; reveal: number; glowBoost: number }) {
   const resolved = applyTransform(
     resolveText(layer.text, ctx.profile, missingMode(ctx.mode)),
@@ -902,11 +995,32 @@ function ImageContent({ layer, ctx, glowBoost }: { layer: ImageLayer; ctx: Rende
   );
 }
 
+/** The frame's interior, as a path. Used both to fill it and to punch it out. */
+function framePath(c: Konva.Context, layer: FrameLayer, w: number, h: number) {
+  c.beginPath();
+  if (layer.frameShape === "ellipse") {
+    c.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2, false);
+  } else if (layer.frameShape === "hexagon") {
+    const pts = chamferPoints(w, h);
+    c.moveTo(pts[0], pts[1]);
+    for (let i = 2; i < pts.length; i += 2) c.lineTo(pts[i], pts[i + 1]);
+  } else {
+    const r = Math.min(layer.cornerRadius, w / 2, h / 2);
+    c.moveTo(r, 0);
+    c.arcTo(w, 0, w, h, r);
+    c.arcTo(w, h, 0, h, r);
+    c.arcTo(0, h, 0, 0, r);
+    c.arcTo(0, 0, w, 0, r);
+  }
+  c.closePath();
+}
+
 function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: RenderContext; glowBoost: number }) {
   const { width: w, height: h } = layer;
+  const isCameraHole = ctx.mode === "live" && layer.type === "camera";
   // In OBS the webcam sits *behind* the browser source, so any fill here would
   // tint the camera. Only the studio draws the placeholder fill.
-  const fill = ctx.mode === "live" && layer.type === "camera" ? undefined : resolveColor(layer.fill, ctx.theme);
+  const fill = isCameraHole ? undefined : resolveColor(layer.fill, ctx.theme);
   const stroke = resolveColor(layer.strokeColor, ctx.theme);
   const shadow = shadowProps(layer.effects, ctx.theme, glowBoost);
 
@@ -949,6 +1063,24 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
 
   return (
     <Group listening={false}>
+      {/* A camera window must be a hole through everything beneath it, not just
+          an unfilled shape. On a scene with a backdrop the backdrop would
+          otherwise sit inside the frame, and the real webcam — which OBS
+          composites *behind* the browser source — could never show through.
+          `destination-out` erases whatever this Konva layer has already
+          painted; the frame's stroke and glow are drawn afterwards, so they
+          survive and still bleed a little light onto the camera edge. */}
+      {isCameraHole && (
+        <KonvaShape
+          listening={false}
+          globalCompositeOperation="destination-out"
+          fill="#000"
+          sceneFunc={(c, shape) => {
+            framePath(c, layer, w, h);
+            c.fillShape(shape);
+          }}
+        />
+      )}
       {outline}
       {ctx.mode !== "live" && layer.type === "camera" && (
         <Text
@@ -1066,26 +1198,45 @@ function ChatRows({
 
 function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: RenderContext; glowBoost: number }) {
   const { width: w, height: h } = layer;
+  const coffin = layer.boxShape === "coffin";
+  // A casket narrows at head and foot, so the rows live in the straight middle.
+  const inset = coffin ? w * 0.16 : 0;
+  const top = coffin ? h * 0.1 : 0;
+
   return (
     <Group listening={false}>
-      <Rect
-        width={w}
-        height={h}
-        cornerRadius={layer.cornerRadius}
-        fill={resolveColor(layer.fill, ctx.theme)}
-        {...borderProps(layer.effects, ctx.theme, w, h)}
-        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
-      />
-      <ChatRows
-        width={w}
-        height={h}
-        fontFamily={layer.fontFamily}
-        fontSize={layer.fontSize}
-        rows={layer.rows}
-        usernameColor={layer.usernameColor}
-        messageColor={layer.messageColor}
-        ctx={ctx}
-      />
+      {coffin ? (
+        <KonvaShape
+          fill={resolveColor(layer.fill, ctx.theme)}
+          {...borderProps(layer.effects, ctx.theme, w, h)}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+          sceneFunc={(c, shape) => {
+            coffinPath(c, w, h);
+            c.fillStrokeShape(shape);
+          }}
+        />
+      ) : (
+        <Rect
+          width={w}
+          height={h}
+          cornerRadius={layer.cornerRadius}
+          fill={resolveColor(layer.fill, ctx.theme)}
+          {...borderProps(layer.effects, ctx.theme, w, h)}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        />
+      )}
+      <Group x={inset} y={top}>
+        <ChatRows
+          width={w - inset * 2}
+          height={h - top}
+          fontFamily={layer.fontFamily}
+          fontSize={layer.fontSize}
+          rows={layer.rows}
+          usernameColor={layer.usernameColor}
+          messageColor={layer.messageColor}
+          ctx={ctx}
+        />
+      </Group>
     </Group>
   );
 }
@@ -1261,8 +1412,23 @@ function WindowContent({ layer, ctx, glowBoost }: { layer: WindowLayer; ctx: Ren
   const ink = resolveColor(layer.textColor, ctx.theme);
   const btn = bar * 0.32;
 
+  const isCameraHole = ctx.mode === "live" && isCamera;
+
   return (
     <Group listening={false}>
+      {/* Same hole as a camera frame: erase the body so OBS's webcam shows
+          through, then repaint the chrome on top. */}
+      {isCameraHole && (
+        <Rect
+          listening={false}
+          globalCompositeOperation="destination-out"
+          y={bar}
+          width={w}
+          height={h - bar}
+          cornerRadius={[0, 0, r, r]}
+          fill="#000"
+        />
+      )}
       <Rect
         width={w}
         height={h}
@@ -1865,6 +2031,8 @@ function Content({ layer, ctx, reveal, glowBoost }: { layer: Layer; ctx: RenderC
       return <ShapeContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
     case "flag":
       return <FlagContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
+    case "icon":
+      return <IconContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
     case "window":
       return <WindowContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
     case "chip":

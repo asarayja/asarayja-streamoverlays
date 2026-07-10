@@ -165,6 +165,7 @@ function chatbox(
   name: string,
   box: Box,
   o: BaseOpts & {
+    boxShape?: "rect" | "coffin";
     fill?: string;
     cornerRadius?: number;
     fontFamily?: string;
@@ -178,6 +179,7 @@ function chatbox(
     ...common(name, o),
     ...box,
     type: "chatbox",
+    boxShape: o.boxShape ?? "rect",
     fill: o.fill ?? "@surface/80",
     cornerRadius: o.cornerRadius ?? 18,
     fontFamily: o.fontFamily ?? "Inter",
@@ -266,6 +268,22 @@ function flag(
     stripes: o.stripes ?? ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
     stackDirection: o.stackDirection ?? "horizontal",
     cornerRadius: o.cornerRadius ?? 4,
+  };
+}
+
+function icon(
+  name: string,
+  box: Box,
+  symbol: string,
+  o: BaseOpts & { fill?: string; strokeWidth?: number } = {},
+): LayerSpec {
+  return {
+    ...common(name, o),
+    ...box,
+    type: "icon",
+    symbol,
+    fill: o.fill ?? "@accent",
+    strokeWidth: o.strokeWidth ?? 2,
   };
 }
 
@@ -1576,6 +1594,8 @@ interface FamilyStyle {
   plateShape: "rect" | "plaque";
   /** Panels use windows instead of plates. */
   windowChrome?: boolean;
+  /** Chat panel silhouette. */
+  chatShape?: "rect" | "coffin";
   /**
    * Lift scene copy clear of a busy lower third. Cloud families own their
    * bottom half; the answer is to move the words, not to crop the sky.
@@ -1679,6 +1699,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           effects: f.frameEffects,
         })
       : chatbox(name, box, {
+          boxShape: f.chatShape,
           cornerRadius: f.radius,
           rows,
           fontFamily: f.body,
@@ -2116,6 +2137,7 @@ const HALLOWED_NIGHT: FamilyStyle = {
   },
   headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
   plateShape: "rect",
+  chatShape: "coffin",
   // The graveyard owns the bottom third; the copy clears its fence line.
   contentOffsetY: -175,
   scene: () => [
@@ -2155,11 +2177,20 @@ const HALLOWED_NIGHT: FamilyStyle = {
       cornerRadius: 1.6,
       rotation: 90,
     }),
-    shape("Decor — Chain", { x: 316, y: 0, width: 34, height: 280 }, {
+    // One chain, on the far side from the moon: nothing should cross it.
+    shape("Decor — Chain", { x: 322, y: 0, width: 30, height: 300 }, {
       shape: "chain",
-      fill: "@accent/75",
-      cornerRadius: 2.6,
+      fill: "@accent/80",
       animation: anim("wave", { duration: 6000, intensity: 0.5 }),
+    }),
+    icon("Decor — Skull", { x: 118, y: 862, width: 74, height: 74 }, "skull", {
+      fill: "@accent/70",
+      animation: anim("float", { duration: 6400, intensity: 0.4 }),
+    }),
+    icon("Decor — Candle", { x: 1740, y: 852, width: 66, height: 66 }, "candle", {
+      fill: "@accent/70",
+      effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+      animation: anim("flicker", { duration: 2200 }),
     }),
   ],
   overlayDecor: () => [

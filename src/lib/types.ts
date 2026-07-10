@@ -278,6 +278,7 @@ export const LAYER_TYPES = [
   "background",
   "shape",
   "flag",
+  "icon",
   "window",
   "chip",
   "text",
@@ -334,7 +335,9 @@ export type ShapeKind =
   /** Graveyard horizon: hill, fence, crosses, a leaning headstone. */
   | "graveyard"
   /** A hanging chain of links ending in a pendant. */
-  | "chain";
+  | "chain"
+  /** A casket silhouette: narrow head, wide shoulders, tapered foot. */
+  | "coffin";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";
@@ -360,6 +363,20 @@ export interface FlagLayer extends LayerBase {
   /** Axis the stripes are stacked along. */
   stackDirection: "vertical" | "horizontal";
   cornerRadius: number;
+}
+
+/**
+ * A catalogue icon. The artwork is a plain path, so the colour is a theme
+ * token like every other fill — recolour the theme, recolour every icon.
+ */
+export interface IconLayer extends LayerBase {
+  type: "icon";
+  /** Named apart from `ChipLayer.icon`: the two vocabularies differ, and
+      merging them would narrow both in `LayerPatch`. */
+  symbol: string;
+  fill: ColorValue;
+  /** Outline weight for stroke-drawn icons. */
+  strokeWidth: number;
 }
 
 /** A retro OS window: title bar, traffic-light buttons, glass gloss. */
@@ -453,6 +470,8 @@ export interface FrameLayer extends LayerBase {
 
 export interface ChatBoxLayer extends LayerBase {
   type: "chatbox";
+  /** Panel silhouette. A coffin is the gothic chat box. */
+  boxShape?: "rect" | "coffin";
   fill: ColorValue;
   cornerRadius: number;
   fontFamily: string;
@@ -525,6 +544,7 @@ export interface ParticleLayer extends LayerBase {
 export type Layer =
   | ShapeLayer
   | FlagLayer
+  | IconLayer
   | WindowLayer
   | ChipLayer
   | TextLayer
@@ -552,6 +572,7 @@ type Fields<T> = Omit<T, "type">;
 export type LayerPatch = Partial<
   Fields<ShapeLayer> &
     Fields<FlagLayer> &
+    Fields<IconLayer> &
     Fields<WindowLayer> &
     Fields<ChipLayer> &
     Fields<TextLayer> &

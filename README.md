@@ -206,6 +206,15 @@ widget layers cleanly on top in OBS.
 only because it is filled with `@background` while the sky's gradient lifts toward `@secondary`
 below. Filled a shade lighter, it reads as a flat band laid over the scene.
 
+**Tailwind splits arbitrary values on spaces.** A `bg-[url('data:image/svg+xml,…')]` class whose data
+URL contains a space is shredded into a dozen garbage tokens, none of which match a rule — the
+utility silently emits nothing. The select chevron lives in `globals.css` for that reason.
+
+**Two circles cannot make a crescent, and one disc cannot make a moon.** Under the nonzero winding
+rule the region inside the bite but outside the moon fills too. Both shapes trace their real
+boundary instead: the crescent is the lune between two circles, the moon is a lit limb plus a
+terminator ellipse whose sweep direction decides gibbous from crescent.
+
 **Konva applies group opacity per child.** Overlapping translucent circles inside a group seam along
 every intersection — which is why the clouds are drawn as a single path whose subpaths union under
 the nonzero winding rule, rather than as a group of discs.
