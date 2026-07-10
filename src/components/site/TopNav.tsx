@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderOpen, LayoutGrid, UserRound, Zap } from "lucide-react";
+import { FolderOpen, LayoutGrid, Shapes, UserRound, Zap } from "lucide-react";
 import { cx } from "@/components/ui";
 import { useProfileStore } from "@/store/profile";
 
 const LINKS = [
+  { href: "/designs", label: "Designs", icon: Shapes },
   { href: "/", label: "Templates", icon: LayoutGrid },
   { href: "/projects", label: "Projects", icon: FolderOpen },
   { href: "/profile", label: "Channel profile", icon: UserRound },
