@@ -2692,14 +2692,9 @@ const PLASMA: FamilyStyle = {
     particles("Decor — Sparks", { kind: "embers", count: 52, size: 3, speed: 0.7, color: "@glow", opacity: 0.7 }),
     particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.4, color: "@text", opacity: 0.35 }),
   ],
-  overlayDecor: () => [
-    shape("Wave — corner", { x: 1180, y: 740, width: 900, height: 300 }, {
-      shape: "wave",
-      fill: "@glow",
-      opacity: 0.5,
-      effects: { glow: { enabled: true, color: "@glow", strength: 58 } },
-    }),
-  ],
+  // No ambient decor over gameplay — a plasma wave across the play area would
+  // cover what the stream is showing.
+  overlayDecor: () => [],
   contentOffsetY: -30,
 };
 

@@ -1167,10 +1167,11 @@ function framePath(c: Konva.Context, layer: FrameLayer, w: number, h: number) {
 
 function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: RenderContext; glowBoost: number }) {
   const { width: w, height: h } = layer;
-  const isCameraHole = ctx.mode === "live" && layer.type === "camera";
-  // In OBS the webcam sits *behind* the browser source, so any fill here would
-  // tint the camera. Only the studio draws the placeholder fill.
-  const fill = isCameraHole ? undefined : resolveColor(layer.fill, ctx.theme);
+  const isCamera = layer.type === "camera";
+  // A camera outline never carries an interior fill: the hole is punched below,
+  // then the studio redraws a flat placeholder on top (no glow). Regular frames
+  // keep their fill.
+  const fill = isCamera ? undefined : resolveColor(layer.fill, ctx.theme);
   const stroke = resolveColor(layer.strokeColor, ctx.theme);
   const shadow = shadowProps(layer.effects, ctx.theme, glowBoost);
 
@@ -1214,20 +1215,6 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
   return (
     <Group listening={false}>
       {outline}
-      {ctx.mode !== "live" && layer.type === "camera" && (
-        <Text
-          text="CAMERA"
-          width={w}
-          height={h}
-          align="center"
-          verticalAlign="middle"
-          fontFamily="Inter"
-          fontSize={Math.max(12, w * 0.035)}
-          letterSpacing={4}
-          fill={resolveColor("@border", ctx.theme)}
-          opacity={0.55}
-        />
-      )}
       {layer.corners && (
         <>
           <Line points={[0, cornerLen, 0, 0, cornerLen, 0]} stroke={accent} strokeWidth={layer.strokeWidth * 1.6} lineCap="round" />
@@ -1236,13 +1223,11 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
           <Line points={[cornerLen, h, 0, h, 0, h - cornerLen]} stroke={accent} strokeWidth={layer.strokeWidth * 1.6} lineCap="round" />
         </>
       )}
-      {/* Punch the interior hole LAST. A camera window is a hole through
-          everything beneath it — the backdrop, the fog, and crucially the
-          frame's own glow, which blooms inward off the stroke. Punching after
-          the frame is drawn erases that inward bloom so the interior is truly
-          transparent (OBS composites the webcam behind it); the outward glow,
-          which lands outside this path, is untouched. */}
-      {isCameraHole && (
+      {/* Punch the interior hole through everything beneath it — the backdrop,
+          the fog, and crucially the frame's own glow, which blooms inward off
+          the stroke. Done in every mode so the interior is never glow-washed;
+          the outward glow, which lands outside this path, is untouched. */}
+      {isCamera && (
         <KonvaShape
           listening={false}
           globalCompositeOperation="destination-out"
@@ -1252,6 +1237,33 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
             c.fillShape(shape);
           }}
         />
+      )}
+      {/* Studio placeholder, drawn on top of the now-transparent hole: a flat
+          dark fill and label, with no glow. Never in live — OBS shows the
+          webcam through the hole. */}
+      {ctx.mode !== "live" && isCamera && (
+        <>
+          <KonvaShape
+            listening={false}
+            fill={resolveColor("@surface/55", ctx.theme)}
+            sceneFunc={(c, shape) => {
+              framePath(c, layer, w, h);
+              c.fillShape(shape);
+            }}
+          />
+          <Text
+            text="CAMERA"
+            width={w}
+            height={h}
+            align="center"
+            verticalAlign="middle"
+            fontFamily="Inter"
+            fontSize={Math.max(12, w * 0.035)}
+            letterSpacing={4}
+            fill={resolveColor("@border", ctx.theme)}
+            opacity={0.55}
+          />
+        </>
       )}
     </Group>
   );
