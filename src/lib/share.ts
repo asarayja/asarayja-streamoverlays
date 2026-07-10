@@ -98,8 +98,13 @@ export async function decodePayload(encoded: string): Promise<SharePayload | nul
 
 export async function buildObsUrl(payload: SharePayload): Promise<string> {
   const encoded = await encodePayload(payload);
-  const origin = typeof window === "undefined" ? "" : window.location.origin;
-  return `${origin}/live/overlay?code=${payload.project.obsCode}#d=${encoded}`;
+  if (typeof window === "undefined") return "";
+  const { origin, pathname } = window.location;
+  // Derive the app's base path from the editor URL — empty when served at a
+  // root, the repo subpath on GitHub Pages — so the OBS link resolves wherever
+  // the app is hosted. Trailing slash matches the static export's dir/index.html.
+  const base = pathname.replace(/\/editor\/?$/, "");
+  return `${origin}${base}/live/overlay/?code=${payload.project.obsCode}#d=${encoded}`;
 }
 
 /**
