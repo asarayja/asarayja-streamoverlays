@@ -472,6 +472,47 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "chamfer") {
+    return <Line closed points={chamferPoints(w, h)} {...paint} />;
+  }
+
+  if (layer.shape === "carbon") {
+    const base = resolveColor(layer.fill, ctx.theme);
+    return (
+      <KonvaShape
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        sceneFunc={(c) => {
+          c.save();
+          c.beginPath();
+          c.rect(0, 0, w, h);
+          c.clip();
+          c.setAttr("fillStyle", base);
+          c.fillRect(0, 0, w, h);
+          // Basket-weave: a light diagonal per cell, alternating direction on a
+          // checkerboard — the carbon-fibre tell.
+          const s = 16;
+          c.setAttr("lineWidth", 3);
+          for (let x = 0; x < w; x += s) {
+            for (let y = 0; y < h; y += s) {
+              const flip = ((x / s + y / s) & 1) === 0;
+              c.setAttr("strokeStyle", flip ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.28)");
+              c.beginPath();
+              if (flip) {
+                c.moveTo(x, y + s);
+                c.lineTo(x + s, y);
+              } else {
+                c.moveTo(x, y);
+                c.lineTo(x + s, y + s);
+              }
+              c.stroke();
+            }
+          }
+          c.restore();
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "coffin") {
     return (
       <KonvaShape

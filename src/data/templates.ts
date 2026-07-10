@@ -1677,6 +1677,8 @@ interface FamilyStyle {
   /** Esports-style corner brackets on frames. */
   corners: boolean;
   strokeWidth: number;
+  /** Camera/frame silhouette. "hexagon" cuts the four corners (mecha chamfer). */
+  frameShape?: "rect" | "ellipse" | "hexagon";
   /** Effects applied to every framed element. */
   frameEffects: DeepPartial<Effects>;
   /** Headline treatment. */
@@ -1686,7 +1688,7 @@ interface FamilyStyle {
   /** Ambient decor layered over overlays (gameplay, webcam, chat). */
   overlayDecor?: () => LayerSpec[];
   /** Alert and panel silhouette. */
-  plateShape: "rect" | "plaque";
+  plateShape: "rect" | "plaque" | "chamfer";
   /** Panels use windows instead of plates. */
   windowChrome?: boolean;
   /** Chat panel silhouette. */
@@ -1777,6 +1779,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         })
       : frame(name, box, {
           camera: true,
+          shape: f.frameShape ?? "rect",
           strokeColor: "@accent",
           strokeWidth: f.strokeWidth,
           cornerRadius: f.frameRadius,
@@ -2697,6 +2700,74 @@ const PLASMA: FamilyStyle = {
   contentOffsetY: -30,
 };
 
+/** Mecha (spec theme B): industrial military-tech — carbon-fibre bands, toxic
+    green accent lines with intense glow, 45° chamfered frames and panels, and a
+    compact tall display. Green in a green palette; colour follows the palette. */
+const MECHA: FamilyStyle = {
+  id: "mecha",
+  name: "Mecha",
+  tags: ["Esports", "Neon", "Sci-Fi"],
+  display: "Bebas Neue",
+  displayWeight: 400,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 2,
+  frameRadius: 4,
+  frameShape: "hexagon",
+  corners: false,
+  strokeWidth: 3,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 3, radius: 4 },
+    glow: { enabled: true, color: "@glow", strength: 42 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 40 } },
+  plateShape: "chamfer",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 135 } },
+    }),
+    // Carbon-fibre header and footer bands.
+    shape("Carbon — top", { x: 0, y: 0, width: 1920, height: 150 }, { shape: "carbon", fill: "@surface" }),
+    shape("Carbon — bottom", { x: 0, y: 930, width: 1920, height: 150 }, { shape: "carbon", fill: "@surface" }),
+    // Toxic green accent lines with intense glow along the band edges.
+    shape("Line — top", { x: 0, y: 150, width: 1920, height: 5 }, {
+      shape: "rect",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 34 } },
+    }),
+    shape("Line — bottom", { x: 0, y: 925, width: 1920, height: 5 }, {
+      shape: "rect",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 34 } },
+    }),
+    // Chamfered HUD accents angled into opposite corners.
+    shape("Chamfer — left", { x: -70, y: 300, width: 380, height: 240 }, {
+      shape: "chamfer",
+      fill: "@surface/70",
+      effects: {
+        border: { enabled: true, color: "@accent", width: 2 },
+        glow: { enabled: true, color: "@glow", strength: 16 },
+      },
+    }),
+    shape("Chamfer — right", { x: 1610, y: 540, width: 380, height: 240 }, {
+      shape: "chamfer",
+      fill: "@surface/70",
+      effects: {
+        border: { enabled: true, color: "@accent", width: 2 },
+        glow: { enabled: true, color: "@glow", strength: 16 },
+      },
+    }),
+    particles("Decor — Sparks", { kind: "embers", count: 22, size: 2.5, speed: 0.5, color: "@accent", opacity: 0.5 }),
+  ],
+  overlayDecor: () => [
+    shape("Carbon — corner", { x: 1540, y: 0, width: 380, height: 96 }, { shape: "carbon", fill: "@surface" }),
+  ],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   HALLOWED_NIGHT,
   ASTRAL_DECK,
@@ -2709,6 +2780,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   HEX_STORM,
   MOONLIT_GROVE,
   PLASMA,
+  MECHA,
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);

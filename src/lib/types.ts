@@ -346,7 +346,11 @@ export type ShapeKind =
   /** A honeycomb lattice of hexagon outlines — the esports mesh accent. */
   | "hexmesh"
   /** A flowing curved energy ribbon: a thick, round-capped bezier stroke. */
-  | "wave";
+  | "wave"
+  /** A rectangle with its four corners cut at 45° — the mecha panel. */
+  | "chamfer"
+  /** A woven carbon-fibre texture fill. */
+  | "carbon";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";
