@@ -2534,16 +2534,19 @@ const HEX_STORM: FamilyStyle = {
       fill: "@surface",
       opacity: 0.72,
     }),
-    shape("Bolt — main", { x: 1300, y: -80, width: 46, height: 1240 }, {
-      shape: "shard",
-      fill: "@glow",
-      effects: { glow: { enabled: true, color: "@glow", strength: 44 } },
-    }),
-    shape("Bolt — left", { x: 150, y: -80, width: 32, height: 1240 }, {
-      shape: "shard",
+    // Two accent lines, mirrored to the same inset and the same width on each
+    // side — different colours, matched geometry.
+    shape("Bolt — left", { x: 150, y: -10, width: 40, height: 1100 }, {
+      shape: "rect",
       fill: "@accent",
-      opacity: 0.85,
-      effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+      opacity: 0.9,
+      effects: { glow: { enabled: true, color: "@glow", strength: 38 } },
+    }),
+    shape("Bolt — right", { x: 1730, y: -10, width: 40, height: 1100 }, {
+      shape: "rect",
+      fill: "@glow",
+      opacity: 0.9,
+      effects: { glow: { enabled: true, color: "@glow", strength: 38 } },
     }),
     particles("Decor — Sparks", { kind: "embers", count: 30, size: 2.5, speed: 0.6, color: "@accent", opacity: 0.6 }),
   ],
