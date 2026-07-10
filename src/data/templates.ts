@@ -2559,6 +2559,69 @@ const HEX_STORM: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** Moonlit Grove: a cozy anime night — full moon, drifting cherry blossoms,
+    soft blossom glow and stars, in an elegant serif. Spec theme F. */
+const MOONLIT_GROVE: FamilyStyle = {
+  id: "grove",
+  name: "Moonlit Grove",
+  tags: ["Fantasy", "Cozy", "Anime"],
+  display: "Playfair Display",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 18,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 20 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@secondary/30", angle: 195 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 72, size: 2.4, speed: 0.12, color: "@accent", opacity: 0.8 }),
+    shape("Decor — Moon", { x: 1470, y: 110, width: 190, height: 190 }, {
+      shape: "moon",
+      moonPhase: 1,
+      craters: false,
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 36 } },
+      animation: anim("float", { duration: 8000, intensity: 0.4 }),
+    }),
+    // Soft blossom masses tucked into the lower corners.
+    shape("Blossom — left", { x: -160, y: 720, width: 520, height: 460 }, {
+      shape: "ellipse",
+      fill: "@primary/30",
+      effects: { glow: { enabled: true, color: "@glow", strength: 46 } },
+    }),
+    shape("Blossom — left small", { x: 200, y: 860, width: 260, height: 240 }, {
+      shape: "ellipse",
+      fill: "@primary/26",
+      effects: { glow: { enabled: true, color: "@glow", strength: 40 } },
+    }),
+    shape("Blossom — right", { x: 1520, y: 760, width: 560, height: 460 }, {
+      shape: "ellipse",
+      fill: "@secondary/32",
+      effects: { glow: { enabled: true, color: "@glow", strength: 46 } },
+    }),
+    particles("Decor — Petals", { kind: "petals", count: 24, size: 7, speed: 1.0, color: "@primary", opacity: 0.7 }),
+    particles("Decor — Clouds", { kind: "clouds", count: 4, size: 100, speed: 0.26, color: "@secondary", opacity: 0.32 }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.4, color: "@accent", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Petals left", { kind: "petals", count: 5, size: 6, speed: 1.0, color: "@primary", opacity: 0.6, box: MARGIN_LEFT }),
+    particles("Decor — Petals right", { kind: "petals", count: 5, size: 6, speed: 1.0, color: "@primary", opacity: 0.6, box: MARGIN_RIGHT }),
+  ],
+  contentOffsetY: -70,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   HALLOWED_NIGHT,
   ASTRAL_DECK,
@@ -2569,6 +2632,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   OVERDRIVE,
   LIQUID_NEON,
   HEX_STORM,
+  MOONLIT_GROVE,
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);
