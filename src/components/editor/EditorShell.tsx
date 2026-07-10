@@ -24,6 +24,7 @@ import { OverlayStage } from "@/components/overlay/OverlayStage";
 import { Button, cx } from "@/components/ui";
 import { publishLive } from "@/lib/share";
 import { CANVAS_WIDTH } from "@/lib/types";
+import type { Layer, Theme } from "@/lib/types";
 import { useEditorStore } from "@/store/editor";
 import { useProfileStore, useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
@@ -73,6 +74,11 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const [exportTime, setExportTime] = useState(0);
   /** When set, the export stage renders only this layer — per-element export. */
   const [soloLayerId, setSoloLayerId] = useState<string | null>(null);
+  /** When set, the export stage renders these layers/theme instead of the
+      current project's — used to sweep the other screens of a pack. */
+  const [exportOverride, setExportOverride] = useState<{ layers: Layer[]; theme: Theme } | null>(
+    null,
+  );
   const exportStageRef = useRef<Konva.Stage>(null);
 
   const missing = hydrated && !saved && project?.id !== projectId;
@@ -265,8 +271,14 @@ export default function EditorShell({ projectId }: { projectId: string }) {
       <div className="pointer-events-none fixed left-[-99999px] top-0 opacity-0" aria-hidden>
         <OverlayStage
           ref={exportStageRef}
-          layers={soloLayerId ? project.layers.filter((l) => l.id === soloLayerId) : project.layers}
-          theme={project.theme}
+          layers={
+            exportOverride
+              ? exportOverride.layers
+              : soloLayerId
+                ? project.layers.filter((l) => l.id === soloLayerId)
+                : project.layers
+          }
+          theme={exportOverride ? exportOverride.theme : project.theme}
           profile={profile}
           time={exportTime}
           mode="live"
@@ -281,9 +293,11 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           stageRef={exportStageRef}
           setExportTime={setExportTime}
           setSoloLayer={setSoloLayerId}
+          setExportOverride={setExportOverride}
           duration={duration}
           onClose={() => {
             setSoloLayerId(null);
+            setExportOverride(null);
             setShowExport(false);
           }}
         />

@@ -1,8 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type Konva from "konva";
-import { Check, Copy, Download, FileJson, Film, Image as ImageIcon, Layers, X } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Download,
+  FileJson,
+  Film,
+  Image as ImageIcon,
+  Layers,
+  Package,
+  X,
+} from "lucide-react";
 import { Button, Field, Segmented, Select, Slider, cx } from "@/components/ui";
 import {
   canvasToBlob,
@@ -20,7 +30,9 @@ import { createZip, toBytes, type ZipEntry } from "@/lib/zip";
 import { SETTLED_TIME } from "@/store/editor";
 import { buildObsUrl } from "@/lib/share";
 import { resolveColor } from "@/lib/theme";
-import type { ChannelProfile, Project } from "@/lib/types";
+import { cloneLayers, getTemplate, packScreens } from "@/data/templates";
+import { getPalette } from "@/data/palettes";
+import type { ChannelProfile, Layer, Project, Template, Theme } from "@/lib/types";
 
 type Job = { label: string; progress: number } | null;
 
@@ -32,8 +44,18 @@ interface ExportDialogProps {
   setExportTime: (t: number) => void;
   /** Restricts the hidden export stage to a single layer. */
   setSoloLayer: (id: string | null) => void;
+  /** Renders arbitrary layers/theme on the hidden stage — used to sweep the
+      other screens of a pack for a bulk export. */
+  setExportOverride: (o: { layers: Layer[]; theme: Theme } | null) => void;
   duration: number;
   onClose: () => void;
+}
+
+/** The screen's own name within its pack, e.g. "Starting Soon" from
+    "Hallowed Night — Starting Soon". */
+function screenLabel(t: Template): string {
+  const i = t.name.lastIndexOf("—");
+  return i === -1 ? t.name : t.name.slice(i + 1).trim();
 }
 
 export function ExportDialog({
@@ -42,6 +64,7 @@ export function ExportDialog({
   stageRef,
   setExportTime,
   setSoloLayer,
+  setExportOverride,
   duration,
   onClose,
 }: ExportDialogProps) {
@@ -52,6 +75,19 @@ export function ExportDialog({
   const [obsUrl, setObsUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+
+  // The other screens of this pack: same design family, same palette.
+  const pack = useMemo(() => packScreens(project.templateId), [project.templateId]);
+  const packLabel = useMemo(() => {
+    const template = getTemplate(project.templateId);
+    if (!template?.family) return project.name;
+    return `${template.family} · ${getPalette(template.paletteId).name}`;
+  }, [project.templateId, project.name]);
+  const [picked, setPicked] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(pack.map((s) => [s.id, true])),
+  );
+  const [packVideo, setPackVideo] = useState(false);
+  const pickedCount = pack.filter((s) => picked[s.id]).length;
 
   const name = slugify(project.name);
   const background = resolveColor("@background", project.theme);
@@ -164,6 +200,90 @@ export function ExportDialog({
         ),
       });
       downloadBlob(createZip(entries), `${name}-elements.zip`);
+    });
+
+  /**
+   * The whole pack in one ZIP: a PNG of every chosen screen (transparent for
+   * overlays, full-frame for scenes), and optionally a video of each. Screens
+   * other than the one being edited render from their pristine template layers,
+   * but all share this project's theme so the pack stays coherent.
+   */
+  const doPack = () =>
+    run("Exporting pack", async () => {
+      const chosen = pack.filter((s) => picked[s.id]);
+      if (chosen.length === 0) throw new Error("Pick at least one screen to export");
+      const withVideo = packVideo && !!video;
+      const perScreen = 1 + (withVideo ? 1 : 0);
+      const total = chosen.length * perScreen;
+      const entries: ZipEntry[] = [];
+      let done = 0;
+
+      try {
+        for (let i = 0; i < chosen.length; i++) {
+          const s = chosen[i];
+          const label = screenLabel(s);
+          const prefix = `${String(i + 1).padStart(2, "0")}-${slugify(label)}`;
+          // The current screen carries the user's edits; siblings come straight
+          // from the template. All wear this project's theme.
+          const layers =
+            s.id === project.templateId ? project.layers : cloneLayers(s.layers);
+          setExportOverride({ layers, theme: project.theme });
+
+          // Still, at the settled pose. Extra frames let a just-swapped screen's
+          // images (logo, avatar) load before we read the canvas.
+          setExportTime(SETTLED_TIME);
+          await nextFrame();
+          await nextFrame();
+          await nextFrame();
+          const png = await canvasToBlob(stage().toCanvas({ pixelRatio: scale }), "image/png");
+          entries.push({ name: `${prefix}.png`, data: new Uint8Array(await png.arrayBuffer()) });
+          done++;
+          setJob({ label: `Screen ${i + 1}/${chosen.length} · ${label}`, progress: done / total });
+
+          if (withVideo) {
+            const blob = await recordVideo({
+              stage: stage(),
+              durationMs: duration,
+              fps,
+              mime: video!.mime,
+              background,
+              setTime: setExportTime,
+              onProgress: (p) =>
+                setJob({
+                  label: `Screen ${i + 1}/${chosen.length} · recording ${label}`,
+                  progress: (done + p) / total,
+                }),
+            });
+            entries.push({
+              name: `${prefix}.${video!.extension}`,
+              data: new Uint8Array(await blob.arrayBuffer()),
+            });
+            done++;
+          }
+        }
+      } finally {
+        setExportOverride(null);
+      }
+
+      entries.push({
+        name: "README.txt",
+        data: toBytes(
+          [
+            `Asarayja — "${packLabel}" pack`,
+            "",
+            `${chosen.length} screen${chosen.length === 1 ? "" : "s"}, each a ${scale}x PNG` +
+              (withVideo ? ` and a ${video!.extension.toUpperCase()} video` : "") +
+              ".",
+            "Scenes (Starting Soon, BRB, Ending…) are full-frame; overlays keep",
+            "true transparency so gameplay shows through, and camera windows stay",
+            "transparent for your webcam.",
+            "",
+            "Screens:",
+            ...chosen.map((s, i) => `  ${String(i + 1).padStart(2, "0")}-${slugify(screenLabel(s))}  ${screenLabel(s)}`),
+          ].join("\n"),
+        ),
+      });
+      downloadBlob(createZip(entries), `${slugify(packLabel)}-pack.zip`);
     });
 
   const doJson = () => {
@@ -304,6 +424,92 @@ export function ExportDialog({
               {(duration / 1000).toFixed(1)}s.
             </Note>
           </section>
+
+          {pack.length > 1 && (
+            <section>
+              <SectionTitle icon={<Package className="size-3.5" />}>Whole pack</SectionTitle>
+              <p className="mb-3 text-xs leading-relaxed text-zinc-500">
+                Every screen that belongs to this design — {packLabel} — in one ZIP. Each chosen
+                screen exports as a {scale}× PNG (transparent overlays, full-frame scenes), plus a
+                video if you like. The screens you aren&apos;t editing use this project&apos;s
+                colours, so the whole pack stays coherent.
+              </p>
+
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-[11px] font-medium text-zinc-400">
+                  {pickedCount} of {pack.length} screens
+                </span>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => setPicked(Object.fromEntries(pack.map((s) => [s.id, true])))}
+                    className="rounded-md px-2 py-1 text-[11px] text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
+                  >
+                    Select all
+                  </button>
+                  <button
+                    onClick={() => setPicked({})}
+                    className="rounded-md px-2 py-1 text-[11px] text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+                {pack.map((s) => (
+                  <label
+                    key={s.id}
+                    className="flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-xs text-zinc-300 transition-colors hover:bg-white/[0.03]"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!picked[s.id]}
+                      onChange={(e) => setPicked((p) => ({ ...p, [s.id]: e.target.checked }))}
+                      className="size-3.5 accent-brand-500"
+                    />
+                    <span className="truncate">{screenLabel(s)}</span>
+                  </label>
+                ))}
+              </div>
+
+              <label className="mb-3 flex items-center gap-2 text-xs text-zinc-400">
+                <input
+                  type="checkbox"
+                  checked={packVideo}
+                  disabled={!video}
+                  onChange={(e) => setPackVideo(e.target.checked)}
+                  className="size-3.5 accent-brand-500"
+                />
+                Include a video of each screen
+                {video ? (
+                  <span className="text-zinc-600">
+                    ({fps} fps {video.extension.toUpperCase()} — set above)
+                  </span>
+                ) : (
+                  <span className="text-zinc-600">(video not supported here)</span>
+                )}
+              </label>
+
+              <Button
+                variant="primary"
+                disabled={!!job || pickedCount === 0}
+                onClick={doPack}
+                className="w-full"
+              >
+                <Package className="size-4" />
+                Export {pickedCount} {pickedCount === 1 ? "screen" : "screens"} as ZIP
+              </Button>
+              {packVideo && video && (
+                <Note>
+                  Videos record in real time, one screen at a time — about{" "}
+                  {((duration / 1000) * pickedCount).toFixed(0)}s for {pickedCount}{" "}
+                  {pickedCount === 1 ? "screen" : "screens"}. No video codec carries alpha, so each
+                  is flattened onto your background colour; for transparent motion use the PNG
+                  sequence or the OBS source.
+                </Note>
+              )}
+            </section>
+          )}
 
           <section>
             <SectionTitle icon={<Layers className="size-3.5" />}>Individual elements</SectionTitle>

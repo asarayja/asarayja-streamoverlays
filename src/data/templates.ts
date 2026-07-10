@@ -3186,6 +3186,20 @@ export function getTemplate(id: string): Template | undefined {
   return TEMPLATE_BY_ID.get(id);
 }
 
+/**
+ * Every screen in the same pack as `templateId`: the same design family in the
+ * same palette (Starting Soon, BRB, Gameplay, chat, alerts…), in the authored
+ * screen order. Empty for one-off core designs that aren't part of a family —
+ * those have no siblings to bundle.
+ */
+export function packScreens(templateId: string): Template[] {
+  const anchor = TEMPLATE_BY_ID.get(templateId);
+  if (!anchor?.family) return [];
+  return TEMPLATES.filter(
+    (t) => t.family === anchor.family && t.paletteId === anchor.paletteId,
+  );
+}
+
 export function templateCount(): number {
   return TEMPLATES.length;
 }
