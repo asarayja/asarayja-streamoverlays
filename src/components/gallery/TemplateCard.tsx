@@ -15,8 +15,6 @@ import type { ChannelProfile, Template, Theme } from "@/lib/types";
  */
 const SETTLED = 6000;
 
-const LOOP = 6000;
-
 interface TemplateCardProps {
   template: Template;
   profile: ChannelProfile;
@@ -31,7 +29,9 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
   const [hovered, setHovered] = useState(false);
 
   // Every template supports motion — hover previews it, rest shows the still.
-  const clock = useClock(hovered, LOOP);
+  // The clock is unbounded: a looping one would replay the entry animation
+  // every cycle, which reads as the preview restarting.
+  const clock = useClock(hovered);
   const time = hovered ? clock : SETTLED;
 
   const resolvedTheme = theme ?? getPalette(template.paletteId).theme;

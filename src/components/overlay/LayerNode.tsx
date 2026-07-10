@@ -240,18 +240,11 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
   }
 
   if (layer.shape === "crescent") {
-    // One path, outer arc clockwise and the bite anticlockwise: the nonzero
-    // winding rule punches the hole without compositing, so the moon stays
-    // transparent over whatever is behind it.
-    const r = Math.min(w, h) / 2;
     return (
       <KonvaShape
         {...paint}
         sceneFunc={(c, shape) => {
-          c.beginPath();
-          c.arc(w / 2, h / 2, r, 0, Math.PI * 2, false);
-          c.arc(w / 2 + r * 0.5, h / 2 - r * 0.18, r * 0.86, 0, Math.PI * 2, true);
-          c.closePath();
+          crescentPath(c, w, h);
           c.fillStrokeShape(shape);
         }}
       />
@@ -282,6 +275,40 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
   }
 
   return <Line closed points={polygonPoints(layer.shape, w, h)} {...paint} />;
+}
+
+/**
+ * A crescent is the *lune* between two circles, and it cannot be drawn as a
+ * disc with a disc subtracted: under the nonzero winding rule the region that
+ * lies inside the bite but outside the moon has winding -1, so it fills too —
+ * which is what produced a moon on each side with a lens between them.
+ *
+ * Instead we trace the boundary: the outer circle's major arc, then back along
+ * the near edge of the bite. One closed region, no winding tricks.
+ */
+function crescentPath(c: Konva.Context, w: number, h: number) {
+  const R = Math.min(w, h) / 2;
+  const d = R * 0.52; // bite offset
+  const rb = R * 0.95; // bite radius
+  const cx = w / 2;
+  const cy = h / 2;
+
+  const a = (d * d - rb * rb + R * R) / (2 * d);
+  const half = Math.sqrt(Math.max(0, R * R - a * a));
+  const t1 = Math.atan2(half, a);
+  const t2 = Math.atan2(half, a - d);
+  const TAU = Math.PI * 2;
+
+  // Tilt the whole moon slightly, the way one hangs in a night sky.
+  const tilt = -0.35;
+  c.save();
+  c.translate(cx, cy);
+  c.rotate(tilt);
+  c.beginPath();
+  c.arc(0, 0, R, t1, TAU - t1, false);
+  c.arc(d, 0, rb, TAU - t2, t2, true);
+  c.closePath();
+  c.restore();
 }
 
 /**
@@ -1051,6 +1078,24 @@ function ChipContent({ layer, ctx, glowBoost }: { layer: ChipLayer; ctx: RenderC
   );
 }
 
+/**
+ * Ambient loops must not *look* like loops.
+ *
+ * A particle that wraps from one edge to the other at full opacity pops, and
+ * the eye reads the pop as "the video restarted". Two rules fix it:
+ *  - wrap outside the frame, with a margin at least as large as the sprite;
+ *  - fade whatever crosses a visible edge.
+ */
+function wrapAround(value: number, span: number): number {
+  return ((value % span) + span) % span;
+}
+
+/** 1 in the middle, easing to 0 within `band` of either edge. */
+function edgeFade(value: number, extent: number, band: number): number {
+  if (band <= 0) return 1;
+  return Math.max(0, Math.min(1, Math.min(value, extent - value) / band));
+}
+
 function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderContext }) {
   const { width: w, height: h } = layer;
   const color = resolveColor(layer.color, ctx.theme);
@@ -1071,8 +1116,9 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
       case "bats": {
         // Glide across the sky on a slow horizontal track with a wing-beat
         // bounce; each bat has its own altitude band and speed.
-        const span = w + 400;
-        const x = ((seedX * span + t * layer.speed * (60 + seedS * 80)) % span) - 200;
+        const margin = size * 6 + 40;
+        const span = w + margin * 2;
+        const x = wrapAround(seedX * span + t * layer.speed * (60 + seedS * 80), span) - margin;
         const y = seedY * h * 0.7 + h * 0.05 + Math.sin(t * (1.2 + seedS) + i) * 26;
         const flap = 0.25 + Math.abs(Math.sin(t * (5 + seedS * 3) + i * 2.1)) * 1.1;
         nodes.push(
@@ -1110,8 +1156,9 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
       case "petals": {
         // Tumble downward with a sideways sway — rose petals, not snow.
         const fall = t * layer.speed * 55 * (0.5 + seedS);
-        const y = ((seedY * h + fall) % (h + 40)) - 20;
-        const x = ((seedX * w + Math.sin(t * (0.5 + seedS) + i) * 70) % w + w) % w;
+        const margin = size * 3;
+        const y = wrapAround(seedY * h + fall, h + margin * 2) - margin;
+        const x = seedX * w + Math.sin(t * (0.5 + seedS) + i) * 70;
         nodes.push(
           <Ellipse
             key={i}
@@ -1121,7 +1168,7 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
             radiusY={size * 0.6}
             rotation={(t * 70 * layer.speed + i * 47) % 360}
             fill={color}
-            opacity={opacity * 0.9}
+            opacity={opacity * 0.9 * edgeFade(y, h, size * 5)}
           />,
         );
         break;
@@ -1132,7 +1179,7 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
         // sells it — a hard-edged circle reads as a balloon, not weather.
         const radius = layer.size * (18 + seedS * 22);
         const span = w + radius * 4;
-        const x = ((seedX * span + t * layer.speed * (14 + seedS * 20)) % span) - radius * 2;
+        const x = wrapAround(seedX * span + t * layer.speed * (14 + seedS * 20), span) - radius * 2;
         const y = h * 0.35 + seedY * h * 0.6;
         nodes.push(
           <Circle
@@ -1161,11 +1208,14 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
         // silhouette: billowed on top, flat on the bottom, one alpha.
         // Evenly spaced along the span (pure noise clumps them), with the flat
         // baseline just past the bottom edge so the cut never shows.
-        const span = w + 900;
-        const slot = (i + 0.5) / Math.max(1, count) + seedX * 0.22;
-        const x = (((slot * span + t * layer.speed * (10 + seedS * 18)) % span) + span) % span - 450;
-        const y = h * 1.0 + (seedY - 0.5) * h * 0.07;
         const scale = layer.size * (0.8 + seedS * 0.7);
+        // The wrap margin has to clear the widest cloud, or a big one snaps
+        // into view at the edge and gives the loop away.
+        const margin = 3.05 * scale + 40;
+        const span = w + margin * 2;
+        const slot = (i + 0.5) / Math.max(1, count) + seedX * 0.22;
+        const x = wrapAround(slot * span + t * layer.speed * (10 + seedS * 18), span) - margin;
+        const y = h * 1.0 + (seedY - 0.5) * h * 0.07;
         const bob = Math.sin(t * 0.25 + i) * 3;
         const alpha = 0.55 + seedS * 0.35;
         const cap = lighten(color, 0.2);
@@ -1287,8 +1337,9 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
           resolveColor("@accentSecondary", ctx.theme),
         ];
         const fall = t * layer.speed * 90 * (0.5 + seedS);
-        const y = ((seedY * h + fall) % (h + 30)) - 15;
-        const x = ((seedX * w + Math.sin(t * (0.8 + seedS) + i) * 50) % w + w) % w;
+        const margin = size * 3;
+        const y = wrapAround(seedY * h + fall, h + margin * 2) - margin;
+        const x = seedX * w + Math.sin(t * (0.8 + seedS) + i) * 50;
         nodes.push(
           <Rect
             key={i}
@@ -1300,7 +1351,7 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
             offsetY={size * 0.45}
             rotation={(t * 180 * layer.speed + i * 71) % 360}
             fill={tones[i % tones.length]}
-            opacity={opacity}
+            opacity={opacity * edgeFade(y, h, size * 5)}
           />,
         );
         break;
@@ -1309,10 +1360,12 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
       case "hearts": {
         // Drift upward with a sway, fading as they rise.
         const rise = t * layer.speed * 45 * (0.5 + seedS);
-        const y = h - (((seedY * h + rise) % (h + 40)) - 20);
-        const x = ((seedX * w + Math.sin(t * (0.6 + seedS) + i) * 40) % w + w) % w;
+        const margin = size * 3;
+        const y = h - (wrapAround(seedY * h + rise, h + margin * 2) - margin);
+        const x = seedX * w + Math.sin(t * (0.6 + seedS) + i) * 40;
         const s = size * (0.8 + seedS);
-        const fade = 0.25 + 0.75 * (y / h);
+        // Hearts dim as they rise, and the edge fade closes the wrap.
+        const fade = (0.25 + 0.75 * Math.max(0, Math.min(1, y / h))) * edgeFade(y, h, size * 5);
         nodes.push(
           <Group key={i} x={x} y={y} rotation={Math.sin(t + i) * 14} opacity={opacity * fade}>
             <Circle x={-0.52 * s} y={-0.35 * s} radius={0.6 * s} fill={color} />
@@ -1346,8 +1399,10 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
 
       case "stars": {
         const drift = t * layer.speed * 40 * (0.4 + seedS);
-        const y = (((seedY * h + drift) % h) + h) % h;
-        const x = (seedX * w + Math.sin(t * (0.3 + seedS) + i) * 18) % w;
+        const y = wrapAround(seedY * h + drift, h);
+        // No modulo on x: the sway is small, and wrapping it would snap a star
+        // across the frame mid-twinkle.
+        const x = seedX * w + Math.sin(t * (0.3 + seedS) + i) * 18;
         nodes.push(
           <Star
             key={i}
@@ -1357,7 +1412,7 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
             innerRadius={size * 0.35}
             outerRadius={size * 1.6}
             fill={color}
-            opacity={opacity * (0.6 + 0.4 * Math.sin(t * 2 + i))}
+            opacity={opacity * (0.6 + 0.4 * Math.sin(t * 2 + i)) * edgeFade(y, h, size * 6)}
           />,
         );
         break;
@@ -1366,9 +1421,9 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
       default: {
         const drift = t * layer.speed * 40 * (0.4 + seedS);
         const rises = layer.kind === "embers" || layer.kind === "bubbles";
-        const rawY = rises ? seedY * h - drift : seedY * h + drift;
-        const y = ((rawY % h) + h) % h;
-        const x = (seedX * w + Math.sin(t * (0.3 + seedS) + i) * 18) % w;
+        const y = wrapAround(rises ? seedY * h - drift : seedY * h + drift, h);
+        const x = seedX * w + Math.sin(t * (0.3 + seedS) + i) * 18;
+        const flicker = layer.kind === "embers" ? 0.5 + 0.5 * Math.sin(t * 3 + i) : 1;
         nodes.push(
           <Circle
             key={i}
@@ -1376,7 +1431,7 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
             y={y}
             radius={size}
             fill={color}
-            opacity={layer.kind === "embers" ? opacity * (0.5 + 0.5 * Math.sin(t * 3 + i)) : opacity}
+            opacity={opacity * flicker * edgeFade(y, h, size * 6)}
           />,
         );
       }
