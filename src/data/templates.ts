@@ -2674,21 +2674,13 @@ const PLASMA: FamilyStyle = {
       opacity: 0.8,
       effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
     }),
-    // Glossy chrome ribbons riding through the lower half — a bright silver
-    // core between darker edges reads as curved, polished metal.
-    shape("Wave — chrome 1", { x: -120, y: 560, width: 2160, height: 360 }, {
+    // A deeper red wave low in the frame, keeping the energy flowing under the
+    // copy without a dull metal ribbon.
+    shape("Wave — plasma low", { x: -140, y: 620, width: 2200, height: 340 }, {
       shape: "wave",
-      effects: {
-        gradientStroke: { enabled: true, from: "#9a9a9a", to: "#ffffff", angle: 90, width: 30 },
-        glow: { enabled: true, color: "@text", strength: 14 },
-      },
-    }),
-    shape("Wave — chrome 2", { x: -160, y: 700, width: 1900, height: 300 }, {
-      shape: "wave",
-      effects: {
-        gradientStroke: { enabled: true, from: "#8a8a8a", to: "#ffffff", angle: 90, width: 30 },
-        glow: { enabled: true, color: "@text", strength: 10 },
-      },
+      fill: "@primary/55",
+      opacity: 0.8,
+      effects: { glow: { enabled: true, color: "@glow", strength: 58 } },
     }),
     // 40–60 sparks rising through the scene.
     particles("Decor — Sparks", { kind: "embers", count: 52, size: 3, speed: 0.7, color: "@glow", opacity: 0.7 }),
