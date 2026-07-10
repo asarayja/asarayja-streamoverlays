@@ -1,3 +1,4 @@
+import { completeTheme } from "./theme";
 import type { ChannelProfile, Project } from "./types";
 
 /**
@@ -85,7 +86,11 @@ export async function decodePayload(encoded: string): Promise<SharePayload | nul
     } else {
       return null;
     }
-    return JSON.parse(json) as SharePayload;
+    const payload = JSON.parse(json) as SharePayload;
+    // Links minted before the token set grew carry eight-token themes.
+    payload.project.theme = completeTheme(payload.project.theme);
+    payload.profile.theme = completeTheme(payload.profile.theme);
+    return payload;
   } catch {
     return null;
   }

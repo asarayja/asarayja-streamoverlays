@@ -147,7 +147,7 @@ function frame(
     ...box,
     type: o.camera ? "camera" : "frame",
     frameShape: o.shape ?? "rect",
-    fill: o.fill ?? "@background/60",
+    fill: o.fill ?? "@surface/60",
     strokeColor: o.strokeColor ?? "@primary",
     strokeWidth: o.strokeWidth ?? 4,
     cornerRadius: o.cornerRadius ?? 16,
@@ -172,7 +172,7 @@ function chatbox(
     ...common(name, o),
     ...box,
     type: "chatbox",
-    fill: o.fill ?? "@background/70",
+    fill: o.fill ?? "@surface/80",
     cornerRadius: o.cornerRadius ?? 18,
     fontFamily: o.fontFamily ?? "Inter",
     fontSize: o.fontSize ?? 22,
@@ -201,7 +201,7 @@ function alert(
     type: "alert",
     title,
     subtitle,
-    fill: o.fill ?? "@background/85",
+    fill: o.fill ?? "@surface/90",
     cornerRadius: o.cornerRadius ?? 20,
     fontFamily: o.fontFamily ?? "Bebas Neue",
     titleColor: o.titleColor ?? "@accent",
@@ -238,7 +238,7 @@ function social(
     fontSize: o.fontSize ?? 24,
     showHandles: o.showHandles ?? true,
     pill: o.pill ?? true,
-    pillColor: o.pillColor ?? "@background/70",
+    pillColor: o.pillColor ?? "@surface/80",
   };
 }
 
@@ -278,8 +278,6 @@ interface BaseTemplate {
   tags: StyleTag[];
   collection: Collection;
   subStyle?: GothicStyle;
-  animated: boolean;
-  premium: boolean;
   layers: LayerSpec[];
 }
 
@@ -295,12 +293,10 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Neon Grid",
     category: "Gameplay",
     tags: ["Esports"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       shape("Top bar", { x: 0, y: 0, width: 1920, height: 76 }, {
-        fill: "@background/85",
+        fill: "@surface/90",
         animation: anim("slide", { direction: "up", duration: 700 }),
       }),
       shape("Top accent", { x: 0, y: 76, width: 1920, height: 4 }, {
@@ -325,7 +321,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         fontFamily: "Inter",
         fontSize: 15,
         fontWeight: 400,
-        fill: "@secondary",
+        fill: "@textSecondary",
       }),
       frame("Webcam", { x: 40, y: 690, width: 480, height: 270 }, {
         camera: true,
@@ -350,12 +346,10 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Minimal Play",
     category: "Gameplay",
     tags: ["Minimal"],
-    animated: false,
-    premium: false,
     collection: "core",
     layers: [
       shape("Name pill", { x: 40, y: 40, width: 380, height: 64 }, {
-        fill: "@background/75",
+        fill: "@surface/85",
         cornerRadius: 32,
       }),
       img("Logo", { x: 56, y: 52, width: 40, height: 40 }, "{{LOGO}}", { logo: true }),
@@ -370,6 +364,9 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         strokeColor: "@border",
         strokeWidth: 2,
         cornerRadius: 20,
+        // Every template supports motion; minimal designs just keep it subtle.
+        effects: { glow: { enabled: true, color: "@glow", strength: 10 } },
+        animation: anim("glow", { duration: 5200, intensity: 0.5 }),
       }),
       social("Socials", { x: 40, y: 976, width: 440, height: 44 }, {
         platforms: ["twitch", "instagram"],
@@ -384,8 +381,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Esports HUD",
     category: "Gameplay",
     tags: ["Esports", "RGB"],
-    animated: true,
-    premium: true,
     collection: "core",
     layers: [
       shape("Left rail", { x: 0, y: 0, width: 12, height: 1080 }, {
@@ -394,7 +389,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         animation: anim("glow", { duration: 2400 }),
       }),
       shape("Header", { x: 60, y: 36, width: 620, height: 88 }, {
-        fill: "@background/85",
+        fill: "@surface/90",
         cornerRadius: 8,
         effects: { border: { enabled: true, color: "@border", width: 2, radius: 8 } },
         animation: anim("slide", { direction: "left", duration: 600 }),
@@ -431,7 +426,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         rows: 7,
       }),
       shape("Bottom bar", { x: 0, y: 1010, width: 1920, height: 70 }, {
-        fill: "@background/80",
+        fill: "@surface/85",
         animation: anim("slide", { direction: "down", duration: 700, delay: 200 }),
       }),
       social("Socials", { x: 60, y: 1024, width: 800, height: 44 }, {
@@ -450,8 +445,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Chat Lounge",
     category: "Just Chatting",
     tags: ["Cozy"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
@@ -478,7 +471,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         fontFamily: "Inter",
         fontSize: 26,
         fontWeight: 400,
-        fill: "@secondary",
+        fill: "@textSecondary",
         animation: anim("fade", { duration: 900, delay: 500 }),
       }),
       chatbox("Chat", { x: 1180, y: 150, width: 640, height: 730 }, {
@@ -498,8 +491,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Starting Soon — Pulse",
     category: "Starting Soon",
     tags: ["Neon"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
@@ -542,7 +533,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         fontSize: 26,
         fontWeight: 400,
         align: "center",
-        fill: "@secondary",
+        fill: "@textSecondary",
         animation: anim("fade", { duration: 1000, delay: 800 }),
       }),
       social("Socials", { x: 460, y: 940, width: 1000, height: 56 }, {
@@ -556,8 +547,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Starting Soon — Cyber",
     category: "Starting Soon",
     tags: ["Cyberpunk", "Sci-Fi"],
-    animated: true,
-    premium: true,
     collection: "core",
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
@@ -597,7 +586,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         fontFamily: "Rajdhani",
         fontSize: 26,
         align: "center",
-        fill: "@secondary",
+        fill: "@textSecondary",
         animation: anim("fade", { duration: 900, delay: 1700 }),
       }),
       social("Socials", { x: 460, y: 880, width: 1000, height: 56 }, {
@@ -614,8 +603,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Be Right Back — Cozy",
     category: "BRB",
     tags: ["Cozy", "Minimal"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
@@ -643,7 +630,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         fontSize: 30,
         fontWeight: 400,
         align: "center",
-        fill: "@secondary",
+        fill: "@textSecondary",
         animation: anim("fade", { duration: 1200, delay: 400 }),
       }),
       social("Socials", { x: 560, y: 900, width: 800, height: 56 }, {
@@ -657,8 +644,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Be Right Back — Dread",
     category: "BRB",
     tags: ["Horror", "Dark"],
-    animated: true,
-    premium: true,
     collection: "core",
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
@@ -685,7 +670,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         fontSize: 28,
         fontWeight: 400,
         align: "center",
-        fill: "@secondary",
+        fill: "@textSecondary",
         animation: anim("fade", { duration: 1600, delay: 600 }),
       }),
     ],
@@ -697,8 +682,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Stream Ending — Thank You",
     category: "Stream Ending",
     tags: ["Neon", "Dark"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
@@ -754,8 +737,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Webcam — Hex Cut",
     category: "Webcam Frames",
     tags: ["Sci-Fi", "Esports"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       frame("Camera", { x: 320, y: 120, width: 1280, height: 720 }, {
@@ -767,7 +748,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         animation: anim("glow", { duration: 2600 }),
       }),
       shape("Name plate", { x: 660, y: 850, width: 600, height: 70 }, {
-        fill: "@background/85",
+        fill: "@surface/90",
         cornerRadius: 35,
         effects: { border: { enabled: true, color: "@border", width: 2, radius: 35 } },
         animation: anim("slide", { direction: "up", duration: 700, delay: 200 }),
@@ -789,8 +770,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Webcam — Soft Circle",
     category: "Webcam Frames",
     tags: ["Minimal", "Cozy"],
-    animated: false,
-    premium: false,
     collection: "core",
     layers: [
       frame("Camera", { x: 610, y: 90, width: 700, height: 700 }, {
@@ -799,6 +778,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         strokeColor: "@primary",
         strokeWidth: 8,
         effects: { shadow: { enabled: true, color: "@shadow", blur: 60, offsetY: 20, opacity: 0.6 } },
+        animation: anim("float", { duration: 6000, intensity: 0.35 }),
       }),
       text("Channel name", { x: 460, y: 830, width: 1000, height: 60 }, "{{DISPLAY_NAME}}", {
         fontFamily: "Space Grotesk",
@@ -823,8 +803,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Alert — New Follower",
     category: "Alerts",
     tags: ["Neon"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       alert("Follower alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW FOLLOWER", "AwesomeViewer", {
@@ -838,8 +816,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Alert — Subscriber",
     category: "Alerts",
     tags: ["Esports", "RGB"],
-    animated: true,
-    premium: true,
     collection: "core",
     layers: [
       alert("Sub alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUB", "Tier 1 · Thank you!", {
@@ -859,8 +835,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Chat Box — Glass",
     category: "Chat Boxes",
     tags: ["Minimal", "Dark"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       chatbox("Chat", { x: 1400, y: 120, width: 460, height: 840 }, {
@@ -886,8 +860,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Social Bar — Pill",
     category: "Social Bars",
     tags: ["Minimal"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       social("Socials", { x: 360, y: 960, width: 1200, height: 64 }, {
@@ -904,12 +876,10 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Social Bar — Side Rail",
     category: "Social Bars",
     tags: ["Neon", "Dark"],
-    animated: true,
-    premium: false,
     collection: "core",
     layers: [
       shape("Rail", { x: 40, y: 300, width: 72, height: 480 }, {
-        fill: "@background/80",
+        fill: "@surface/85",
         cornerRadius: 36,
         effects: { border: { enabled: true, color: "@border", width: 1, radius: 36 } },
         animation: anim("slide", { direction: "left", duration: 700 }),
@@ -931,8 +901,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Stinger — Diagonal Sweep",
     category: "Stinger Transitions",
     tags: ["Neon", "Esports"],
-    animated: true,
-    premium: true,
     collection: "core",
     layers: [
       shape("Sweep back", { x: -600, y: -200, width: 1400, height: 1600 }, {
@@ -959,12 +927,10 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     name: "Signature Package",
     category: "Complete Stream Package",
     tags: ["Esports", "Neon"],
-    animated: true,
-    premium: true,
     collection: "core",
     layers: [
       shape("Top bar", { x: 0, y: 0, width: 1920, height: 84 }, {
-        fill: "@background/88",
+        fill: "@surface/92",
         animation: anim("slide", { direction: "up", duration: 700 }),
       }),
       shape("Top accent", { x: 0, y: 84, width: 1920, height: 3 }, {
@@ -983,7 +949,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
       text("Slogan", { x: 100, y: 56, width: 600, height: 24 }, "{{SLOGAN}}", {
         fontFamily: "Inter",
         fontSize: 15,
-        fill: "@secondary",
+        fill: "@textSecondary",
       }),
       shape("Live pill", { x: 1740, y: 22, width: 140, height: 40 }, {
         fill: "@primary",
@@ -1013,7 +979,7 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         animation: anim("elastic", { duration: 1200, delay: 900 }),
       }),
       shape("Bottom bar", { x: 0, y: 1012, width: 1920, height: 68 }, {
-        fill: "@background/85",
+        fill: "@surface/90",
         animation: anim("slide", { direction: "down", duration: 700, delay: 200 }),
       }),
       social("Socials", { x: 44, y: 1026, width: 900, height: 44 }, {
@@ -1046,8 +1012,6 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Fantasy"],
     collection: "gothic",
     subStyle: "Dark Goth",
-    animated: true,
-    premium: false,
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
@@ -1063,12 +1027,12 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         animation: anim("float", { duration: 6000, intensity: 0.6 }),
       }),
       shape("Decor — Left column", { x: 150, y: 180, width: 80, height: 900 }, {
-        fill: "@background/70",
+        fill: "@surface/80",
         effects: { border: { enabled: true, color: "@border", width: 2, radius: 0 } },
         opacity: 0.85,
       }),
       shape("Decor — Right column", { x: 1690, y: 180, width: 80, height: 900 }, {
-        fill: "@background/70",
+        fill: "@surface/80",
         effects: { border: { enabled: true, color: "@border", width: 2, radius: 0 } },
         opacity: 0.85,
       }),
@@ -1096,7 +1060,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         fontSize: 28,
         fontWeight: 400,
         align: "center",
-        fill: "@secondary",
+        fill: "@textSecondary",
         animation: anim("fade", { duration: 1200, delay: 800 }),
       }),
       social("Socials", { x: 460, y: 930, width: 1000, height: 56 }, {
@@ -1113,11 +1077,9 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Horror", "Dark"],
     collection: "gothic",
     subStyle: "Vampire Goth",
-    animated: true,
-    premium: false,
     layers: [
       shape("Top bar", { x: 0, y: 0, width: 1920, height: 78 }, {
-        fill: "@background/88",
+        fill: "@surface/92",
         animation: anim("slide", { direction: "up", duration: 700 }),
       }),
       shape("Ornament line", { x: 0, y: 78, width: 1920, height: 3 }, {
@@ -1138,7 +1100,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         fontFamily: "IM Fell English SC",
         fontSize: 15,
         fontWeight: 400,
-        fill: "@secondary",
+        fill: "@textSecondary",
       }),
       particles("Decor — Bats", { kind: "bats", count: 7, size: 5, speed: 0.7, color: "@primary", opacity: 0.55 }),
       particles("Decor — Petals", { kind: "petals", count: 14, size: 5, speed: 0.6, color: "@accent", opacity: 0.5 }),
@@ -1170,8 +1132,6 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Pink", "Cozy"],
     collection: "gothic",
     subStyle: "Pastel Goth",
-    animated: true,
-    premium: false,
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
@@ -1189,7 +1149,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         animation: anim("glow", { duration: 4200 }),
       }),
       shape("Name plate", { x: 90, y: 760, width: 640, height: 84 }, {
-        fill: "@background/80",
+        fill: "@surface/85",
         cornerRadius: 42,
         effects: { border: { enabled: true, color: "@border", width: 2, radius: 42 } },
       }),
@@ -1203,7 +1163,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         fontFamily: "Inter",
         fontSize: 24,
         fontWeight: 400,
-        fill: "@secondary",
+        fill: "@textSecondary",
       }),
       chatbox("Chat", { x: 1180, y: 140, width: 650, height: 740 }, {
         cornerRadius: 30,
@@ -1226,8 +1186,6 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Fantasy", "Purple"],
     collection: "gothic",
     subStyle: "Witch Goth",
-    animated: true,
-    premium: false,
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
@@ -1262,7 +1220,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         fontSize: 30,
         fontWeight: 400,
         align: "center",
-        fill: "@secondary",
+        fill: "@textSecondary",
         animation: anim("fade", { duration: 1200, delay: 500 }),
       }),
       social("Socials", { x: 560, y: 880, width: 800, height: 56 }, {
@@ -1279,8 +1237,6 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Fantasy", "Dark"],
     collection: "gothic",
     subStyle: "Victorian Goth",
-    animated: true,
-    premium: true,
     layers: [
       shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
         background: true,
@@ -1329,11 +1285,9 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Cyberpunk", "Neon"],
     collection: "gothic",
     subStyle: "Cyber Goth",
-    animated: true,
-    premium: true,
     layers: [
       shape("Top bar", { x: 0, y: 0, width: 1920, height: 80 }, {
-        fill: "@background/90",
+        fill: "@surface/92",
         animation: anim("slide", { direction: "up", duration: 700 }),
       }),
       shape("Glitch line", { x: 0, y: 80, width: 1920, height: 3 }, {
@@ -1354,7 +1308,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         fontFamily: "Rajdhani",
         fontSize: 15,
         fontWeight: 400,
-        fill: "@secondary",
+        fill: "@textSecondary",
         letterSpacing: 3,
       }),
       shape("Live pill", { x: 1744, y: 20, width: 140, height: 40 }, {
@@ -1396,7 +1350,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         animation: anim("elastic", { duration: 1200, delay: 900 }),
       }),
       shape("Bottom bar", { x: 0, y: 1014, width: 1920, height: 66 }, {
-        fill: "@background/88",
+        fill: "@surface/92",
         animation: anim("slide", { direction: "down", duration: 700, delay: 200 }),
       }),
       social("Socials", { x: 44, y: 1026, width: 900, height: 44 }, {
@@ -1417,8 +1371,6 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Pink", "Dark"],
     collection: "gothic",
     subStyle: "Romantic Goth",
-    animated: true,
-    premium: false,
     layers: [
       particles("Decor — Petals", { kind: "petals", count: 16, size: 6, speed: 0.6, color: "@primary", opacity: 0.65 }),
       frame("Decor — Outer lace", { x: 300, y: 100, width: 1320, height: 760 }, {
@@ -1436,7 +1388,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         animation: anim("glow", { duration: 4600 }),
       }),
       shape("Name plate", { x: 660, y: 880, width: 600, height: 72 }, {
-        fill: "@background/85",
+        fill: "@surface/90",
         cornerRadius: 36,
         effects: { border: { enabled: true, color: "@border", width: 2, radius: 36 } },
       }),
@@ -1457,8 +1409,6 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     tags: ["Dark", "Nordic"],
     collection: "gothic",
     subStyle: "Gothic Horror",
-    animated: true,
-    premium: false,
     layers: [
       particles("Decor — Ravens", { kind: "bats", count: 10, size: 6, speed: 1.0, color: "@primary", opacity: 0.65 }),
       alert("Follower alert", { x: 560, y: 400, width: 800, height: 240 }, "A RAVEN ARRIVES", "New follower · AwesomeViewer", {
@@ -1494,8 +1444,6 @@ function buildVariant(base: BaseTemplate, paletteId: string): Template {
     tags: [...tags],
     collection: base.collection,
     subStyle: base.subStyle,
-    premium: base.premium,
-    animated: base.animated,
     paletteId,
     layers: base.layers.map((spec, i) => ({ ...spec, id: `${base.id}-l${i}` }) as Layer),
   };

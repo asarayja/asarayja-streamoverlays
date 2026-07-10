@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getPalette, DEFAULT_PALETTE_ID } from "@/data/palettes";
+import { completeTheme } from "@/lib/theme";
 import type { ChannelProfile, SocialPlatform, Theme, ThemeToken } from "@/lib/types";
 
 export const EMPTY_PROFILE: ChannelProfile = {
@@ -80,7 +81,17 @@ export const useProfileStore = create<ProfileState>()(
       reset: () => set({ profile: EMPTY_PROFILE, configured: false }),
       loadDemo: () => set({ profile: DEMO_PROFILE, configured: true }),
     }),
-    { name: "asarayja:profile", version: 1, skipHydration: true },
+    {
+      name: "asarayja:profile",
+      version: 2,
+      skipHydration: true,
+      // v1 themes predate the sixteen-token system; derive the new tokens.
+      migrate: (persisted) => {
+        const state = persisted as ProfileState;
+        if (state?.profile?.theme) state.profile.theme = completeTheme(state.profile.theme);
+        return state;
+      },
+    },
   ),
 );
 

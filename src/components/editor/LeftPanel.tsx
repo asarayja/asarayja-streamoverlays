@@ -28,7 +28,8 @@ import {
 import { FONTS } from "@/data/fonts";
 import { TEMPLATES } from "@/data/templates";
 import { getPalette } from "@/data/palettes";
-import { HarmonyButton, PaletteGrid, ThemeTokens } from "@/components/ThemeEditor";
+import { ContrastCheck } from "@/components/ContrastCheck";
+import { HarmonyGenerator, PaletteGrid, ThemeTokens } from "@/components/ThemeEditor";
 import { Button, Chip, Field, TextInput, cx } from "@/components/ui";
 import { uid } from "@/lib/id";
 import { fileToDataUrl } from "@/lib/image";
@@ -182,7 +183,6 @@ function TemplatesTab() {
                   <span className="block truncate text-xs font-medium text-zinc-200">{template.name}</span>
                   <span className="block truncate text-[10px] text-zinc-500">{template.category}</span>
                 </span>
-                {template.animated && <Wind className="size-3.5 shrink-0 text-zinc-600" />}
               </button>
             );
           })}
@@ -348,7 +348,7 @@ function IconAction({
 function ColorsTab() {
   const project = useEditorStore((s) => s.project);
   const setTheme = useEditorStore((s) => s.setTheme);
-  const setThemeToken = useEditorStore((s) => s.setThemeToken);
+  const setThemePatch = useEditorStore((s) => s.setThemePatch);
   if (!project) return null;
 
   return (
@@ -359,9 +359,12 @@ function ColorsTab() {
       />
       <div className="space-y-4 p-4">
         <PaletteGrid theme={project.theme} onApply={setTheme} />
-        <HarmonyButton theme={project.theme} onApply={setTheme} />
+        <HarmonyGenerator theme={project.theme} onApply={setTheme} />
         <div className="border-t border-white/[0.06] pt-4">
-          <ThemeTokens theme={project.theme} onChange={setThemeToken} />
+          <ContrastCheck theme={project.theme} onFix={setThemePatch} />
+        </div>
+        <div className="border-t border-white/[0.06] pt-4">
+          <ThemeTokens theme={project.theme} onPatch={setThemePatch} />
         </div>
       </div>
     </div>

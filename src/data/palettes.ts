@@ -1,13 +1,20 @@
-import type { Palette, StyleTag } from "@/lib/types";
+import type { CoreTheme, Palette, StyleTag, Theme } from "@/lib/types";
+import { completeTheme } from "@/lib/theme";
 
 /**
- * Shipping palettes. Each one is a complete `Theme`, so swapping a palette in
- * the editor recolours every layer of every template in one assignment.
+ * Shipping palettes. Authors tune the eight core tokens (plus any overrides);
+ * `completeTheme` derives the other eight, so every palette exposes the full
+ * sixteen-token system. Swapping a palette recolours every layer of every
+ * template in one assignment.
  *
  * `tags` feed the gallery filter — a template variant inherits its palette's
  * tags on top of its own structural tags.
  */
-export const PALETTES: Palette[] = [
+interface PaletteDef extends Omit<Palette, "theme"> {
+  theme: CoreTheme & Partial<Theme>;
+}
+
+const DEFS: PaletteDef[] = [
   {
     id: "purple-neon",
     name: "Purple Neon",
@@ -104,20 +111,24 @@ export const PALETTES: Palette[] = [
       shadow: "#000000",
     },
   },
+  // Spec palette "Minimal": white background, light-gray surface, slate,
+  // steel blue, royal blue, near-black text.
   {
     id: "white-clean",
-    name: "White",
+    name: "Minimal",
     collection: "core",
     tags: ["Light", "Minimal", "Cozy"],
     theme: {
-      primary: "#18181b",
-      secondary: "#71717a",
-      accent: "#6366f1",
-      background: "#fafafa",
-      text: "#18181b",
-      border: "#d4d4d8",
-      glow: "#c7d2fe",
-      shadow: "#71717a",
+      primary: "#475569",
+      secondary: "#5b7c99",
+      accent: "#2563eb",
+      background: "#fbfbfc",
+      surface: "#eff1f4",
+      surfaceSecondary: "#e4e7ec",
+      text: "#0f1115",
+      border: "#b3bac7",
+      glow: "#93b4f5",
+      shadow: "#7d8593",
     },
   },
   {
@@ -200,19 +211,22 @@ export const PALETTES: Palette[] = [
       shadow: "#0c4a6e",
     },
   },
+  // Spec palette "Fantasy": deep forest, dark moss, emerald, gold, magic blue,
+  // warm ivory.
   {
     id: "forest",
-    name: "Forest",
+    name: "Fantasy",
     collection: "core",
     tags: ["Green", "Cozy", "Fantasy", "Nordic"],
     theme: {
-      primary: "#4d7c0f",
-      secondary: "#84cc16",
-      accent: "#fbbf24",
-      background: "#0b1207",
-      text: "#f7fee7",
-      border: "#65a30d",
-      glow: "#a3e635",
+      primary: "#2fa36b",
+      secondary: "#d9a23c",
+      accent: "#4fa3e8",
+      background: "#0c1710",
+      surface: "#18261c",
+      text: "#f5efdc",
+      border: "#4a6a55",
+      glow: "#6fd3a0",
       shadow: "#000000",
     },
   },
@@ -249,22 +263,84 @@ export const PALETTES: Palette[] = [
     },
   },
 
+
+  /* -------------------------------- Pride -------------------------------- */
+  // Flag colours harmonised per the design rules: softened saturation, a
+  // neutral dark background, and text/accent pairs that pass the contrast
+  // gate — celebratory without the over-saturated sticker look.
+  {
+    id: "pride",
+    name: "Pride",
+    collection: "core",
+    tags: ["RGB", "Pink", "Blue", "Dark"],
+    theme: {
+      primary: "#d9486b",
+      secondary: "#3e8ede",
+      accent: "#f2b33d",
+      accentSecondary: "#58b368",
+      background: "#111015",
+      text: "#f7f7fa",
+      border: "#6f6a7e",
+      glow: "#e8875f",
+      shadow: "#000000",
+      success: "#58b368",
+      warning: "#f2b33d",
+      error: "#d9486b",
+    },
+  },
+  {
+    id: "trans-pride",
+    name: "Trans Pride",
+    collection: "core",
+    tags: ["Blue", "Pink", "Dark", "Cozy"],
+    theme: {
+      primary: "#6fbee6",
+      secondary: "#f0a3c2",
+      accent: "#bfe3f5",
+      accentSecondary: "#f6cdde",
+      background: "#12141a",
+      text: "#f6fafd",
+      border: "#5e7386",
+      glow: "#9ad2f0",
+      shadow: "#000000",
+    },
+  },
+  {
+    id: "bi-pride",
+    name: "Bi Pride",
+    collection: "core",
+    tags: ["Pink", "Purple", "Blue", "Dark"],
+    theme: {
+      primary: "#c1437e",
+      secondary: "#7a4e9e",
+      accent: "#7f9ee8",
+      background: "#100a14",
+      text: "#f8f4fb",
+      border: "#6e5580",
+      glow: "#d06aa0",
+      shadow: "#000000",
+    },
+  },
+
   /* ------------------------------- Gothic -------------------------------- */
   // The ten launch packs. Each is a complete Theme, so a gothic template can
   // swap between them with one click, exactly like the core palettes.
+  // Spec palette "Dark Goth": charcoal black, gunmetal, deep burgundy, royal
+  // purple, antique silver, ivory white, dark crimson glow.
   {
     id: "midnight-cathedral",
     name: "Midnight Cathedral",
     collection: "gothic",
     tags: ["Dark", "Purple", "Fantasy"],
     theme: {
-      primary: "#4C3A6E",
-      secondary: "#8E86A8",
-      accent: "#C9CDE0",
-      background: "#0A0A14",
-      text: "#F0EEF7",
-      border: "#6E6390",
-      glow: "#9F8FD0",
+      primary: "#571c30",
+      secondary: "#4b2a6e",
+      accent: "#c6c2ce",
+      background: "#0b0b0e",
+      surface: "#17161c",
+      text: "#f4efe6",
+      border: "#6e6577",
+      glow: "#8a1e3c",
       shadow: "#000000",
     },
   },
@@ -273,7 +349,10 @@ export const PALETTES: Palette[] = [
     name: "Pastel Nightmare",
     collection: "gothic",
     tags: ["Pink", "Purple", "Dark"],
+    // Spec palette "Pastel Goth": dark plum, charcoal violet, soft pink,
+    // lavender, mint, warm white, pastel purple glow.
     theme: {
+      surface: "#241c2e",
       primary: "#E7A5D7",
       secondary: "#B6A5E8",
       accent: "#9FE0D0",
@@ -292,7 +371,7 @@ export const PALETTES: Palette[] = [
     theme: {
       primary: "#5E102A",
       secondary: "#24142F",
-      accent: "#A51D45",
+      accent: "#C2224F",
       background: "#08070A",
       text: "#F1E8ED",
       border: "#71616D",
@@ -300,19 +379,22 @@ export const PALETTES: Palette[] = [
       shadow: "#000000",
     },
   },
+  // Tuned to "Haunting Whispers" (piktochart.com/blog/gothic-color-palette):
+  // a muted violet ramp #1F1A2A -> #B8A3C1.
   {
     id: "moonlit-witch",
     name: "Moonlit Witch",
     collection: "gothic",
     tags: ["Purple", "Dark", "Fantasy"],
     theme: {
-      primary: "#6D5A9E",
-      secondary: "#3E5C50",
-      accent: "#C9A7F5",
-      background: "#0B0A12",
+      primary: "#5B4B8A",
+      secondary: "#7A6A9A",
+      accent: "#B8A3C1",
+      background: "#14101C",
+      surface: "#241B30",
       text: "#F3EFFA",
-      border: "#7E6BA8",
-      glow: "#A98BE8",
+      border: "#6F5F8E",
+      glow: "#9C82C9",
       shadow: "#000000",
     },
   },
@@ -321,7 +403,9 @@ export const PALETTES: Palette[] = [
     name: "Victorian Mourning",
     collection: "gothic",
     tags: ["Dark", "Orange", "Fantasy"],
+    // Surface leans on the warm dark wood of "Enchanted Forest" (piktochart).
     theme: {
+      surface: "#241C16",
       primary: "#6E1F2E",
       secondary: "#3A2C22",
       accent: "#C8A44D",
@@ -337,14 +421,18 @@ export const PALETTES: Palette[] = [
     name: "Cyber Coven",
     collection: "gothic",
     tags: ["Cyberpunk", "Purple", "Neon", "Dark"],
+    // Spec palette "Cyber Goth": near black, graphite, electric purple, neon
+    // cyan, acid green, white, electric blue glow.
     theme: {
-      primary: "#9B30FF",
-      secondary: "#23E8DA",
-      accent: "#F02EAE",
+      primary: "#9b30ff",
+      secondary: "#23e8da",
+      accent: "#b8e62e",
+      accentSecondary: "#f02eae",
       background: "#050208",
-      text: "#F4EAFF",
-      border: "#8C4FD0",
-      glow: "#B76CFF",
+      surface: "#1a1a1f",
+      text: "#f7f4fb",
+      border: "#8c4fd0",
+      glow: "#3d9bff",
       shadow: "#000000",
     },
   },
@@ -364,19 +452,23 @@ export const PALETTES: Palette[] = [
       shadow: "#000000",
     },
   },
+  // Tuned to "Dark Elegance" (piktochart gothic palettes): slate navy with a
+  // vivid rose-red pair and petal-pink highlights.
   {
     id: "gothic-romance",
     name: "Gothic Romance",
     collection: "gothic",
     tags: ["Red", "Pink", "Dark"],
     theme: {
-      primary: "#B3193E",
-      secondary: "#2C0F1A",
-      accent: "#E8A0B4",
-      background: "#100608",
-      text: "#FBEFF2",
-      border: "#A46073",
-      glow: "#D14C6F",
+      primary: "#D50032",
+      secondary: "#8D99AE",
+      accent: "#F9AFAF",
+      accentSecondary: "#EF233C",
+      background: "#131521",
+      surface: "#23263A",
+      text: "#FDF4F6",
+      border: "#7C8299",
+      glow: "#EF233C",
       shadow: "#000000",
     },
   },
@@ -385,12 +477,16 @@ export const PALETTES: Palette[] = [
     name: "Raven Manor",
     collection: "gothic",
     tags: ["Blue", "Dark", "Nordic"],
+    // Navy depths from "Phantom's Embrace" (piktochart), silver kept as the
+    // signature accent, its crimson repurposed as the secondary accent.
     theme: {
-      primary: "#35455C",
-      secondary: "#1E2733",
+      primary: "#2C3F66",
+      secondary: "#223052",
       accent: "#B9C4D6",
-      background: "#0A0C10",
-      text: "#EAEFF5",
+      accentSecondary: "#E94560",
+      background: "#12141C",
+      surface: "#1B2233",
+      text: "#F2F5F9",
       border: "#55677F",
       glow: "#8FA3C0",
       shadow: "#000000",
@@ -413,6 +509,12 @@ export const PALETTES: Palette[] = [
     },
   },
 ];
+
+/** Public palettes: core tokens authored above, the rest derived. */
+export const PALETTES: Palette[] = DEFS.map((def) => ({
+  ...def,
+  theme: completeTheme(def.theme),
+}));
 
 export const DEFAULT_PALETTE_ID = "purple-neon";
 

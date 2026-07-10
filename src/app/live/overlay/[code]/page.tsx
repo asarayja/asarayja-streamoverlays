@@ -7,6 +7,7 @@ import { useClock } from "@/lib/useClock";
 import { useElementSize } from "@/lib/useElementSize";
 import { useProfileStore } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
+import { SETTLED_TIME } from "@/store/editor";
 
 /**
  * The OBS browser source.
@@ -26,7 +27,11 @@ export default function LiveOverlayPage({ params }: { params: Promise<{ code: st
   const [status, setStatus] = useState<"loading" | "ready" | "missing">("loading");
 
   const loopMs = 6000;
-  const time = useClock(status === "ready", loopMs);
+  // The project's motion switch travels with the payload: off means OBS gets
+  // the settled still frame instead of a running clock.
+  const motion = payload?.project.animationsEnabled !== false;
+  const clock = useClock(status === "ready" && motion, loopMs);
+  const time = motion ? clock : SETTLED_TIME;
 
   useEffect(() => {
     let cancelled = false;

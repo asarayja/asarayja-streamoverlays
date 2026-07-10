@@ -3,6 +3,9 @@
 Browser-based stream overlay editor. Pick a template, fill in your channel profile once, and
 export to PNG, video, individual elements, or a live OBS browser source.
 
+Everything is free — no premium tier — and every template works both as a still and animated:
+motion is a per-project switch, not a template property.
+
 ```bash
 npm install
 npm run dev      # http://localhost:3000
@@ -20,8 +23,16 @@ A template is **pure data**, and it never contains a literal colour or a literal
 text("Channel name", box, "{{CHANNEL_NAME}}", { fill: "@accent" })
 ```
 
-- `@accent` is a **theme token**, resolved against the project's `Theme`.
+- `@accent` is a **design token**, resolved against the project's `Theme`.
 - `{{CHANNEL_NAME}}` is a **placeholder**, resolved against your `ChannelProfile`.
+
+The token system is sixteen deep — backgrounds (`background`, `backgroundSecondary`, `surface`,
+`surfaceSecondary`), brand (`primary`, `secondary`, `accent`, `accentSecondary`), text (`text`,
+`textSecondary`), effects (`border`, `glow`, `shadow`) and status (`success`, `warning`,
+`error`). Palettes author the eight core tokens; `completeTheme` derives the rest, and any
+derived token can be overridden by hand. Colour values support modifiers:
+`@accent/40` (alpha), `@accent+20` (lighter), `@accent-20` (darker) — lighter/darker/hover
+variants of any token without minting new ones.
 
 Rendering is always `template + theme + profile → layers`. Two product promises fall out of that
 single rule for free:
@@ -31,10 +42,29 @@ single rule for free:
 - **Never type your name twice.** Fill in the channel profile once; every template you open is
   already populated.
 
-It also means the 350 templates in the gallery are generated at module load: 18 core designs ×
-15 core palettes plus 8 gothic designs × 10 gothic palettes. Collections pair with their own
+It also means the 404 templates in the gallery are generated at module load: 18 core designs ×
+18 core palettes plus 8 gothic designs × 10 gothic palettes. Collections pair with their own
 palettes — a neon esports palette on a Victorian mourning frame helps nobody. Adding a gothic
 palette adds 8 finished gothic templates.
+
+## Colour, done properly
+
+- **Harmony schemes, never random.** "Generate from primary" places secondary and accent hues by
+  colour-wheel geometry — analogous, complementary, split-complementary, triadic, tetradic or
+  monochrome — then forces the result through the contrast gate (`themeFromSeed`).
+- **Automatic contrast control.** The `ContrastCheck` panel (editor Colors tab and profile page)
+  scores the pairs that decide on-stream readability against WCAG 2.x — 4.5:1 for text, 3:1 for
+  UI — with a deterministic one-click fix that moves only the failing token's lightness. It also
+  simulates protanopia/deuteranopia and warns when success/error or primary/accent collapse for
+  red-green colour-blind viewers.
+- **Linked colours.** Editing background, text, accent or primary cascades to the tones derived
+  from them (surfaces, secondary text, glow, border) — one colour change restyles the family
+  (`cascade` in `lib/theme.ts`).
+- **Shipped palettes are gated.** `GET /qa` runs every shipped palette through the same checks;
+  all 28 pass all pairs. The named spec palettes (Dark Goth, Pastel Goth, Cyber Goth, Minimal,
+  Fantasy) are hand-authored, and three Pride palettes ship with flag colours harmonised onto
+  neutral backgrounds. Several gothic packs are tuned to published gothic palettes
+  (piktochart.com/blog/gothic-color-palette).
 
 ## The Gothic collection
 
@@ -80,7 +110,7 @@ src/
     zip.ts            Minimal store-only ZIP writer
   data/
     templates.ts      Base templates (core + gothic) + variant expansion
-    palettes.ts       25 shipping palettes: 15 core + 10 gothic packs
+    palettes.ts       28 shipping palettes: 18 core (incl. 3 Pride) + 10 gothic packs
     fonts.ts          Google Fonts catalogue
   components/
     overlay/          The renderer. LayerNode.tsx paints every layer type.
@@ -132,6 +162,10 @@ your webcam, so any fill would tint it. In `live` mode the interior is fully tra
 | PNG sequence (ZIP) | Yes | Frame-accurate, with the FFmpeg commands to encode it |
 | Individual elements (ZIP) | Yes | Each visible layer as its own cropped PNG + a position manifest |
 | OBS browser source | Yes | Nothing to export — OBS renders the page |
+
+**Motion switch.** The clapperboard toggle in the editor header sets `project.animationsEnabled`.
+Off, the live OBS view and exports render the settled still pose; on, everything plays. The flag
+travels inside the OBS link payload, so a static overlay stays static in OBS.
 
 **Scenes vs overlays.** Screens like Starting Soon, BRB and Stream Ending carry a canvas-filling
 `background` layer and export opaque edge to edge (gradients are painted over a solid base so a

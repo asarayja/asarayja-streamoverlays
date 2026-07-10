@@ -7,7 +7,7 @@ import { PALETTES } from "@/data/palettes";
 import { TEMPLATES } from "@/data/templates";
 import { TemplateCard } from "@/components/gallery/TemplateCard";
 import { TopNav } from "@/components/site/TopNav";
-import { Button, Chip, Select, TextInput, Toggle, cx } from "@/components/ui";
+import { Button, Chip, Select, TextInput, cx } from "@/components/ui";
 import { useProfileStore, useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
 import { GOTHIC_STYLES, STYLE_TAGS, TEMPLATE_CATEGORIES } from "@/lib/types";
@@ -27,8 +27,6 @@ export default function GalleryPage() {
   const [tags, setTags] = useState<StyleTag[]>([]);
   const [paletteId, setPaletteId] = useState("all");
   const [query, setQuery] = useState("");
-  const [animatedOnly, setAnimatedOnly] = useState(false);
-  const [freeOnly, setFreeOnly] = useState(false);
   const [useBrand, setUseBrand] = useState(false);
   const [visible, setVisible] = useState(PAGE_SIZE);
 
@@ -39,13 +37,11 @@ export default function GalleryPage() {
       if (collection === "gothic" && subStyle !== "all" && t.subStyle !== subStyle) return false;
       if (category !== "All" && t.category !== category) return false;
       if (paletteId !== "all" && t.paletteId !== paletteId) return false;
-      if (animatedOnly && !t.animated) return false;
-      if (freeOnly && t.premium) return false;
       if (tags.length > 0 && !tags.every((tag) => t.tags.includes(tag))) return false;
       if (needle && !`${t.name} ${t.category}`.toLowerCase().includes(needle)) return false;
       return true;
     });
-  }, [collection, subStyle, category, tags, paletteId, query, animatedOnly, freeOnly]);
+  }, [collection, subStyle, category, tags, paletteId, query]);
 
   const shown = filtered.slice(0, visible);
   const resetPaging = () => setVisible(PAGE_SIZE);
@@ -69,8 +65,6 @@ export default function GalleryPage() {
     setCategory("All");
     setPaletteId("all");
     setQuery("");
-    setAnimatedOnly(false);
-    setFreeOnly(false);
     resetPaging();
   };
 
@@ -90,8 +84,8 @@ export default function GalleryPage() {
             <span className="text-white">in under five minutes.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-balance text-[15px] leading-relaxed text-zinc-400">
-            Fill in your channel details once. Every template picks up your name, logo and socials
-            automatically — then export to PNG, video, or a live OBS browser source.
+            Everything is free, every template works as a still or animated. Fill in your channel
+            details once — every design picks up your name, logo and socials automatically.
           </p>
         </section>
 
@@ -157,29 +151,6 @@ export default function GalleryPage() {
                   </option>
                 ))}
               </Select>
-            </div>
-
-            <div className="flex items-center gap-5 rounded-lg border border-white/10 bg-black/20 px-3.5 py-1.5">
-              <div className="w-32">
-                <Toggle
-                  label="Animated"
-                  checked={animatedOnly}
-                  onChange={(v) => {
-                    setAnimatedOnly(v);
-                    resetPaging();
-                  }}
-                />
-              </div>
-              <div className="w-24">
-                <Toggle
-                  label="Free"
-                  checked={freeOnly}
-                  onChange={(v) => {
-                    setFreeOnly(v);
-                    resetPaging();
-                  }}
-                />
-              </div>
             </div>
 
             <button

@@ -56,6 +56,9 @@ interface EditorState {
 
   setTheme: (theme: Theme) => void;
   setThemeToken: (token: ThemeToken, color: string) => void;
+  /** Several tokens in one undoable step — used by the cascade and contrast fixes. */
+  setThemePatch: (patch: Partial<Theme>) => void;
+  setMotion: (enabled: boolean) => void;
   /** Swap the artwork, keep the project (and its OBS URL) intact. */
   applyTemplate: (templateId: string, adoptPalette: boolean) => void;
 
@@ -136,7 +139,7 @@ function makeLayer(type: LayerType, index: number): Layer {
         width: 480,
         height: 270,
         frameShape: "rect",
-        fill: "@background/60",
+        fill: "@surface/60",
         strokeColor: "@primary",
         strokeWidth: 4,
         cornerRadius: 16,
@@ -148,7 +151,7 @@ function makeLayer(type: LayerType, index: number): Layer {
         type: "chatbox",
         width: 380,
         height: 560,
-        fill: "@background/70",
+        fill: "@surface/85",
         cornerRadius: 18,
         fontFamily: "Inter",
         fontSize: 22,
@@ -162,7 +165,7 @@ function makeLayer(type: LayerType, index: number): Layer {
         type: "alert",
         width: 800,
         height: 240,
-        fill: "@background/85",
+        fill: "@surface/92",
         cornerRadius: 20,
         fontFamily: "Bebas Neue",
         title: "NEW FOLLOWER",
@@ -185,7 +188,7 @@ function makeLayer(type: LayerType, index: number): Layer {
         fontSize: 24,
         showHandles: true,
         pill: true,
-        pillColor: "@background/70",
+        pillColor: "@surface/80",
       };
     case "particle":
       return {
@@ -344,6 +347,16 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     setThemeToken: (token, color) => {
       pushHistory();
       patchProject((project) => ({ ...project, theme: { ...project.theme, [token]: color } }));
+    },
+
+    setThemePatch: (patch) => {
+      pushHistory();
+      patchProject((project) => ({ ...project, theme: { ...project.theme, ...patch } }));
+    },
+
+    setMotion: (enabled) => {
+      patchProject((project) => ({ ...project, animationsEnabled: enabled }));
+      if (!enabled) set({ playing: false, time: SETTLED_TIME });
     },
 
     applyTemplate: (templateId, adoptPalette) => {

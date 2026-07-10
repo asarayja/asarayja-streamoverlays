@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Crown, Play, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { getPalette } from "@/data/palettes";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { useClock } from "@/lib/useClock";
@@ -30,9 +30,9 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
   const [hovered, setHovered] = useState(false);
 
-  const playing = hovered && template.animated;
-  const clock = useClock(playing, LOOP);
-  const time = playing ? clock : SETTLED;
+  // Every template supports motion — hover previews it, rest shows the still.
+  const clock = useClock(hovered, LOOP);
+  const time = hovered ? clock : SETTLED;
 
   const resolvedTheme = theme ?? getPalette(template.paletteId).theme;
   // Full-screen scenes carry their own background; partial overlays are meant to
@@ -68,26 +68,6 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
               mode="preview"
               width={size.width}
             />
-          )}
-
-          {template.animated && (
-            <span
-              className={cx(
-                "absolute right-3 top-3 flex items-center gap-1 rounded-full bg-black/60 px-2 py-1",
-                "text-[10px] font-semibold uppercase tracking-wider text-zinc-300 backdrop-blur-sm",
-                "transition-opacity group-hover:opacity-0",
-              )}
-            >
-              <Play className="size-2.5 fill-current" />
-              Animated
-            </span>
-          )}
-
-          {template.premium && (
-            <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30 backdrop-blur-sm">
-              <Crown className="size-2.5" />
-              Pro
-            </span>
           )}
 
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100">

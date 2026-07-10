@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowRight, Check, RotateCcw } from "lucide-react";
 import { TEMPLATES } from "@/data/templates";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
-import { HarmonyButton, PaletteGrid, ThemeTokens } from "@/components/ThemeEditor";
+import { ContrastCheck } from "@/components/ContrastCheck";
+import { HarmonyGenerator, PaletteGrid, ThemeTokens } from "@/components/ThemeEditor";
 import { ImageUpload } from "@/components/profile/ImageUpload";
 import { TopNav } from "@/components/site/TopNav";
 import { Button, Field, TextInput } from "@/components/ui";
@@ -36,8 +37,10 @@ const SOCIAL_LABELS: Record<SocialPlatform, string> = {
 const PREVIEW_TEMPLATE_ID = "starting-pulse--purple-neon";
 
 export default function ProfilePage() {
-  const { profile, configured, setField, setSocial, setTheme, setThemeToken, reset, loadDemo } =
+  const { profile, configured, setField, setSocial, setTheme, reset, loadDemo } =
     useProfileStore();
+  const patchTheme = (patch: Partial<typeof profile.theme>) =>
+    setTheme({ ...profile.theme, ...patch });
   const renderProfile = useRenderProfile();
   const [previewRef, previewSize] = useElementSize<HTMLDivElement>();
   const [saved, setSaved] = useState(false);
@@ -150,11 +153,14 @@ export default function ProfilePage() {
               Your default theme. Change one token and every layer that references it repaints.
             </p>
             <div className="grid gap-6 lg:grid-cols-2">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <PaletteGrid theme={profile.theme} onApply={setTheme} />
-                <HarmonyButton theme={profile.theme} onApply={setTheme} />
+                <HarmonyGenerator theme={profile.theme} onApply={setTheme} />
+                <div className="border-t border-white/[0.06] pt-4">
+                  <ContrastCheck theme={profile.theme} onFix={patchTheme} />
+                </div>
               </div>
-              <ThemeTokens theme={profile.theme} onChange={setThemeToken} />
+              <ThemeTokens theme={profile.theme} onPatch={patchTheme} />
             </div>
           </div>
 

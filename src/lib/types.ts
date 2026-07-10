@@ -19,20 +19,48 @@ export const CANVAS_HEIGHT = 1080;
 /*                                   Theme                                    */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * The full design-token set. Every colour in every template is one of these —
+ * no layer ever stores a hex code of its own.
+ *
+ * The first eight are the *core* tokens palettes are authored in; the rest can
+ * be derived from them by `completeTheme` so a palette author tunes eight
+ * values and gets a coherent sixteen-token system, but may also override any
+ * derived token by hand where the derivation isn't good enough.
+ */
 export const THEME_TOKENS = [
+  // backgrounds
+  "background",
+  "backgroundSecondary",
+  "surface",
+  "surfaceSecondary",
+  // brand
   "primary",
   "secondary",
   "accent",
-  "background",
+  "accentSecondary",
+  // text
   "text",
+  "textSecondary",
+  // effects
   "border",
   "glow",
   "shadow",
+  // status
+  "success",
+  "warning",
+  "error",
 ] as const;
 
 export type ThemeToken = (typeof THEME_TOKENS)[number];
 
 export type Theme = Record<ThemeToken, string>;
+
+/** The tokens a palette must author; everything else is derivable. */
+export type CoreTheme = Pick<
+  Theme,
+  "background" | "primary" | "secondary" | "accent" | "text" | "border" | "glow" | "shadow"
+>;
 
 /**
  * Either a literal CSS colour (`#ff0055`, `rgba(0,0,0,.5)`) or a theme
@@ -450,6 +478,12 @@ export const GOTHIC_STYLES = [
 
 export type GothicStyle = (typeof GOTHIC_STYLES)[number];
 
+/**
+ * Everything is free and every template works both ways: exported as a still
+ * (settled pose) or played animated. There is deliberately no premium flag and
+ * no static/animated split — motion is a per-project toggle, not a template
+ * property.
+ */
 export interface Template {
   id: string;
   name: string;
@@ -458,8 +492,6 @@ export interface Template {
   collection: Collection;
   /** Sub-style filter within the gothic collection. */
   subStyle?: GothicStyle;
-  premium: boolean;
-  animated: boolean;
   /** Palette this variant ships with; the user can swap it instantly. */
   paletteId: string;
   layers: Layer[];
@@ -473,6 +505,11 @@ export interface Project {
   layers: Layer[];
   /** Short code used for the OBS browser source URL. */
   obsCode: string;
+  /**
+   * Master motion switch. Off = the overlay renders its settled pose
+   * everywhere, including the live OBS view. Absent (older saves) means on.
+   */
+  animationsEnabled?: boolean;
   createdAt: number;
   updatedAt: number;
   favorite: boolean;

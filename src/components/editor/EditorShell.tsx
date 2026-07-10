@@ -5,6 +5,7 @@ import Link from "next/link";
 import type Konva from "konva";
 import {
   ArrowLeft,
+  Clapperboard,
   Cloud,
   Download,
   Grid3x3,
@@ -55,6 +56,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const removeSelected = useEditorStore((s) => s.removeSelected);
   const duplicateSelected = useEditorStore((s) => s.duplicateSelected);
   const setTheme = useEditorStore((s) => s.setTheme);
+  const setMotion = useEditorStore((s) => s.setMotion);
 
   const upsert = useProjectsStore((s) => s.upsert);
   const rename = useProjectsStore((s) => s.rename);
@@ -196,6 +198,13 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         </ToolButton>
         <ToolButton onClick={toggleGrid} active={showGrid} title="Grid">
           <Grid3x3 className="size-4" />
+        </ToolButton>
+        <ToolButton
+          onClick={() => setMotion(project.animationsEnabled === false)}
+          active={project.animationsEnabled !== false}
+          title="Motion: when off, the OBS view and exports use the settled still pose"
+        >
+          <Clapperboard className="size-4" />
         </ToolButton>
 
         <div className="mx-2 h-6 w-px bg-white/8" />

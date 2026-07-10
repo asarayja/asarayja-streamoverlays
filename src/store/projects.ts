@@ -5,6 +5,7 @@ import { persist } from "zustand/middleware";
 import { cloneLayers, getTemplate } from "@/data/templates";
 import { getPalette } from "@/data/palettes";
 import { obsCode, uid } from "@/lib/id";
+import { completeTheme } from "@/lib/theme";
 import type { Project, Theme } from "@/lib/types";
 
 interface ProjectsState {
@@ -103,8 +104,17 @@ export const useProjectsStore = create<ProjectsState>()(
     }),
     {
       name: "asarayja:projects",
-      version: 1,
+      version: 2,
       skipHydration: true,
+      // v1 projects predate the sixteen-token system and the motion switch.
+      migrate: (persisted) => {
+        const state = persisted as Pick<ProjectsState, "projects" | "folders">;
+        for (const project of state?.projects ?? []) {
+          project.theme = completeTheme(project.theme);
+          project.animationsEnabled = project.animationsEnabled ?? true;
+        }
+        return state;
+      },
       // `hydrated` is derived at runtime, never read back from storage.
       partialize: ({ projects, folders }) => ({ projects, folders }),
       onRehydrateStorage: () => (state) => state?.markHydrated(),

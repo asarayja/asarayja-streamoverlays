@@ -1,22 +1,45 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Link2, Link2Off, Sparkles } from "lucide-react";
 import { PALETTES } from "@/data/palettes";
-import { Button, ColorInput, Field, cx } from "@/components/ui";
-import { resolveColor, themeFromSeed } from "@/lib/theme";
-import { THEME_TOKENS } from "@/lib/types";
+import { Button, ColorInput, Field, Select, cx } from "@/components/ui";
+import {
+  HARMONY_SCHEMES,
+  SCHEME_LABELS,
+  cascade,
+  resolveColor,
+  themeFromSeed,
+  type HarmonyScheme,
+} from "@/lib/theme";
 import type { Theme, ThemeToken } from "@/lib/types";
 
 const TOKEN_LABELS: Record<ThemeToken, string> = {
+  background: "Background",
+  backgroundSecondary: "Background 2",
+  surface: "Surface",
+  surfaceSecondary: "Surface 2",
   primary: "Primary",
   secondary: "Secondary",
   accent: "Accent",
-  background: "Background",
+  accentSecondary: "Accent 2",
   text: "Text",
+  textSecondary: "Text 2",
   border: "Border",
   glow: "Glow",
   shadow: "Shadow",
+  success: "Success",
+  warning: "Warning",
+  error: "Error",
 };
+
+const TOKEN_GROUPS: Array<{ title: string; tokens: ThemeToken[] }> = [
+  { title: "Backgrounds", tokens: ["background", "backgroundSecondary", "surface", "surfaceSecondary"] },
+  { title: "Brand", tokens: ["primary", "secondary", "accent", "accentSecondary"] },
+  { title: "Text", tokens: ["text", "textSecondary"] },
+  { title: "Effects", tokens: ["border", "glow", "shadow"] },
+  { title: "Status", tokens: ["success", "warning", "error"] },
+];
 
 export function PaletteGrid({
   theme,
@@ -54,45 +77,96 @@ export function PaletteGrid({
 }
 
 /**
- * Editing a token here repaints every layer that references it, because layers
- * store `@primary` rather than `#8b5cf6`.
+ * The sixteen design tokens, grouped, with a linked-edit mode: editing a core
+ * colour (background, text, accent, primary) recomputes the tones derived from
+ * it, so changing one colour restyles the family instead of leaving nine other
+ * pickers to update by hand.
  */
 export function ThemeTokens({
   theme,
-  onChange,
-  onCommit,
+  onPatch,
 }: {
   theme: Theme;
-  onChange: (token: ThemeToken, color: string) => void;
-  onCommit?: (token: ThemeToken, color: string) => void;
+  onPatch: (patch: Partial<Theme>) => void;
 }) {
+  const [linked, setLinked] = useState(true);
+
+  const edit = (token: ThemeToken, color: string) => {
+    onPatch(linked ? cascade(theme, token, color) : { [token]: color });
+  };
+
   return (
-    <div className="space-y-3">
-      {THEME_TOKENS.map((token) => (
-        <Field key={token} label={TOKEN_LABELS[token]}>
-          <ColorInput
-            value={theme[token]}
-            resolved={resolveColor(theme[token], theme)}
-            onChange={(color) => onChange(token, color)}
-            onCommit={(color) => onCommit?.(token, color)}
-          />
-        </Field>
+    <div className="space-y-4">
+      <button
+        onClick={() => setLinked((v) => !v)}
+        className={cx(
+          "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors",
+          linked
+            ? "border-brand-400/40 bg-brand-500/10 text-brand-400"
+            : "border-white/10 bg-white/[0.03] text-zinc-500",
+        )}
+        title="When on, editing background, text, accent or primary also updates the tones derived from them (surfaces, glow, borders, secondary text)"
+      >
+        {linked ? <Link2 className="size-3.5" /> : <Link2Off className="size-3.5" />}
+        {linked ? "Linked colours: derived tones follow" : "Linked colours off: edit tokens individually"}
+      </button>
+
+      {TOKEN_GROUPS.map((group) => (
+        <div key={group.title}>
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">
+            {group.title}
+          </p>
+          <div className="space-y-2.5">
+            {group.tokens.map((token) => (
+              <Field key={token} label={TOKEN_LABELS[token]}>
+                <ColorInput
+                  value={theme[token]}
+                  resolved={resolveColor(theme[token], theme)}
+                  onChange={(color) => edit(token, color)}
+                />
+              </Field>
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   );
 }
 
-/** Derives a full harmony from the primary colour — no model call involved. */
-export function HarmonyButton({ theme, onApply }: { theme: Theme; onApply: (theme: Theme) => void }) {
+/**
+ * Colour-wheel generation: the user picks a harmony scheme, the hues are
+ * placed by that scheme's geometry, and the result is forced through the
+ * contrast gate. Never a random colour.
+ */
+export function HarmonyGenerator({
+  theme,
+  onApply,
+}: {
+  theme: Theme;
+  onApply: (theme: Theme) => void;
+}) {
+  const [scheme, setScheme] = useState<HarmonyScheme>("analogous");
+
   return (
-    <Button
-      variant="outline"
-      className="w-full"
-      onClick={() => onApply({ ...themeFromSeed(theme.primary), text: theme.text })}
-      title="Rebuild secondary, accent, background, border and glow from your primary colour"
-    >
-      <Sparkles className="size-3.5 text-brand-400" />
-      Generate palette from primary
-    </Button>
+    <div className="flex gap-2">
+      <div className="w-44 shrink-0">
+        <Select value={scheme} onChange={(e) => setScheme(e.target.value as HarmonyScheme)}>
+          {HARMONY_SCHEMES.map((s) => (
+            <option key={s} value={s}>
+              {SCHEME_LABELS[s]}
+            </option>
+          ))}
+        </Select>
+      </div>
+      <Button
+        variant="outline"
+        className="flex-1"
+        onClick={() => onApply(themeFromSeed(theme.primary, scheme))}
+        title="Build all sixteen tokens from your primary colour using this harmony scheme, with WCAG contrast enforced"
+      >
+        <Sparkles className="size-3.5 text-brand-400" />
+        Generate from primary
+      </Button>
+    </div>
   );
 }
