@@ -1666,6 +1666,8 @@ interface FamilyStyle {
   displayWeight: number;
   displayTracking: number;
   displayTransform: "none" | "uppercase";
+  /** Slant the headline and channel name — the esports look. */
+  displayItalic?: boolean;
   /** Body/UI face. */
   body: string;
   /** Panel and plate radius. */
@@ -1718,6 +1720,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fontFamily: f.display,
       fontSize: 96,
       fontWeight: f.displayWeight,
+      italic: f.displayItalic,
       align: "center",
       fill: "@text",
       letterSpacing: f.displayTracking,
@@ -1731,6 +1734,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fontFamily: f.display,
       fontSize: 48,
       fontWeight: f.displayWeight,
+      italic: f.displayItalic,
       align: "center",
       fill: "@accent",
       letterSpacing: Math.max(2, f.displayTracking * 0.5),
@@ -2375,6 +2379,120 @@ const HALLOWED_NIGHT: FamilyStyle = {
   ],
 };
 
+/** Overdrive: angular esports — diagonal shards, hex mesh, bracket frames,
+    slanted display. Neon on near-black; colour comes from the palette. */
+const OVERDRIVE: FamilyStyle = {
+  id: "overdrive",
+  name: "Overdrive",
+  tags: ["Esports", "Neon", "Dark"],
+  display: "Kanit",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "uppercase",
+  displayItalic: true,
+  body: "Rajdhani",
+  radius: 4,
+  frameRadius: 6,
+  corners: true,
+  strokeWidth: 3,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 6 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 135 } },
+    }),
+    shape("Shard — back", { x: 1080, y: -80, width: 900, height: 1240 }, {
+      shape: "shard",
+      fill: "@surface",
+      opacity: 0.85,
+    }),
+    shape("Shard — mid", { x: 1320, y: -80, width: 620, height: 1240 }, {
+      shape: "shard",
+      fill: "@primary/30",
+    }),
+    shape("Shard — accent", { x: 1360, y: -80, width: 80, height: 1240 }, {
+      shape: "shard",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+    }),
+    shape("Shard — left", { x: -280, y: -80, width: 540, height: 1240 }, {
+      shape: "shard",
+      fill: "@surface",
+      opacity: 0.6,
+    }),
+    shape("Hex mesh — TL", { x: -40, y: -40, width: 480, height: 320 }, {
+      shape: "hexmesh",
+      fill: "@primary/22",
+    }),
+    shape("Hex mesh — BR", { x: 1500, y: 800, width: 480, height: 340 }, {
+      shape: "hexmesh",
+      fill: "@primary/22",
+    }),
+    particles("Decor — Sparks", { kind: "embers", count: 24, size: 3, speed: 0.5, color: "@accent", opacity: 0.5 }),
+  ],
+  overlayDecor: () => [
+    shape("Hex mesh — corner", { x: 1580, y: -30, width: 380, height: 250 }, {
+      shape: "hexmesh",
+      fill: "@primary/20",
+    }),
+  ],
+  contentOffsetY: 0,
+};
+
+/** Liquid Neon: soft organic blobs of neon on near-black, pill panels and
+    rounded frames — the friendlier gamer look. */
+const LIQUID_NEON: FamilyStyle = {
+  id: "liquidneon",
+  name: "Liquid Neon",
+  tags: ["Neon", "RGB", "Dark"],
+  display: "Righteous",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "uppercase",
+  body: "Poppins",
+  radius: 40,
+  frameRadius: 36,
+  corners: false,
+  strokeWidth: 3,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 3, radius: 36 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 160 } },
+    }),
+    shape("Blob — TL", { x: -260, y: -240, width: 760, height: 720 }, {
+      shape: "ellipse",
+      fill: "@primary/32",
+      effects: { glow: { enabled: true, color: "@glow", strength: 44 } },
+    }),
+    shape("Blob — BR", { x: 1380, y: 540, width: 840, height: 780 }, {
+      shape: "ellipse",
+      fill: "@secondary/32",
+      effects: { glow: { enabled: true, color: "@glow", strength: 44 } },
+    }),
+    shape("Blob — accent", { x: 1200, y: -280, width: 520, height: 520 }, {
+      shape: "ellipse",
+      fill: "@accent/16",
+    }),
+    particles("Decor — Blobs", { kind: "blobs", count: 5, size: 120, speed: 0.35, color: "@primary", opacity: 0.5 }),
+    particles("Decor — Bubbles", { kind: "bubbles", count: 20, size: 8, speed: 0.5, color: "@accent", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: -60,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   HALLOWED_NIGHT,
   ASTRAL_DECK,
@@ -2382,6 +2500,8 @@ const NEW_FAMILIES: FamilyStyle[] = [
   COZY_CLOUDS,
   HOLO_GLASS,
   STARLIT_SERENITY,
+  OVERDRIVE,
+  LIQUID_NEON,
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);

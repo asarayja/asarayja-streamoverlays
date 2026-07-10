@@ -338,7 +338,11 @@ export type ShapeKind =
   /** A hanging chain of links ending in a pendant. */
   | "chain"
   /** A casket silhouette: narrow head, wide shoulders, tapered foot. */
-  | "coffin";
+  | "coffin"
+  /** A slanted parallelogram — the diagonal esports ribbon. */
+  | "shard"
+  /** A honeycomb lattice of hexagon outlines — the esports mesh accent. */
+  | "hexmesh";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";

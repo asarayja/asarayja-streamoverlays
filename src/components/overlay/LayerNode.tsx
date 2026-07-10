@@ -151,8 +151,34 @@ function polygonPoints(shape: string, w: number, h: number): number[] {
       return [w * 0.5, 0, w, h * 0.25, w, h * 0.75, w * 0.5, h, 0, h * 0.75, 0, h * 0.25];
     case "line":
       return [0, h / 2, w, h / 2];
+    case "shard":
+      // A right-leaning parallelogram: the diagonal ribbon of an esports scene.
+      return [w * 0.32, 0, w, 0, w * 0.68, h, 0, h];
     default:
       return [0, 0, w, 0, w, h, 0, h];
+  }
+}
+
+/** A honeycomb lattice: pointy-top hexagon outlines tiled across the box. */
+function hexMeshPath(c: Konva.Context, w: number, h: number) {
+  const R = Math.max(14, Math.min(w, h) * 0.11); // circumradius
+  const dx = R * 1.5;
+  const dy = R * Math.sqrt(3);
+  c.beginPath();
+  let col = 0;
+  for (let cx = 0; cx <= w + R; cx += dx, col++) {
+    const offY = col % 2 ? dy / 2 : 0;
+    for (let cy = -dy; cy <= h + dy; cy += dy) {
+      const yc = cy + offY;
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i;
+        const px = cx + R * Math.cos(a);
+        const py = yc + R * Math.sin(a);
+        if (i === 0) c.moveTo(px, py);
+        else c.lineTo(px, py);
+      }
+      c.closePath();
+    }
   }
 }
 
@@ -374,6 +400,20 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
           }}
         />
       </Group>
+    );
+  }
+
+  if (layer.shape === "hexmesh") {
+    return (
+      <KonvaShape
+        stroke={resolveColor(layer.fill, ctx.theme)}
+        strokeWidth={2}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        sceneFunc={(c, shape) => {
+          hexMeshPath(c, w, h);
+          c.strokeShape(shape);
+        }}
+      />
     );
   }
 

@@ -40,7 +40,7 @@ import type {
   Theme,
 } from "@/lib/types";
 
-const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "moon", "crescent", "coffin", "plaque", "scanlines", "web", "drip", "graveyard", "chain"];
+const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "moon", "crescent", "coffin", "plaque", "scanlines", "web", "drip", "graveyard", "chain", "shard", "hexmesh"];
 const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs", "ghosts", "bokeh"];
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
 
