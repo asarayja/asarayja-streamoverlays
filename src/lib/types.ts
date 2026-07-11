@@ -140,6 +140,20 @@ export const ANIMATION_PRESETS = [
   "flicker",
   "scale",
   "elastic",
+  // Continuous — glow-driven blinkers, motion loops.
+  "blink",
+  "neon",
+  "heartbeat",
+  "spin",
+  "sway",
+  "wobble",
+  "orbit",
+  // One-shot entrances.
+  "flip",
+  "pop",
+  "drop",
+  "swing",
+  "glitch",
 ] as const;
 
 export type AnimationPreset = (typeof ANIMATION_PRESETS)[number];

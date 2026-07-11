@@ -45,6 +45,9 @@ const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubb
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
 import { useT } from "@/lib/i18n";
 
+/** Presets that drive the glow effect — picking one enables glow. */
+const GLOW_ANIM_PRESETS = new Set<AnimationPreset>(["glow", "shimmer", "blink", "neon"]);
+
 export function RightPanel() {
   const t = useT();
   const layer = useSelectedLayer();
@@ -292,11 +295,18 @@ export function RightPanel() {
         <Field label={t("Preset")}>
           <Select
             value={layer.animation.preset}
-            onChange={(e) =>
-              commit({
-                animation: { ...layer.animation, preset: e.target.value as AnimationPreset },
-              })
-            }
+            onChange={(e) => {
+              const preset = e.target.value as AnimationPreset;
+              const patch: LayerPatch = { animation: { ...layer.animation, preset } };
+              // Glow-driven presets light up the glow effect automatically.
+              if (GLOW_ANIM_PRESETS.has(preset) && !layer.effects.glow.enabled) {
+                patch.effects = {
+                  ...layer.effects,
+                  glow: { ...layer.effects.glow, enabled: true, strength: layer.effects.glow.strength || 24 },
+                };
+              }
+              commit(patch);
+            }}
           >
             {ANIMATION_PRESETS.map((preset) => (
               <option key={preset} value={preset}>
@@ -306,12 +316,11 @@ export function RightPanel() {
           </Select>
         </Field>
 
-        {(layer.animation.preset === "glow" || layer.animation.preset === "shimmer") &&
-          !layer.effects.glow.enabled && (
-            <p className="text-[11px] leading-relaxed text-amber-400/80">
-              {t("This preset pulses the glow effect, which is currently off. Enable Glow under Effects to see it.")}
-            </p>
-          )}
+        {GLOW_ANIM_PRESETS.has(layer.animation.preset) && !layer.effects.glow.enabled && (
+          <p className="text-[11px] leading-relaxed text-amber-400/80">
+            {t("This preset pulses the glow effect, which is currently off. Enable Glow under Effects to see it.")}
+          </p>
+        )}
         {layer.animation.preset !== "none" && (
           <>
             <Slider

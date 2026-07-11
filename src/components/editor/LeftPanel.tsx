@@ -933,6 +933,9 @@ function TextTab() {
 
 /* -------------------------------- Animations ------------------------------ */
 
+/** Presets that animate the glow effect, so picking one turns glow on. */
+const GLOW_PRESETS = new Set<AnimationPreset>(["glow", "shimmer", "blink", "neon"]);
+
 function AnimateTab() {
   const layer = useSelectedLayer();
   const updateLayer = useEditorStore((s) => s.updateLayer);
@@ -947,8 +950,18 @@ function AnimateTab() {
     );
   }
 
-  const set = (preset: AnimationPreset) =>
-    updateLayer(layer.id, { animation: { ...layer.animation, preset } });
+  const set = (preset: AnimationPreset) => {
+    const patch: LayerPatch = { animation: { ...layer.animation, preset } };
+    // Glow-driven presets only show if there's a glow to pulse — light one up
+    // automatically so blink/glow/neon work the moment they're picked.
+    if (GLOW_PRESETS.has(preset) && !layer.effects.glow.enabled) {
+      patch.effects = {
+        ...layer.effects,
+        glow: { ...layer.effects.glow, enabled: true, strength: layer.effects.glow.strength || 24 },
+      };
+    }
+    updateLayer(layer.id, patch);
+  };
 
   return (
     <div>

@@ -74,6 +74,13 @@ const CONTINUOUS = new Set([
   "shimmer",
   "shake",
   "flicker",
+  "blink",
+  "neon",
+  "heartbeat",
+  "spin",
+  "sway",
+  "wobble",
+  "orbit",
 ]);
 
 export function isContinuous(preset: Animation["preset"]): boolean {
@@ -132,6 +139,50 @@ export function sample(anim: Animation, t: number): AnimationSample {
         const n = noise(bucket);
         return { ...IDENTITY, opacity: n > 0.82 ? 0.35 : 0.85 + n * 0.15 };
       }
+      case "blink": {
+        // A neon sign switching on and off: the glow snaps fully on for the
+        // first ~60% of the cycle, dark for the rest, with the text dimming to
+        // match. Needs the layer's Glow effect enabled to light up.
+        const on = phase < 0.6;
+        return { ...IDENTITY, glowBoost: on ? 55 * k : 0, opacity: on ? 1 : 0.5 };
+      }
+      case "neon": {
+        // A live neon tube: a steady bright glow that hums and, now and then,
+        // flickers dark for a beat.
+        const bucket = Math.floor(elapsed / 70);
+        const n = noise(bucket);
+        const dropout = n > 0.9;
+        const hum = 0.85 + 0.15 * Math.sin(elapsed / 30);
+        return {
+          ...IDENTITY,
+          glowBoost: (dropout ? 6 : 46 * hum) * k,
+          opacity: dropout ? 0.6 : 1,
+        };
+      }
+      case "heartbeat": {
+        // Lub-dub: two quick swells then a rest.
+        const beat =
+          phase < 0.14
+            ? Math.sin((phase / 0.14) * Math.PI)
+            : phase < 0.32
+              ? Math.sin(((phase - 0.18) / 0.14) * Math.PI) * 0.7
+              : 0;
+        const s = 1 + Math.max(0, beat) * 0.13 * k;
+        return { ...IDENTITY, scaleX: s, scaleY: s };
+      }
+      case "spin":
+        return { ...IDENTITY, rotation: phase * 360 };
+      case "sway":
+        return { ...IDENTITY, rotation: Math.sin(phase * tau) * 6 * k };
+      case "wobble": {
+        // Squash and stretch: width and height breathe out of phase.
+        const a = Math.sin(phase * tau);
+        return { ...IDENTITY, scaleX: 1 + a * 0.06 * k, scaleY: 1 - a * 0.06 * k };
+      }
+      case "orbit": {
+        const r = 9 * k;
+        return { ...IDENTITY, dx: Math.cos(phase * tau) * r, dy: Math.sin(phase * tau) * r };
+      }
     }
   }
 
@@ -175,6 +226,38 @@ function atProgress(anim: Animation, raw: number): AnimationSample {
       return { ...IDENTITY, rotation: 360 * p, opacity: Math.min(1, raw * 3) };
     case "typewriter":
       return { ...IDENTITY, reveal: raw };
+    case "flip": {
+      // Open from an edge: horizontal scale from nothing to full.
+      return { ...IDENTITY, scaleX: Math.max(0.02, p), opacity: Math.min(1, raw * 2) };
+    }
+    case "pop": {
+      // A punchy scale that overshoots past full, then settles.
+      const b = EASING_FNS.backOut(raw);
+      const s = 0.4 + 0.6 * b;
+      return { ...IDENTITY, scaleX: s, scaleY: s, opacity: Math.min(1, raw * 3) };
+    }
+    case "drop": {
+      // Falls in from above and bounces to rest.
+      const b = EASING_FNS.bounceOut(raw);
+      return { ...IDENTITY, dy: -180 * k * (1 - b), opacity: Math.min(1, raw * 3) };
+    }
+    case "swing": {
+      // Swings in on a hinge and settles with an elastic wobble.
+      const e = EASING_FNS.elasticOut(raw);
+      return { ...IDENTITY, rotation: -38 * k * (1 - e), opacity: Math.min(1, raw * 4) };
+    }
+    case "glitch": {
+      // Jitters and flashes while arriving, snapping clean at the end.
+      if (raw >= 1) return IDENTITY;
+      const s = Math.floor(raw * 60);
+      const jitter = 1 - raw;
+      return {
+        ...IDENTITY,
+        dx: (noise(s) - 0.5) * 26 * k * jitter,
+        dy: (noise(s + 7) - 0.5) * 12 * k * jitter,
+        opacity: noise(s + 3) > 0.28 ? 1 : 0.3,
+      };
+    }
     default:
       return IDENTITY;
   }
