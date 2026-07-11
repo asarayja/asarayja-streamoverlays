@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { googleFontsHref } from "@/data/fonts";
 import { StoreHydrator } from "@/components/StoreHydrator";
@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: "Asarayja Stream Overlays — Professional stream overlays in minutes",
   description:
     "Pick a template, fill in your channel profile once, and export overlays for OBS. Static and animated, with true alpha.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

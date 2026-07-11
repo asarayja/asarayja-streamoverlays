@@ -12,6 +12,7 @@ import {
   Hand,
   Magnet,
   Maximize,
+  Monitor,
   MousePointer2,
   PaintBucket,
   Palette,
@@ -95,6 +96,16 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const [panTool, setPanTool] = useState(false);
   const [drawTool, setDrawTool] = useState(false);
   const [bucketTool, setBucketTool] = useState(false);
+  // The editor needs a real workspace — gate it to bigger screens so phones
+  // don't mount the (unusable) canvas. "unknown" until the client measures.
+  const [device, setDevice] = useState<"unknown" | "small" | "ok">("unknown");
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 900px)");
+    const update = () => setDevice(mq.matches ? "ok" : "small");
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
   // "Send to site" is a hidden maintainer tool, off by default. Reveal it from
   // the browser console (see the local dev note, not committed to git).
   const [devMode, setDevMode] = useState(false);
@@ -218,6 +229,25 @@ export default function EditorShell({ projectId }: { projectId: string }) {
       window.removeEventListener("keyup", onKeyUp);
     };
   }, [undo, redo, removeSelected, duplicateSelected]);
+
+  // Hold the first paint until the client knows the screen size, so a phone
+  // never briefly mounts the canvas editor.
+  if (device === "unknown") return null;
+
+  if (device === "small") {
+    return (
+      <div className="app-bg flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+        <Monitor className="size-10 text-brand-400" />
+        <h1 className="text-lg font-semibold text-white">{t("The editor needs a bigger screen")}</h1>
+        <p className="max-w-sm text-sm leading-relaxed text-zinc-400">
+          {t("Open this on a computer to design and edit overlays. You can browse all the designs on your phone.")}
+        </p>
+        <Link href="/">
+          <Button variant="primary" className="mt-1">{t("Browse designs")}</Button>
+        </Link>
+      </div>
+    );
+  }
 
   if (missing) {
     return (
