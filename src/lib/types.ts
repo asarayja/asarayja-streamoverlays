@@ -445,7 +445,13 @@ export type ShapeKind =
   /** A title ribbon/banner with forked ends. */
   | "banner"
   /** A rounded speech bubble with a tail — for callouts. */
-  | "bubble";
+  | "bubble"
+  /** A plain rhombus (rotated square) — the diamond plate. */
+  | "diamond"
+  /** A faceted cut gem — a rhombus with cut lines. */
+  | "gem"
+  /** A tiling harlequin/argyle diamond lattice, stroked in the fill colour. */
+  | "harlequin";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";

@@ -402,6 +402,31 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
   { label: "Lightning", patch: { shape: "bolt", width: 200, height: 320, fill: "@accent" } },
   { label: "Banner", patch: { shape: "banner", width: 520, height: 130, cornerRadius: 8, fill: "@primary" } },
   { label: "Speech bubble", patch: { shape: "bubble", width: 420, height: 260, cornerRadius: 28, fill: "@surface/92" } },
+  {
+    label: "Diamond plate",
+    patch: {
+      shape: "diamond",
+      width: 460,
+      height: 460,
+      fill: "@surface/92",
+      effects: {
+        ...DEFAULT_EFFECTS,
+        border: { enabled: true, color: "@accent", width: 3, radius: 0 },
+        glow: { enabled: true, color: "@glow", strength: 26 },
+      },
+    },
+  },
+  {
+    label: "Gem",
+    patch: {
+      shape: "gem",
+      width: 160,
+      height: 160,
+      fill: "@accent",
+      effects: { ...DEFAULT_EFFECTS, glow: { enabled: true, color: "@glow", strength: 26 } },
+    },
+  },
+  { label: "Harlequin", patch: { shape: "harlequin", width: 1920, height: 1080, fill: "@primary/14" } },
   { label: "Line", patch: { shape: "line", width: 480, height: 6, fill: "@accent" } },
   { label: "Moon", patch: { shape: "moon", width: 220, height: 220, moonPhase: 1, craters: true, fill: "@accent" } },
   { label: "Crescent", patch: { shape: "crescent", width: 180, height: 180, fill: "@accent" } },

@@ -2861,6 +2861,124 @@ const WITCHING_HOUR: FamilyStyle = {
   ],
 };
 
+/** Gothic Rose: an opulent red-and-near-black romance — a harlequin lattice
+    behind light from above, a diamond plate carrying the headline, faceted red
+    gems, red roses and drifting petals. */
+const GOTHIC_ROSE: FamilyStyle = {
+  id: "gothicrose",
+  name: "Gothic Rose",
+  collection: "gothic",
+  tags: ["Fantasy", "Dark", "Red"],
+  display: "Playfair Display",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 16,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 16 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  // Arched plaques behind the diamond, matching the reference.
+  plateShape: "plaque",
+  chatShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@secondary/22", angle: 180 } },
+    }),
+    // Harlequin lattice wallpaper.
+    shape("Decor — Harlequin", FULL, { shape: "harlequin", fill: "@primary/12" }),
+    // Light pouring from above.
+    shape("Decor — Light", { x: 360, y: -320, width: 1200, height: 720 }, {
+      shape: "ellipse",
+      fill: "@accent/12",
+      effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 34, size: 2.2, speed: 0.12, color: "@accent", opacity: 0.55 }),
+    // The diamond plate the headline sits inside.
+    shape("Decor — Diamond", { x: 610, y: 150, width: 700, height: 700 }, {
+      shape: "diamond",
+      fill: "@surface/92",
+      effects: {
+        border: { enabled: true, color: "@accent", width: 3, radius: 0 },
+        glow: { enabled: true, color: "@glow", strength: 30 },
+      },
+    }),
+    // Faceted red gems in the corners.
+    shape("Gem — top left", { x: 120, y: 170, width: 96, height: 96 }, {
+      shape: "gem",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+      animation: anim("float", { duration: 6400, intensity: 0.4 }),
+    }),
+    shape("Gem — top right", { x: 1704, y: 170, width: 96, height: 96 }, {
+      shape: "gem",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+      animation: anim("float", { duration: 7000, intensity: 0.4 }),
+    }),
+    shape("Gem — mid left", { x: 220, y: 620, width: 70, height: 70 }, {
+      shape: "gem",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+      animation: anim("pulse", { duration: 4200 }),
+    }),
+    shape("Gem — mid right", { x: 1630, y: 640, width: 70, height: 70 }, {
+      shape: "gem",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+      animation: anim("pulse", { duration: 4600 }),
+    }),
+    // Hanging garlands from the top edge.
+    shape("Decor — Garland left", { x: 320, y: 0, width: 22, height: 210 }, {
+      shape: "chain",
+      fill: "@accent/70",
+      animation: anim("wave", { duration: 6000, intensity: 0.4 }),
+    }),
+    shape("Decor — Garland right", { x: 1580, y: 0, width: 22, height: 210 }, {
+      shape: "chain",
+      fill: "@accent/70",
+      animation: anim("wave", { duration: 6600, intensity: 0.4 }),
+    }),
+    // Roses tucked into the lower corners.
+    icon("Rose — left", { x: 90, y: 850, width: 160, height: 160 }, "rose", {
+      fill: "@accent/85",
+      effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+      animation: anim("float", { duration: 6800, intensity: 0.3 }),
+    }),
+    icon("Rose — left small", { x: 250, y: 910, width: 96, height: 96 }, "rose", {
+      fill: "@primary/80",
+      animation: anim("float", { duration: 7200, intensity: 0.3 }),
+    }),
+    icon("Rose — right", { x: 1680, y: 858, width: 170, height: 170 }, "rose", {
+      fill: "@accent/85",
+      effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+      animation: anim("float", { duration: 7000, intensity: 0.3 }),
+    }),
+    particles("Decor — Petals", { kind: "petals", count: 22, size: 8, speed: 1.0, color: "@accent", opacity: 0.7 }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 7, size: 6, speed: 0.4, color: "@accent", opacity: 0.35 }),
+  ],
+  overlayDecor: () => [
+    shape("Decor — Harlequin", FULL, { shape: "harlequin", fill: "@primary/9" }),
+    particles("Decor — Petals left", { kind: "petals", count: 4, size: 7, speed: 1.0, color: "@accent", opacity: 0.6, box: MARGIN_LEFT }),
+    particles("Decor — Petals right", { kind: "petals", count: 4, size: 7, speed: 1.0, color: "@accent", opacity: 0.6, box: MARGIN_RIGHT }),
+    icon("Rose — left", { x: 40, y: 150, width: 90, height: 90 }, "rose", {
+      fill: "@accent/70",
+      animation: anim("float", { duration: 6800, intensity: 0.3 }),
+    }),
+    icon("Rose — right", { x: 1790, y: 150, width: 90, height: 90 }, "rose", {
+      fill: "@accent/70",
+      animation: anim("float", { duration: 7200, intensity: 0.3 }),
+    }),
+  ],
+};
+
 /** Red Plasma (spec theme A): flowing energy — glowing plasma waves crossing
     diagonally, glossy chrome ribbons, a metallic headline with a light-reflection
     band, and rising sparks. Red in a red palette; colour follows the palette. */
@@ -3847,6 +3965,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   HEX_STORM,
   MOONLIT_GROVE,
   WITCHING_HOUR,
+  GOTHIC_ROSE,
   PLASMA,
   AURORA,
   NEBULA,

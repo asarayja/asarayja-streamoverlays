@@ -191,6 +191,9 @@ function polygonPoints(shape: string, w: number, h: number): number[] {
       const n = Math.min(w * 0.14, h * 0.6);
       return [0, 0, w, 0, w - n, h * 0.5, w, h, 0, h, n, h * 0.5];
     }
+    case "diamond":
+      // A rhombus / rotated square — the diamond plate.
+      return [w / 2, 0, w, h / 2, w / 2, h, 0, h / 2];
     default:
       return [0, 0, w, 0, w, h, 0, h];
   }
@@ -1068,8 +1071,9 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     return <KonvaShape {...paint} sceneFunc={(c, shape) => { plaquePath(c, w, h); c.fillStrokeShape(shape); }} />;
   }
 
-  if (layer.shape === "damask") {
+  if (layer.shape === "damask" || layer.shape === "harlequin") {
     const stroke = fill ?? resolveColor(layer.fill, ctx.theme);
+    const drawPattern = layer.shape === "harlequin" ? harlequinPath : damaskPath;
     return (
       <KonvaShape
         listening={false}
@@ -1081,8 +1085,47 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
           c.beginPath();
           c.rect(0, 0, w, h);
           c.clip();
-          damaskPath(c, w, h);
+          drawPattern(c, w, h);
           c.strokeShape(shape);
+          c.restore();
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "gem") {
+    const base = resolveColor(layer.fill, ctx.theme);
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          // The gem body — a rhombus — filled/stroked with the layer's paint.
+          c.beginPath();
+          c.moveTo(w / 2, 0);
+          c.lineTo(w, h / 2);
+          c.lineTo(w / 2, h);
+          c.lineTo(0, h / 2);
+          c.closePath();
+          c.fillStrokeShape(shape);
+          // Cut facets: an inner table rhombus with spokes to each point.
+          const cx = w / 2;
+          const cy = h / 2;
+          const ix = w * 0.28;
+          const iy = h * 0.28;
+          c.save();
+          c.setAttr("strokeStyle", withAlpha(lighten(base, 55), 0.55));
+          c.setAttr("lineWidth", 1.5);
+          c.beginPath();
+          c.moveTo(cx, cy - iy);
+          c.lineTo(cx + ix, cy);
+          c.lineTo(cx, cy + iy);
+          c.lineTo(cx - ix, cy);
+          c.closePath();
+          c.moveTo(cx, cy - iy); c.lineTo(cx, 0);
+          c.moveTo(cx + ix, cy); c.lineTo(w, cy);
+          c.moveTo(cx, cy + iy); c.lineTo(cx, h);
+          c.moveTo(cx - ix, cy); c.lineTo(0, cy);
+          c.stroke();
           c.restore();
         }}
       />
@@ -2204,6 +2247,23 @@ function damaskPath(c: Konva.Context, w: number, h: number) {
       motif(cx + offset, cy, cell * 0.92);
     }
     row++;
+  }
+}
+
+/** A harlequin / argyle lattice: a tiled grid of diamonds, stroked. The
+    understated Gothic-Rose wallpaper. */
+function harlequinPath(c: Konva.Context, w: number, h: number) {
+  const cell = Math.max(70, Math.min(w, h) * 0.12);
+  const half = cell / 2;
+  c.beginPath();
+  for (let cy = 0; cy <= h + cell; cy += cell) {
+    for (let cx = 0; cx <= w + cell; cx += cell) {
+      c.moveTo(cx, cy - half);
+      c.lineTo(cx + half, cy);
+      c.lineTo(cx, cy + half);
+      c.lineTo(cx - half, cy);
+      c.closePath();
+    }
   }
 }
 
