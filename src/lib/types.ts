@@ -366,6 +366,14 @@ export interface ShapeLayer extends LayerBase {
   moonPhase?: number;
   /** For `shape: "moon"`. A full moon without craters reads as a flat disc. */
   craters?: boolean;
+  /** For `shape: "glasssheet"`. Literal hex colours the prism disperses the
+      light into — a pride flag, substituted per palette like flag stripes.
+      Absent → the default cyan/magenta/gold prism tints. */
+  facetColors?: string[];
+  /** For `shape: "glasssheet"`. How the flag colours are laid on the glass:
+      "sides" a few thicker lines hugging each edge (default), or "stripes" a
+      full field of thin diagonal pinstripes. */
+  facetMode?: "sides" | "stripes";
 }
 
 /**

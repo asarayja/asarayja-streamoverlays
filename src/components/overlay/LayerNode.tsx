@@ -478,10 +478,12 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
 
   if (layer.shape === "glasssheet") {
     const strength = layer.effects.gloss?.strength ?? 1;
+    const glossy = layer.effects.gloss?.style !== "sheen";
+    const facetMode = layer.facetMode ?? "sides";
     return (
       <KonvaShape
         listening={false}
-        sceneFunc={(c) => drawGlassSheet(c, w, h, strength)}
+        sceneFunc={(c) => drawGlassSheet(c, w, h, strength, ctx.time, glossy, facetMode, layer.facetColors)}
       />
     );
   }
@@ -824,30 +826,42 @@ function drawReflection(c: Konva.Context, w: number, h: number, r: number, stren
   c.restore();
 }
 
+/** A literal hex (#rrggbb) as an rgba() string at alpha `a`. */
+function hexAlpha(hex: string, a: number): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
 /**
- * A full-sheet of glass laid over the scene: a faint facet pattern, a few
- * prismatic colour spots where light refracts, and wide diagonal reflections.
- * Everything is drawn with light, translucent highlights only, so whatever sits
- * beneath still reads through — it just looks like it is behind a pane of glass.
+ * A full sheet of glass laid over the scene: a faint facet pattern, prismatic
+ * colour where light refracts, and wide diagonal reflections. Everything is
+ * drawn with light, translucent highlights only, so whatever sits beneath still
+ * reads through — it just looks like it is behind a pane of glass.
+ *
+ * The whole thing breathes with `time`: the prism colours drift and pulse and
+ * the reflections sway, all on sine phases so any loop point is seamless.
+ * `facetColors` (a pride flag, per palette) turns the prism into that spectrum;
+ * without it the glass catches the default cyan/magenta/gold tints.
  */
-function drawGlassSheet(c: Konva.Context, w: number, h: number, strength: number) {
+function drawGlassSheet(
+  c: Konva.Context,
+  w: number,
+  h: number,
+  strength: number,
+  time: number,
+  glossy: boolean,
+  facetMode: "sides" | "stripes",
+  facetColors?: string[],
+) {
+  const ph = time / 1000;
   c.save();
   c.beginPath();
   c.rect(0, 0, w, h);
   c.clip();
 
-  // Faint diagonal facet lines — the texture of the glass.
-  c.setAttr("strokeStyle", `rgba(255,255,255,${0.03 * strength})`);
-  c.setAttr("lineWidth", 1.5);
-  for (let x = -h; x < w; x += 94) {
-    c.beginPath();
-    c.moveTo(x, 0);
-    c.lineTo(x + h, h);
-    c.stroke();
-  }
-
-  // Prismatic facets: soft colour patches where the glass splits the light, so
-  // a few spots pick up a slightly different tint — cyan, magenta, warm gold.
   const facet = (cx: number, cy: number, rad: number, col: string) => {
     const g = c.createRadialGradient(cx, cy, 0, cx, cy, rad);
     g.addColorStop(0, col);
@@ -857,12 +871,68 @@ function drawGlassSheet(c: Konva.Context, w: number, h: number, strength: number
     c.arc(cx, cy, rad, 0, Math.PI * 2);
     c.fill();
   };
-  facet(w * 0.52, h * 0.24, w * 0.2, `rgba(90,200,255,${0.13 * strength})`);
-  facet(w * 0.66, h * 0.52, w * 0.17, `rgba(255,120,220,${0.11 * strength})`);
-  facet(w * 0.58, h * 0.78, w * 0.15, `rgba(255,225,130,${0.1 * strength})`);
 
-  // Wide diagonal reflections sweeping the whole sheet, with a crisp glint on
-  // the leading edge — the tell that a light source is caught in the glass.
+  if (facetColors && facetColors.length) {
+    const n = facetColors.length;
+    const scroll = Math.floor(ph * 0.6);
+    if (facetMode === "stripes") {
+      // A full field of thin diagonal pride pinstripes across the whole pane,
+      // drifting slowly — the busier "flag through the glass" look.
+      const step = 26;
+      const period = step * n;
+      const drift = (((ph * 8) % period) + period) % period;
+      c.setAttr("lineCap", "butt");
+      c.setAttr("lineWidth", glossy ? 7 : 9);
+      for (let x = -h - period; x < w + step; x += step) {
+        const idx = ((Math.floor((x + drift) / step) % n) + n) % n;
+        c.setAttr("strokeStyle", hexAlpha(facetColors[idx], (glossy ? 0.34 : 0.24) * strength));
+        c.beginPath();
+        c.moveTo(x, 0);
+        c.lineTo(x + h, h);
+        c.stroke();
+      }
+    } else {
+      // A few thicker pride lines running at the same angle as the reflection,
+      // grouped down one side (the left) — a diagonal rainbow accent parallel to
+      // the caught light, not a field across the whole pane. Colours scroll
+      // slowly through the stack so it shimmers.
+      const lineW = glossy ? 15 : 17;
+      const gap = 9;
+      const len = h * 0.4; // half-length along the diagonal
+      c.save();
+      c.translate(w * 0.14, h / 2); // left-side anchor
+      c.rotate(-0.5); // the reflection's angle
+      c.setAttr("lineCap", "round");
+      c.setAttr("lineWidth", lineW);
+      for (let i = 0; i < n; i++) {
+        const idx = (((i + scroll) % n) + n) % n;
+        const off = (i - (n - 1) / 2) * (lineW + gap); // perpendicular, centred
+        c.setAttr("strokeStyle", hexAlpha(facetColors[idx], (glossy ? 0.55 : 0.45) * strength));
+        c.beginPath();
+        c.moveTo(off, -len);
+        c.lineTo(off, len);
+        c.stroke();
+      }
+      c.restore();
+    }
+  } else {
+    // Faint diagonal facet lines — the texture of plain glass.
+    c.setAttr("strokeStyle", `rgba(255,255,255,${0.03 * strength})`);
+    c.setAttr("lineWidth", 1.5);
+    for (let x = -h; x < w; x += 94) {
+      c.beginPath();
+      c.moveTo(x, 0);
+      c.lineTo(x + h, h);
+      c.stroke();
+    }
+    // Default prism tints — cyan, magenta, warm gold, softly pulsing.
+    const pulse = (i: number) => 0.7 + 0.3 * Math.sin(ph * 0.9 + i);
+    facet(w * 0.52, h * 0.24, w * 0.2, hexAlpha("#5ac8ff", 0.13 * strength * pulse(0)));
+    facet(w * 0.66, h * 0.52, w * 0.17, hexAlpha("#ff78dc", 0.11 * strength * pulse(1)));
+    facet(w * 0.58, h * 0.78, w * 0.15, hexAlpha("#ffe182", 0.1 * strength * pulse(2)));
+  }
+
+  // Reflections, swaying slowly so the caught light plays across the glass.
   const streak = (centreX: number, band: number, alpha: number) => {
     c.save();
     c.translate(centreX, h / 2);
@@ -875,9 +945,29 @@ function drawGlassSheet(c: Konva.Context, w: number, h: number, strength: number
     c.fillRect(-band, -h * 1.8, band * 2, h * 3.6);
     c.restore();
   };
-  streak(w * 0.34, w * 0.15, 0.1); // wide soft reflection body
-  streak(w * 0.64, w * 0.05, 0.14); // second, narrower body
-  streak(w * 0.7, w * 0.016, 0.28); // crisp glint on its leading edge
+  const sway = Math.sin(ph * 0.35) * w * 0.05;
+  if (glossy) {
+    // Glossy glass: a wet top-left sheen and a bright, crisp specular glint —
+    // the look of polished, shiny glass catching a hard light.
+    const sheen = c.createLinearGradient(0, 0, w * 0.55, h * 0.55);
+    sheen.addColorStop(0, `rgba(255,255,255,${0.16 * strength})`);
+    sheen.addColorStop(0.5, "rgba(255,255,255,0)");
+    c.setAttr("fillStyle", sheen);
+    c.fillRect(0, 0, w, h);
+    streak(w * 0.34 + sway, w * 0.13, 0.12); // soft reflection body
+    streak(w * 0.66 + sway, w * 0.04, 0.2); // narrower body
+    streak(w * 0.71 + sway, w * 0.012, 0.44); // hard, bright glint
+  } else {
+    // Matte (frosted) glass: the light is diffused into a soft, even glow with
+    // wide low-contrast reflections and no hard glint.
+    const soft = c.createLinearGradient(0, 0, 0, h);
+    soft.addColorStop(0, `rgba(255,255,255,${0.08 * strength})`);
+    soft.addColorStop(1, "rgba(255,255,255,0)");
+    c.setAttr("fillStyle", soft);
+    c.fillRect(0, 0, w, h);
+    streak(w * 0.4 + sway, w * 0.24, 0.06);
+    streak(w * 0.6 + sway, w * 0.17, 0.05);
+  }
   c.restore();
 }
 

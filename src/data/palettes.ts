@@ -1140,6 +1140,109 @@ const DEFS: PaletteDef[] = [
       shadow: "#000000",
     },
   },
+
+  /* ----- Prism packs: the glass Prism Flag family, in a light and a dark ----- */
+  /* mode for the rainbow and the lesbian flag. The glass sheet disperses the   */
+  /* `flag` colours into a shimmering prism spectrum; the theme stays neutral   */
+  /* so the flag carries the identity. Ids are prefixed `prism-` so only the    */
+  /* Prism Flag family expands across them.                                     */
+  {
+    id: "prism-rainbow",
+    flag: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
+    name: "Prism Rainbow",
+    collection: "pride",
+    subStyle: "Prism Rainbow",
+    tags: ["RGB", "Neon", "Dark"],
+    theme: {
+      primary: "#8f7de0",
+      secondary: "#e0655f",
+      accent: "#f5b942",
+      accentSecondary: "#66bb7a",
+      background: "#120d1e",
+      text: "#f7f5fb",
+      border: "#645b7a",
+      glow: "#a98cf0",
+      shadow: "#000000",
+      success: "#66bb7a",
+      warning: "#f5b942",
+      error: "#e36d6d",
+    },
+  },
+  {
+    id: "prism-rainbow-light",
+    flag: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"],
+    name: "Prism Rainbow Light",
+    collection: "pride",
+    subStyle: "Prism Rainbow",
+    tags: ["RGB", "Light", "Minimal"],
+    theme: {
+      primary: "#5a4e8c",
+      secondary: "#b5486a",
+      accent: "#7b2fa0",
+      accentSecondary: "#2f7a5a",
+      background: "#f6f3fb",
+      surface: "#e9e3f2",
+      surfaceSecondary: "#ddd4ec",
+      text: "#171420",
+      textSecondary: "#4f4a63",
+      border: "#b3aec6",
+      glow: "#b892e0",
+      shadow: "#9a94a8",
+      success: "#278657",
+      warning: "#8a6414",
+      error: "#ba2c37",
+    },
+  },
+  {
+    id: "prism-lesbian",
+    flag: ["#D52D00", "#EF7627", "#FFFFFF", "#D162A4", "#A30262"],
+    name: "Prism Lesbian",
+    collection: "pride",
+    subStyle: "Prism Lesbian",
+    tags: ["Orange", "Pink", "Dark"],
+    theme: {
+      primary: "#ef7627",
+      secondary: "#d162a4",
+      accent: "#ff9a5c",
+      accentSecondary: "#e07ab0",
+      // Neutral dark ground so the warm flag lines stay legible against it.
+      background: "#131215",
+      surface: "#1d1b20",
+      text: "#faf6f4",
+      border: "#5f5a5f",
+      glow: "#f08a4e",
+      shadow: "#000000",
+      success: "#5fb98a",
+      warning: "#f0a54e",
+      error: "#e2574d",
+    },
+  },
+  {
+    id: "prism-lesbian-light",
+    flag: ["#D52D00", "#EF7627", "#FFFFFF", "#D162A4", "#A30262"],
+    name: "Prism Lesbian Light",
+    collection: "pride",
+    subStyle: "Prism Lesbian",
+    tags: ["Orange", "Pink", "Light"],
+    theme: {
+      primary: "#c24e2a",
+      secondary: "#b8477e",
+      accent: "#a30262",
+      accentSecondary: "#c25a2e",
+      // Neutral light ground so the flag lines stay distinct against it.
+      background: "#f5f3f4",
+      surface: "#e8e3e5",
+      surfaceSecondary: "#ddd6d9",
+      text: "#1b1518",
+      textSecondary: "#5f545a",
+      border: "#c2b8bd",
+      glow: "#ef9f80",
+      shadow: "#9a8e88",
+      success: "#278657",
+      warning: "#9a6414",
+      error: "#ba2c37",
+    },
+  },
 ];
 
 /** Public palettes: core tokens authored above, the rest derived. */
@@ -1162,4 +1265,10 @@ export function paletteTags(id: string): StyleTag[] {
 
 export const CORE_PALETTES = PALETTES.filter((p) => p.collection === "core");
 export const GOTHIC_PALETTES = PALETTES.filter((p) => p.collection === "gothic");
-export const PRIDE_PALETTES = PALETTES.filter((p) => p.collection === "pride");
+// Pride splits into the classic pride packs and the glass Prism Flag packs: the
+// `prism-` palettes only make sense under the Prism Flag family (they disperse
+// into its glass sheet), so they expand separately, not across every design.
+export const PRIDE_PALETTES = PALETTES.filter(
+  (p) => p.collection === "pride" && !p.id.startsWith("prism-"),
+);
+export const PRISM_PALETTES = PALETTES.filter((p) => p.id.startsWith("prism-"));

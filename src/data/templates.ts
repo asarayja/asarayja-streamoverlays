@@ -13,7 +13,7 @@ import {
   type TemplateCategory,
   type StyleTag,
 } from "@/lib/types";
-import { CORE_PALETTES, GOTHIC_PALETTES, PRIDE_PALETTES, paletteTags } from "./palettes";
+import { CORE_PALETTES, GOTHIC_PALETTES, PRIDE_PALETTES, PRISM_PALETTES, paletteTags } from "./palettes";
 import type { Palette } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
@@ -70,6 +70,7 @@ function shape(
     background?: boolean;
     moonPhase?: number;
     craters?: boolean;
+    facetMode?: "sides" | "stripes";
   } = {},
 ): LayerSpec {
   return {
@@ -81,6 +82,7 @@ function shape(
     cornerRadius: o.cornerRadius ?? 0,
     moonPhase: o.moonPhase,
     craters: o.craters,
+    facetMode: o.facetMode,
   };
 }
 
@@ -1699,6 +1701,10 @@ interface FamilyStyle {
   /** Glass highlight: "frost" (default) a soft top sheen, "reflection" diagonal
       light glints across the pane. */
   glassStyle?: "frost" | "reflection";
+  /** How a pride flag is laid on the glass sheet: "sides" a few thicker
+      horizontal lines beside the copy (default), or "stripes" a full field of
+      diagonal pinstripes. */
+  facetMode?: "sides" | "stripes";
   /** Panels use windows instead of plates. */
   windowChrome?: boolean;
   /** Chat panel silhouette. */
@@ -1874,8 +1880,14 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           shape("Glass sheet", FULL, {
             shape: "glasssheet",
             fill: "@text/6",
+            facetMode: f.facetMode ?? "sides",
             effects: {
-              gloss: { enabled: true, strength: f.glassStyle === "reflection" ? 1 : 0.65 },
+              gloss: {
+                enabled: true,
+                strength: f.glassStyle === "reflection" ? 1 : 0.72,
+                // Glossy (shiny) glass for reflection families; matte frosted for frost.
+                style: f.glassStyle === "reflection" ? "streak" : "sheen",
+              },
             },
           }),
         ]
@@ -3004,6 +3016,102 @@ const CRYSTAL: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** The neutral glass ground shared by the pride prism families: a calm gradient
+    and soft neutral orbs, so the flag lines in the glass sheet carry the
+    identity rather than the backdrop tinting everything. */
+const prismFlagGround = (): LayerSpec[] => [
+  shape("Backdrop", FULL, {
+    background: true,
+    fill: "@background",
+    effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 130 } },
+  }),
+  particles("Decor — Orbs A", { kind: "blobs", count: 4, size: 168, speed: 0.28, color: "@text", opacity: 0.07 }),
+  particles("Decor — Orbs B", { kind: "blobs", count: 3, size: 140, speed: 0.32, color: "@border", opacity: 0.22 }),
+  particles("Decor — Sparkle", { kind: "stars", count: 26, size: 2, speed: 0.12, color: "@text", opacity: 0.45 }),
+];
+
+/** Prism Flag: the glossy-glass look flying a pride flag. A few thicker pride
+    lines run down each side of the glass, with a wet reflection over the top,
+    over a neutral glass ground so the flag reads. Pride collection, so it
+    expands across the prism palettes (rainbow / lesbian, each light and dark)
+    and the flag colours arrive per palette. Everything animates. */
+const PRISM_FLAG: FamilyStyle = {
+  id: "prism-flag",
+  name: "Prism Flag",
+  collection: "pride",
+  tags: ["RGB", "Neon", "Minimal"],
+  display: "Montserrat",
+  displayWeight: 800,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 20,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 2,
+  glass: true,
+  glassStyle: "reflection",
+  frameEffects: {
+    border: { enabled: true, color: "@text/50", width: 2, radius: 20 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  plateShape: "rect",
+  scene: prismFlagGround,
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Frost Flag: the same pride prism, but matte frosted glass — a soft, even
+    sheen instead of the glossy glint, so the flag reads through diffused rather
+    than polished. The matte counterpart to Prism Flag; both expand across the
+    prism palettes so every flag comes in a glossy and a matte finish. */
+const FROST_FLAG: FamilyStyle = {
+  id: "frost-flag",
+  name: "Frost Flag",
+  collection: "pride",
+  tags: ["RGB", "Minimal", "Cozy"],
+  display: "Poppins",
+  displayWeight: 600,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 22,
+  frameRadius: 22,
+  corners: false,
+  strokeWidth: 2,
+  glass: true,
+  // No glassStyle → frost: a matte, diffused sheen.
+  frameEffects: {
+    border: { enabled: true, color: "@text/45", width: 2, radius: 22 },
+    glow: { enabled: true, color: "@glow", strength: 18 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+  plateShape: "rect",
+  scene: prismFlagGround,
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Prism Stripes: the glossy pride prism with the flag laid on as a full field
+    of diagonal pinstripes across the glass — the busier look, kept alongside
+    the calmer Prism Flag for those who prefer it. */
+const PRISM_STRIPES: FamilyStyle = {
+  ...PRISM_FLAG,
+  id: "prism-stripes",
+  name: "Prism Stripes",
+  facetMode: "stripes",
+};
+
+/** Frost Stripes: the matte counterpart — full diagonal pinstripes through
+    frosted glass. */
+const FROST_STRIPES: FamilyStyle = {
+  ...FROST_FLAG,
+  id: "frost-stripes",
+  name: "Frost Stripes",
+  facetMode: "stripes",
+};
+
 /** Mecha (spec theme B): industrial military-tech — carbon-fibre bands, toxic
     green accent lines with intense glow, 45° chamfered frames and panels, and a
     compact tall display. Green in a green palette; colour follows the palette. */
@@ -3169,6 +3277,15 @@ const NEW_FAMILIES: FamilyStyle[] = [
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);
+
+// The pride glass families — glossy Prism Flag and matte Frost Flag — expanded
+// (below) across the prism palettes only, so every flag comes in both finishes.
+const PRISM_PRIDE_TEMPLATES: BaseTemplate[] = [
+  ...familyScreens(PRISM_FLAG),
+  ...familyScreens(FROST_FLAG),
+  ...familyScreens(PRISM_STRIPES),
+  ...familyScreens(FROST_STRIPES),
+];
 
 /* -------------------------------------------------------------------------- */
 /*                            Gothic design family                            */
@@ -4182,6 +4299,10 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
       if (layer.type === "text" && layer.fillStripes && palette.flag) {
         layer.fillStripes = palette.flag;
       }
+      // A glass sheet disperses the palette's flag into its prism spectrum.
+      if (layer.type === "shape" && layer.shape === "glasssheet" && palette.flag) {
+        layer.facetColors = palette.flag;
+      }
       return layer;
     }),
   };
@@ -4202,6 +4323,7 @@ export const TEMPLATES: Template[] = [
   ...expand(GENERATED_FAMILY_TEMPLATES, CORE_PALETTES),
   ...expand(GOTHIC_TEMPLATES, GOTHIC_PALETTES),
   ...expand(PRIDE_TEMPLATES, PRIDE_PALETTES),
+  ...expand(PRISM_PRIDE_TEMPLATES, PRISM_PALETTES),
 ];
 
 const TEMPLATE_BY_ID = new Map(TEMPLATES.map((t) => [t.id, t]));
