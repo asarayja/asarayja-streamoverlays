@@ -2201,6 +2201,46 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       chat("Chat", { x: 1400, y: 120, width: 460, height: 840 }, 10),
     ]),
 
+    // Stinger transition — a two-part veil wipes across in the family colours
+    // with a glowing leading edge, so a scene cut hides behind the pack's own
+    // identity instead of a hard swap.
+    base("stinger", "Stinger Transition", "Stinger Transitions", [
+      shape("Veil back", { x: -700, y: -220, width: 1500, height: 1620 }, {
+        fill: "@primary",
+        rotation: 10,
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary", angle: 90 } },
+        animation: anim("slide", { direction: "left", duration: 760, intensity: 4, easing: "easeInOut" }),
+      }),
+      shape("Veil front", { x: -360, y: -220, width: 1500, height: 1620 }, {
+        fill: "@surface",
+        rotation: 10,
+        opacity: 0.96,
+        effects: {
+          gradient: { enabled: true, from: "@surface", to: "@background", angle: 90 },
+          glow: { enabled: true, color: "@glow", strength: 24 },
+        },
+        animation: anim("slide", { direction: "left", duration: 760, delay: 130, intensity: 4, easing: "easeInOut" }),
+      }),
+      shape("Edge glow", { x: 900, y: -220, width: 8, height: 1620 }, {
+        fill: "@accent",
+        rotation: 10,
+        effects: { glow: { enabled: true, color: "@glow", strength: 44 } },
+        animation: anim("slide", { direction: "left", duration: 760, delay: 130, intensity: 4, easing: "easeInOut" }),
+      }),
+      text("Channel name", { x: 310, y: 470 + dy, width: 1300, height: 130 }, "{{CHANNEL_NAME}}", {
+        fontFamily: f.display,
+        fontSize: 92,
+        fontWeight: f.displayWeight,
+        italic: f.displayItalic,
+        align: "center",
+        fill: f.displayFill ?? "@text",
+        letterSpacing: f.displayTracking,
+        textTransform: f.displayTransform,
+        effects: f.headlineEffects,
+        animation: anim("zoom", { duration: 560, delay: 380, easing: "backOut" }),
+      }),
+    ]),
+
     alertScreen("follower", "Follower Alert", "NEW FOLLOWER", "AwesomeViewer", false),
     alertScreen("subscriber", "Subscriber Alert", "NEW SUBSCRIBER", "Tier 1 · welcome aboard", true),
 
@@ -4752,6 +4792,53 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
             letterSpacing: 4,
           }),
         ];
+      }),
+    ],
+  },
+
+  {
+    id: "gothic-stinger",
+    name: "Stinger — Gothic Veil",
+    category: "Stinger Transitions",
+    tags: ["Fantasy", "Dark"],
+    collection: "gothic",
+    layers: [
+      // Two dark curtains sweep across, back-lit by the palette accent, so the
+      // cut hides behind a gothic veil rather than a hard swap.
+      shape("Veil back", { x: -700, y: -220, width: 1500, height: 1620 }, {
+        fill: "@primary",
+        rotation: 10,
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary", angle: 90 } },
+        animation: anim("slide", { direction: "left", duration: 760, intensity: 4, easing: "easeInOut" }),
+      }),
+      shape("Veil front", { x: -360, y: -220, width: 1500, height: 1620 }, {
+        fill: "@surface",
+        rotation: 10,
+        opacity: 0.96,
+        effects: {
+          gradient: { enabled: true, from: "@surface", to: "@background", angle: 90 },
+          border: { enabled: true, color: "@accent", width: 2, radius: 0 },
+        },
+        animation: anim("slide", { direction: "left", duration: 760, delay: 130, intensity: 4, easing: "easeInOut" }),
+      }),
+      // Bats scatter out of the veil as it lands.
+      particles("Decor — Bats", { kind: "bats", count: 14, size: 7, speed: 1.1, color: "@secondary", opacity: 0.85 }),
+      // A hot moon blooms in the centre at the peak of the wipe.
+      shape("Decor — Moon", { x: 810, y: 360, width: 300, height: 300 }, {
+        shape: "moon",
+        moonPhase: 1,
+        fill: "@accent",
+        effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
+        animation: anim("zoom", { duration: 620, delay: 360, easing: "backOut" }),
+      }),
+      text("Channel name", { x: 360, y: 690, width: 1200, height: 110 }, "{{CHANNEL_NAME}}", {
+        fontFamily: "UnifrakturMaguntia",
+        fontSize: 88,
+        fontWeight: 400,
+        align: "center",
+        fill: "@text",
+        effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+        animation: anim("fade", { duration: 500, delay: 460 }),
       }),
     ],
   },
