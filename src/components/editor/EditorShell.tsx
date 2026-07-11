@@ -17,6 +17,7 @@ import {
   Pencil,
   Radio,
   Redo2,
+  Send,
   Undo2,
   ZoomIn,
   ZoomOut,
@@ -25,6 +26,8 @@ import { OverlayStage } from "@/components/overlay/OverlayStage";
 import { Button, cx } from "@/components/ui";
 import { publishLive } from "@/lib/share";
 import { resolveColor } from "@/lib/theme";
+import { downloadBlob, slugify } from "@/lib/export";
+import { packToDesignFile } from "@/lib/design-file";
 import { CANVAS_WIDTH } from "@/lib/types";
 import type { Layer, Theme } from "@/lib/types";
 import { BRUSH_KINDS, useEditorStore } from "@/store/editor";
@@ -63,6 +66,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
 
   const upsert = useProjectsStore((s) => s.upsert);
   const syncPackTheme = useProjectsStore((s) => s.syncPackTheme);
+  const packScreensOf = useProjectsStore((s) => s.packScreensOf);
   const renameProject = useEditorStore((s) => s.renameProject);
   const hydrated = useProjectsStore((s) => s.hydrated);
   const saved = useProjectsStore((s) =>
@@ -74,6 +78,16 @@ export default function EditorShell({ projectId }: { projectId: string }) {
 
   const [panTool, setPanTool] = useState(false);
   const [drawTool, setDrawTool] = useState(false);
+  // "Send to site" is a hidden maintainer tool, off by default. Reveal it from
+  // the browser console (see the local dev note, not committed to git).
+  const [devMode, setDevMode] = useState(false);
+  useEffect(() => {
+    setDevMode(localStorage.getItem("asarayja:dev") === "1");
+    (window as unknown as { asarayjaDev?: () => void }).asarayjaDev = () => {
+      localStorage.setItem("asarayja:dev", "1");
+      setDevMode(true);
+    };
+  }, []);
   const [showExport, setShowExport] = useState(false);
   const [exportTime, setExportTime] = useState(0);
   /** When set, the export stage renders only this layer — per-element export. */
@@ -275,6 +289,27 @@ export default function EditorShell({ projectId }: { projectId: string }) {
               Live view
             </Button>
           </Link>
+          {devMode && (
+            <Button
+              onClick={() => {
+                // One click: package the whole pack (every screen + palette) as a
+                // ready-to-bake design file. Send it in and it ships as a built-in.
+                upsert(project);
+                const screens = project.packId ? packScreensOf(project.packId) : [project];
+                const merged = screens.map((s) => (s.id === project.id ? project : s));
+                if (!merged.some((s) => s.id === project.id)) merged.push(project);
+                const file = packToDesignFile(merged);
+                downloadBlob(
+                  new Blob([JSON.stringify(file, null, 2)], { type: "application/json" }),
+                  `${slugify(file.name)}.asarayja-design.json`,
+                );
+              }}
+              title="Download this whole design as one file to send in and have it baked into the site"
+            >
+              <Send className="size-3.5" />
+              Send to site
+            </Button>
+          )}
           <Button
             variant="primary"
             onClick={() => {
