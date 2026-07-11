@@ -65,9 +65,18 @@ const GLOW_ANIM_PRESETS = new Set<AnimationPreset>(["glow", "shimmer", "blink", 
 /** Colour sets for the "multi-colour letters" toggle — each letter cycles the
     palette. The first is the default when the toggle is switched on. */
 const MULTI_LETTER_PALETTES: Array<{ label: string; colors: string[] }> = [
-  { label: "Rainbow", colors: ["#FF3B30", "#FF9500", "#FFCC00", "#34C759", "#00A2FF", "#AF52DE"] },
-  { label: "Pride", colors: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#004DFF", "#750787"] },
+  // Rainbow + pride flags (authentic stripe colours).
+  { label: "Rainbow", colors: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#004DFF", "#750787"] },
+  { label: "Progress", colors: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#004DFF", "#750787", "#FFFFFF", "#FFAFC8", "#74D7EE", "#613915", "#000000"] },
   { label: "Trans", colors: ["#5BCEFA", "#F5A9B8", "#FFFFFF", "#F5A9B8", "#5BCEFA"] },
+  { label: "Lesbian", colors: ["#D52D00", "#FF9A56", "#FFFFFF", "#D362A4", "#A30262"] },
+  { label: "Bisexual", colors: ["#D60270", "#9B4F96", "#0038A8"] },
+  { label: "Pansexual", colors: ["#FF218C", "#FFD800", "#21B1FF"] },
+  { label: "Nonbinary", colors: ["#FCF434", "#FFFFFF", "#9C59D1", "#2C2C2C"] },
+  { label: "Asexual", colors: ["#000000", "#A3A3A3", "#FFFFFF", "#800080"] },
+  { label: "Genderfluid", colors: ["#FF75A2", "#FFFFFF", "#BE18D6", "#000000", "#333EBD"] },
+  { label: "Aromantic", colors: ["#3DA542", "#A7D379", "#FFFFFF", "#A9A9A9", "#000000"] },
+  // Colour moods.
   { label: "Warm", colors: ["#FF4E50", "#FC913A", "#F9D423", "#FF6A00"] },
   { label: "Cool", colors: ["#00C6FB", "#005BEA", "#43E97B", "#38F9D7"] },
   { label: "Pastel", colors: ["#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF", "#D5BAFF"] },
@@ -544,29 +553,70 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(on) => commit({ fillStripes: on ? MULTI_LETTER_COLORS : undefined })}
           />
           {text.fillStripes && text.fillStripes.length > 0 && (
-            <div className="grid grid-cols-2 gap-1.5">
-              {MULTI_LETTER_PALETTES.map((pal) => {
-                const active = JSON.stringify(text.fillStripes) === JSON.stringify(pal.colors);
+            <>
+              <div className="grid grid-cols-2 gap-1.5">
+                {MULTI_LETTER_PALETTES.map((pal) => {
+                  const active = JSON.stringify(text.fillStripes) === JSON.stringify(pal.colors);
+                  return (
+                    <button
+                      key={pal.label}
+                      title={t(pal.label)}
+                      onClick={() => commit({ fillStripes: pal.colors })}
+                      className={cx(
+                        "flex items-center gap-1.5 rounded-lg border px-2 py-1.5 transition-colors",
+                        active ? "border-brand-400/60 bg-brand-500/10" : "border-white/[0.06] bg-white/[0.02] hover:border-white/15",
+                      )}
+                    >
+                      <span className="flex shrink-0 overflow-hidden rounded">
+                        {pal.colors.map((c, i) => (
+                          <span key={i} style={{ background: c }} className="h-3.5 w-2" />
+                        ))}
+                      </span>
+                      <span className="truncate text-[10px] text-zinc-400">{t(pal.label)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {(() => {
+                const letters = [...text.text].filter((ch) => ch.trim() !== "");
+                if (letters.length === 0 || letters.length > 30) return null;
+                const stripes = text.fillStripes ?? [];
+                const len = Math.max(1, stripes.length);
+                const colorAt = (i: number) => stripes[i % len] ?? "#ffffff";
+                const setLetter = (i: number, color: string) => {
+                  const next = letters.map((_, j) => colorAt(j));
+                  next[i] = color;
+                  commit({ fillStripes: next });
+                };
                 return (
-                  <button
-                    key={pal.label}
-                    title={t(pal.label)}
-                    onClick={() => commit({ fillStripes: pal.colors })}
-                    className={cx(
-                      "flex items-center gap-1.5 rounded-lg border px-2 py-1.5 transition-colors",
-                      active ? "border-brand-400/60 bg-brand-500/10" : "border-white/[0.06] bg-white/[0.02] hover:border-white/15",
-                    )}
-                  >
-                    <span className="flex shrink-0 overflow-hidden rounded">
-                      {pal.colors.map((c, i) => (
-                        <span key={i} style={{ background: c }} className="h-3.5 w-2" />
-                      ))}
-                    </span>
-                    <span className="truncate text-[10px] text-zinc-400">{t(pal.label)}</span>
-                  </button>
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-zinc-600">{t("Per letter")}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {letters.map((ch, i) => {
+                        const col = colorAt(i);
+                        const val = /^#[0-9a-fA-F]{6}$/.test(col) ? col : "#ffffff";
+                        return (
+                          <label
+                            key={i}
+                            title={t("Letter colour")}
+                            className="relative grid size-7 cursor-pointer place-items-center rounded border border-white/15 text-[11px] font-bold"
+                            style={{ background: col }}
+                          >
+                            <span style={{ color: "#fff", mixBlendMode: "difference" }}>{ch}</span>
+                            <input
+                              type="color"
+                              value={val}
+                              onChange={(e) => setLetter(i, e.target.value)}
+                              className="absolute inset-0 cursor-pointer opacity-0"
+                            />
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
-              })}
-            </div>
+              })()}
+            </>
           )}
 
           {(() => {
