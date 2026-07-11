@@ -1864,10 +1864,33 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       }),
     ]);
 
+  // A frosted-glass pane behind a message scene's copy — so glass families show
+  // the glass effect on Starting Soon etc., sitting over the solid backdrop.
+  const glassPane = (): LayerSpec[] =>
+    f.glass
+      ? [
+          shape("Glass pane", { x: 300, y: 330 + dy, width: 1320, height: 640 }, {
+            shape: "rect",
+            fill: "@text/10",
+            cornerRadius: f.radius,
+            effects: {
+              border: { enabled: true, color: "@text/35", width: 2, radius: f.radius },
+              glow: { enabled: true, color: "@glow", strength: 14 },
+              gloss: {
+                enabled: true,
+                strength: 0.55,
+                style: f.glassStyle === "reflection" ? "streak" : "sheen",
+              },
+            },
+          }),
+        ]
+      : [];
+
   /** A full-screen message scene: ground, headline, name, slogan, socials. */
   const scene = (id: string, name: string, category: TemplateCategory, copy: string, extra: LayerSpec[] = []) =>
     base(id, name, category, [
       ...f.scene(),
+      ...glassPane(),
       ...extra,
       headline(copy),
       channelName(600),
