@@ -352,6 +352,9 @@ export type ShapeKind =
   /** A full-sheet glass overlay: facet pattern, prismatic colour spots and
       diagonal light reflections, over whatever is beneath it. */
   | "glasssheet"
+  /** A stack of flowing, glowing plasma waves — one per flag colour — that
+      drift and flow. Carries `facetColors`, substituted per pride palette. */
+  | "flagwaves"
   /** A rectangle with its four corners cut at 45° — the mecha panel. */
   | "chamfer"
   /** A woven carbon-fibre texture fill. */

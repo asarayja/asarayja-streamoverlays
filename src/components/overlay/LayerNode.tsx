@@ -488,6 +488,44 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "flagwaves") {
+    // A stack of flowing, glowing plasma ribbons — one per flag colour — that
+    // drift and undulate across the band. Reads as rainbow plasma energy.
+    const cols = layer.facetColors;
+    if (!cols || !cols.length) return null;
+    const tt = ctx.time / 1000;
+    const n = cols.length;
+    return (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) => {
+          const th = (h / n) * 1.3; // slight overlap so the band reads as one flow
+          const amp = h * 0.1;
+          c.setAttr("lineCap", "round");
+          c.setAttr("lineJoin", "round");
+          c.setAttr("lineWidth", th);
+          for (let i = 0; i < n; i++) {
+            const col = cols[i];
+            const yc = ((i + 0.5) / n) * h;
+            const drift = Math.sin(tt * 0.5 + i * 0.7) * amp * 0.6;
+            c.setAttr("strokeStyle", hexAlpha(col, 0.82));
+            c.setAttr("shadowColor", col);
+            c.setAttr("shadowBlur", th * 0.7);
+            c.beginPath();
+            const steps = 28;
+            for (let s = 0; s <= steps; s++) {
+              const x = (w * s) / steps;
+              const y = yc + drift + Math.sin((x / w) * Math.PI * 2 + tt * 0.8 + i * 0.6) * amp;
+              if (s === 0) c.moveTo(x, y);
+              else c.lineTo(x, y);
+            }
+            c.stroke();
+          }
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "chamfer") {
     return <Line closed points={chamferPoints(w, h)} {...paint} />;
   }

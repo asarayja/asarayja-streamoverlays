@@ -3112,6 +3112,50 @@ const FROST_STRIPES: FamilyStyle = {
   facetMode: "stripes",
 };
 
+/** Plasma Flag: the Plasma pack flying a pride flag. A river of flowing, glowing
+    plasma ribbons — one per flag colour — undulates across the frame, in the
+    Orbitron/Rajdhani plasma type. Pride collection; the flag arrives per palette
+    (rainbow / lesbian, light and dark). */
+const PLASMA_FLAG: FamilyStyle = {
+  id: "plasma-flag",
+  name: "Plasma Flag",
+  collection: "pride",
+  tags: ["Neon", "RGB", "Dark"],
+  display: "Orbitron",
+  displayWeight: 800,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 6,
+  frameRadius: 8,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 28 },
+  },
+  headlineEffects: {
+    glow: { enabled: true, color: "@glow", strength: 34 },
+    // A dark halo keeps the letters legible over the bright rainbow flow.
+    shadow: { enabled: true, color: "@shadow", blur: 22, offsetY: 4, opacity: 0.85 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 130 } },
+    }),
+    // The rainbow plasma river — flowing glowing ribbons in the flag's colours.
+    shape("Plasma flag", { x: -140, y: 220, width: 2200, height: 600 }, { shape: "flagwaves" }),
+    // Rising sparks and soft bokeh for depth.
+    particles("Decor — Sparks", { kind: "embers", count: 46, size: 3, speed: 0.7, color: "@glow", opacity: 0.55 }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.4, color: "@text", opacity: 0.28 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 /** Mecha (spec theme B): industrial military-tech — carbon-fibre bands, toxic
     green accent lines with intense glow, 45° chamfered frames and panels, and a
     compact tall display. Green in a green palette; colour follows the palette. */
@@ -3521,6 +3565,7 @@ const PRISM_PRIDE_TEMPLATES: BaseTemplate[] = [
   ...familyScreens(FROST_FLAG),
   ...familyScreens(PRISM_STRIPES),
   ...familyScreens(FROST_STRIPES),
+  ...familyScreens(PLASMA_FLAG),
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -4535,8 +4580,12 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
       if (layer.type === "text" && layer.fillStripes && palette.flag) {
         layer.fillStripes = palette.flag;
       }
-      // A glass sheet disperses the palette's flag into its prism spectrum.
-      if (layer.type === "shape" && layer.shape === "glasssheet" && palette.flag) {
+      // A glass sheet / plasma waves take the palette's flag colours.
+      if (
+        layer.type === "shape" &&
+        (layer.shape === "glasssheet" || layer.shape === "flagwaves") &&
+        palette.flag
+      ) {
         layer.facetColors = palette.flag;
       }
       return layer;
