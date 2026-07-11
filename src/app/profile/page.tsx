@@ -15,6 +15,7 @@ import { useClock } from "@/lib/useClock";
 import { SOCIAL_PLATFORMS } from "@/lib/types";
 import type { SocialPlatform } from "@/lib/types";
 import { useProfileStore, useRenderProfile } from "@/store/profile";
+import { useT } from "@/lib/i18n";
 
 const SOCIAL_LABELS: Record<SocialPlatform, string> = {
   twitch: "Twitch",
@@ -37,6 +38,7 @@ const SOCIAL_LABELS: Record<SocialPlatform, string> = {
 const PREVIEW_TEMPLATE_ID = "starting-pulse--purple-neon";
 
 export default function ProfilePage() {
+  const t = useT();
   const { profile, configured, setField, setSocial, setTheme, reset, loadDemo } =
     useProfileStore();
   const patchTheme = (patch: Partial<typeof profile.theme>) =>
@@ -64,30 +66,29 @@ export default function ProfilePage() {
           <header>
             {!configured && (
               <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-400/30 bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-400">
-                Step 1 of 2 · Set up your channel
+                {t("Step 1 of 2 · Set up your channel")}
               </span>
             )}
             <h1 className="text-3xl font-bold tracking-tight text-white">
-              {configured ? "Channel profile" : "Welcome — let's set up your channel"}
+              {configured ? t("Channel profile") : t("Welcome — let's set up your channel")}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-              Enter this once. Templates are written against placeholders like{" "}
+              {t("Enter this once. Templates are written against placeholders like")}{" "}
               <code className="rounded bg-white/8 px-1.5 py-0.5 font-mono text-[11px] text-brand-400">
                 {"{{CHANNEL_NAME}}"}
               </code>{" "}
-              and{" "}
+              {t("and")}{" "}
               <code className="rounded bg-white/8 px-1.5 py-0.5 font-mono text-[11px] text-brand-400">
                 {"{{LOGO}}"}
               </code>
-              , so every overlay you open is already filled in with your details. You can change any
-              of it later.
+              {t(", so every overlay you open is already filled in with your details. You can change any of it later.")}
             </p>
           </header>
 
           <div className="panel rounded-2xl p-5">
-            <h2 className="mb-4 text-sm font-semibold text-zinc-200">Identity</h2>
+            <h2 className="mb-4 text-sm font-semibold text-zinc-200">{t("Identity")}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Channel name" hint="{{CHANNEL_NAME}}">
+              <Field label={t("Channel name")} hint="{{CHANNEL_NAME}}">
                 <TextInput
                   value={profile.channelName}
                   onChange={(e) => setField("channelName", e.target.value)}
@@ -95,7 +96,7 @@ export default function ProfilePage() {
                   placeholder="MelissaGaming"
                 />
               </Field>
-              <Field label="Display name" hint="{{DISPLAY_NAME}}">
+              <Field label={t("Display name")} hint="{{DISPLAY_NAME}}">
                 <TextInput
                   value={profile.displayName}
                   onChange={(e) => setField("displayName", e.target.value)}
@@ -104,12 +105,12 @@ export default function ProfilePage() {
                 />
               </Field>
               <div className="sm:col-span-2">
-                <Field label="Slogan" hint="{{SLOGAN}}">
+                <Field label={t("Slogan")} hint="{{SLOGAN}}">
                   <TextInput
                     value={profile.slogan}
                     onChange={(e) => setField("slogan", e.target.value)}
                     onBlur={confirmSaved}
-                    placeholder="Chaos, coffee and questionable aim"
+                    placeholder={t("Chaos, coffee and questionable aim")}
                   />
                 </Field>
               </div>
@@ -117,7 +118,7 @@ export default function ProfilePage() {
 
             <div className="mt-6 grid gap-6 sm:grid-cols-2">
               <ImageUpload
-                label="Logo · {{LOGO}}"
+                label={t("Logo · {{LOGO}}")}
                 value={profile.logo}
                 onChange={(v) => {
                   setField("logo", v);
@@ -125,7 +126,7 @@ export default function ProfilePage() {
                 }}
               />
               <ImageUpload
-                label="Profile image · {{PROFILE_IMAGE}}"
+                label={t("Profile image · {{PROFILE_IMAGE}}")}
                 round
                 value={profile.profileImage}
                 onChange={(v) => {
@@ -137,19 +138,18 @@ export default function ProfilePage() {
           </div>
 
           <div className="panel rounded-2xl p-5">
-            <h2 className="mb-1 text-sm font-semibold text-zinc-200">Socials</h2>
+            <h2 className="mb-1 text-sm font-semibold text-zinc-200">{t("Socials")}</h2>
             <p className="mb-4 text-xs text-zinc-500">
-              Leave a field empty to hide it. Handles render without the @ where the platform
-              doesn&apos;t use one.
+              {t("Leave a field empty to hide it. Handles render without the @ where the platform doesn't use one.")}
             </p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {SOCIAL_PLATFORMS.map((platform) => (
-                <Field key={platform} label={SOCIAL_LABELS[platform]}>
+                <Field key={platform} label={t(SOCIAL_LABELS[platform])}>
                   <TextInput
                     value={profile.socials[platform]}
                     onChange={(e) => setSocial(platform, e.target.value)}
                     onBlur={confirmSaved}
-                    placeholder={platform === "website" ? "melissa.gg" : "handle"}
+                    placeholder={platform === "website" ? "melissa.gg" : t("handle")}
                   />
                 </Field>
               ))}
@@ -157,9 +157,9 @@ export default function ProfilePage() {
           </div>
 
           <div className="panel rounded-2xl p-5">
-            <h2 className="mb-1 text-sm font-semibold text-zinc-200">Brand colours</h2>
+            <h2 className="mb-1 text-sm font-semibold text-zinc-200">{t("Brand colours")}</h2>
             <p className="mb-4 text-xs text-zinc-500">
-              Your default theme. Change one token and every layer that references it repaints.
+              {t("Your default theme. Change one token and every layer that references it repaints.")}
             </p>
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="space-y-4">
@@ -174,21 +174,21 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/">
+            <Link href="/templates">
               <Button variant="primary">
-                {configured ? "Browse templates" : "Continue to templates"}
+                {configured ? t("Browse templates") : t("Continue to templates")}
                 <ArrowRight className="size-4" />
               </Button>
             </Link>
-            <Button onClick={loadDemo}>Fill with demo data</Button>
+            <Button onClick={loadDemo}>{t("Fill with demo data")}</Button>
             <Button variant="danger" onClick={reset}>
               <RotateCcw className="size-3.5" />
-              Reset profile
+              {t("Reset profile")}
             </Button>
             {saved && (
               <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
                 <Check className="size-3.5" />
-                Saved
+                {t("Saved")}
               </span>
             )}
           </div>
@@ -198,11 +198,11 @@ export default function ProfilePage() {
           <div className="panel overflow-hidden rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-                Live preview
+                {t("Live preview")}
               </p>
               {!configured && (
                 <span className="rounded-full bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-amber-300">
-                  Demo data
+                  {t("Demo data")}
                 </span>
               )}
             </div>
@@ -219,8 +219,7 @@ export default function ProfilePage() {
               )}
             </div>
             <p className="px-4 py-3 text-[11px] leading-relaxed text-zinc-500">
-              This is a real template rendering your profile — not a mockup. Every field above feeds
-              the same placeholder resolver the editor and OBS source use.
+              {t("This is a real template rendering your profile — not a mockup. Every field above feeds the same placeholder resolver the editor and OBS source use.")}
             </p>
           </div>
         </aside>

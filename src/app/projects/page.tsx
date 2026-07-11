@@ -11,10 +11,12 @@ import { useElementSize, useInView } from "@/lib/useElementSize";
 import type { Project } from "@/lib/types";
 import { useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
+import { useT } from "@/lib/i18n";
 
 const SETTLED = 6000;
 
 export default function ProjectsPage() {
+  const t = useT();
   const projects = useProjectsStore((s) => s.projects);
   const profile = useRenderProfile();
   const [onlyFavorites, setOnlyFavorites] = useState(false);
@@ -29,9 +31,9 @@ export default function ProjectsPage() {
       <main className="mx-auto max-w-[1600px] px-6 py-10">
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">Projects</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-white">{t("Projects")}</h1>
             <p className="mt-2 text-sm text-zinc-400">
-              Saved in this browser. Every project keeps its own OBS code.
+              {t("Saved in this browser. Every project keeps its own OBS code.")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -40,10 +42,10 @@ export default function ProjectsPage() {
               className={cx(onlyFavorites && "!border-amber-400/40 !text-amber-300")}
             >
               <Star className={cx("size-3.5", onlyFavorites && "fill-current")} />
-              Favorites
+              {t("Favorites")}
             </Button>
-            <Link href="/">
-              <Button variant="primary">New from template</Button>
+            <Link href="/templates">
+              <Button variant="primary">{t("New from template")}</Button>
             </Link>
           </div>
         </div>
@@ -51,10 +53,10 @@ export default function ProjectsPage() {
         {sorted.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/10 py-24 text-center">
             <p className="text-sm text-zinc-400">
-              {projects.length === 0 ? "No projects yet." : "No favorites yet."}
+              {projects.length === 0 ? t("No projects yet.") : t("No favorites yet.")}
             </p>
-            <Link href="/">
-              <Button className="mt-4">Browse templates</Button>
+            <Link href="/templates">
+              <Button className="mt-4">{t("Browse templates")}</Button>
             </Link>
           </div>
         ) : (
@@ -70,6 +72,7 @@ export default function ProjectsPage() {
 }
 
 function ProjectCard({ project, profile }: { project: Project; profile: ReturnType<typeof useRenderProfile> }) {
+  const t = useT();
   const router = useRouter();
   const [viewRef, inView] = useInView<HTMLDivElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
@@ -109,7 +112,7 @@ function ProjectCard({ project, profile }: { project: Project; profile: ReturnTy
         <div className="flex shrink-0 items-center gap-0.5">
           <button
             onClick={() => toggleFavorite(project.id)}
-            title="Favorite"
+            title={t("Favorite")}
             className={cx(
               "rounded p-1.5 transition-colors hover:bg-white/5",
               project.favorite ? "text-amber-400" : "text-zinc-600 hover:text-zinc-300",
@@ -122,7 +125,7 @@ function ProjectCard({ project, profile }: { project: Project; profile: ReturnTy
               const copy = duplicate(project.id);
               if (copy) router.push(`/editor?id=${copy.id}`);
             }}
-            title="Duplicate"
+            title={t("Duplicate")}
             className="rounded p-1.5 text-zinc-600 transition-colors hover:bg-white/5 hover:text-zinc-300"
           >
             <Copy className="size-3.5" />
@@ -130,7 +133,7 @@ function ProjectCard({ project, profile }: { project: Project; profile: ReturnTy
           <button
             onClick={() => (confirming ? remove(project.id) : setConfirming(true))}
             onBlur={() => setConfirming(false)}
-            title={confirming ? "Click again to delete" : "Delete"}
+            title={confirming ? t("Click again to delete") : t("Delete")}
             className={cx(
               "rounded p-1.5 transition-colors hover:bg-white/5",
               confirming ? "bg-red-500/20 text-red-300" : "text-zinc-600 hover:text-red-400",

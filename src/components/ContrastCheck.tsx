@@ -10,6 +10,7 @@ import {
   type CvdType,
 } from "@/lib/theme";
 import type { Theme, ThemeToken } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 
 /**
  * Automatic contrast control.
@@ -61,6 +62,7 @@ export function ContrastCheck({
   /** Applies token corrections; absent = read-only report. */
   onFix?: (patch: Partial<Theme>) => void;
 }) {
+  const t = useT();
   const results = PAIRS.map((pair) => {
     const ratio = contrastRatio(theme[pair.fg], theme[pair.bg]);
     return { ...pair, ratio, pass: ratio >= pair.target };
@@ -94,7 +96,7 @@ export function ContrastCheck({
       <div className="flex items-center justify-between gap-2">
         <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
           <Eye className="size-3.5" />
-          Contrast check
+          {t("Contrast check")}
         </p>
         <span
           className={cx(
@@ -104,7 +106,7 @@ export function ContrastCheck({
               : "bg-amber-400/10 text-amber-300",
           )}
         >
-          {failing.length === 0 ? "All pass" : `${failing.length} below target`}
+          {failing.length === 0 ? t("All pass") : t("{n} below target", { n: failing.length })}
         </span>
       </div>
 
@@ -121,7 +123,7 @@ export function ContrastCheck({
             >
               Aa
             </span>
-            <span className="min-w-0 flex-1 truncate text-xs text-zinc-400">{r.label}</span>
+            <span className="min-w-0 flex-1 truncate text-xs text-zinc-400">{t(r.label)}</span>
             <span
               className={cx(
                 "font-mono text-[11px] tabular-nums",
@@ -138,7 +140,7 @@ export function ContrastCheck({
                   onClick={() => onFix({ [r.fg]: ensureContrast(theme[r.fg], theme[r.bg], r.target) })}
                   className="shrink-0 rounded bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300 transition-colors hover:bg-amber-400/25"
                 >
-                  Fix
+                  {t("Fix")}
                 </button>
               )
             )}
@@ -149,7 +151,7 @@ export function ContrastCheck({
       {failing.length > 1 && onFix && (
         <Button variant="outline" className="w-full" onClick={fixAll}>
           <Wand2 className="size-3.5" />
-          Fix all ({failing.length})
+          {t("Fix all ({n})", { n: failing.length })}
         </Button>
       )}
 
@@ -158,8 +160,7 @@ export function ContrastCheck({
           {cvdWarnings.map((w) => (
             <p key={w.label + w.typeLabel} className="flex items-start gap-1.5 text-[11px] leading-relaxed text-amber-300/90">
               <AlertTriangle className="mt-0.5 size-3 shrink-0" />
-              {w.label} look alike for {w.typeLabel} viewers — separate their lightness, not just
-              their hue.
+              {t("{pair} look alike for {vision} viewers — separate their lightness, not just their hue.", { pair: t(w.label), vision: t(w.typeLabel) })}
             </p>
           ))}
         </div>

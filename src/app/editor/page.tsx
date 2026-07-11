@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useT } from "@/lib/i18n";
 
 /**
  * Konva reads `window` at import time, so the whole editor loads client-side
@@ -11,11 +12,14 @@ import dynamic from "next/dynamic";
  */
 const EditorShell = dynamic(() => import("@/components/editor/EditorShell"), {
   ssr: false,
-  loading: () => (
-    <div className="grid min-h-screen place-items-center bg-ink-950">
-      <p className="text-sm text-zinc-500">Loading editor…</p>
-    </div>
-  ),
+  loading: () => {
+    const t = useT();
+    return (
+      <div className="grid min-h-screen place-items-center bg-ink-950">
+        <p className="text-sm text-zinc-500">{t("Loading editor…")}</p>
+      </div>
+    );
+  },
 });
 
 function EditorInner() {
@@ -24,11 +28,12 @@ function EditorInner() {
 }
 
 export default function EditorPage() {
+  const t = useT();
   return (
     <Suspense
       fallback={
         <div className="grid min-h-screen place-items-center bg-ink-950">
-          <p className="text-sm text-zinc-500">Loading editor…</p>
+          <p className="text-sm text-zinc-500">{t("Loading editor…")}</p>
         </div>
       }
     >

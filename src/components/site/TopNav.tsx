@@ -5,17 +5,21 @@ import { usePathname } from "next/navigation";
 import { FolderOpen, LayoutGrid, Shapes, UserRound, Zap } from "lucide-react";
 import { cx } from "@/components/ui";
 import { useProfileStore } from "@/store/profile";
+import { useT } from "@/lib/i18n";
+import { LangSwitch } from "@/components/site/LangSwitch";
 
+// The design gallery is the landing page (/); templates live at /templates.
 const LINKS = [
-  { href: "/designs", label: "Designs", icon: Shapes },
-  { href: "/", label: "Templates", icon: LayoutGrid },
-  { href: "/projects", label: "Projects", icon: FolderOpen },
-  { href: "/profile", label: "Channel profile", icon: UserRound },
+  { href: "/", label: "Designs", icon: Shapes, match: ["/", "/designs"] },
+  { href: "/templates", label: "Templates", icon: LayoutGrid, match: ["/templates"] },
+  { href: "/projects", label: "Projects", icon: FolderOpen, match: ["/projects"] },
+  { href: "/profile", label: "Channel profile", icon: UserRound, match: ["/profile"] },
 ];
 
 export function TopNav() {
   const pathname = usePathname();
   const configured = useProfileStore((s) => s.configured);
+  const t = useT();
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-950/80 backdrop-blur-xl">
@@ -30,8 +34,8 @@ export function TopNav() {
         </Link>
 
         <nav className="ml-2 flex items-center gap-1">
-          {LINKS.map(({ href, label, icon: Icon }) => {
-            const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+          {LINKS.map(({ href, label, icon: Icon, match }) => {
+            const active = match.some((m) => (m === "/" ? pathname === "/" : pathname.startsWith(m)));
             return (
               <Link
                 key={href}
@@ -42,22 +46,23 @@ export function TopNav() {
                 )}
               >
                 <Icon className="size-4" />
-                {label}
+                {t(label)}
               </Link>
             );
           })}
         </nav>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
           {!configured && (
             <Link
               href="/profile"
               className="flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/10 px-3.5 py-1.5 text-xs font-medium text-amber-300 transition-colors hover:bg-amber-400/20"
             >
               <span className="size-1.5 rounded-full bg-amber-400" />
-              Set up your channel profile
+              {t("Set up your channel profile")}
             </Link>
           )}
+          <LangSwitch />
         </div>
       </div>
     </header>

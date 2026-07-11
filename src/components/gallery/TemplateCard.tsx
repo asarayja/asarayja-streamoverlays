@@ -7,6 +7,7 @@ import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { useClock } from "@/lib/useClock";
 import { useElementSize, useInView } from "@/lib/useElementSize";
 import { cx } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 import type { ChannelProfile, Template, Theme } from "@/lib/types";
 
 /**
@@ -24,6 +25,7 @@ interface TemplateCardProps {
 }
 
 export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardProps) {
+  const t = useT();
   const [viewRef, inView] = useInView<HTMLDivElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
   const [hovered, setHovered] = useState(false);
@@ -73,7 +75,7 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100">
             <span className="flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg">
               <Sparkles className="size-4" />
-              Open in editor
+              {t("Open in editor")}
             </span>
           </div>
         </div>

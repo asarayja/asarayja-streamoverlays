@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";
 import { isContinuous } from "@/lib/animation";
 import { cx } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 import { useEditorStore } from "@/store/editor";
 
 /**
@@ -12,6 +13,7 @@ import { useEditorStore } from "@/store/editor";
  * which is also what the exporter does, frame by frame.
  */
 export function Timeline() {
+  const t = useT();
   const project = useEditorStore((s) => s.project);
   const playing = useEditorStore((s) => s.playing);
   const time = useEditorStore((s) => s.time);
@@ -54,14 +56,14 @@ export function Timeline() {
         <button
           onClick={() => setPlaying(!playing)}
           className="grid size-8 place-items-center rounded-lg bg-brand-500 text-white transition-colors hover:bg-brand-400"
-          title={playing ? "Pause" : "Play"}
+          title={playing ? t("Pause") : t("Play")}
         >
           {playing ? <Pause className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
         </button>
         <button
           onClick={() => setTime(0)}
           className="grid size-8 place-items-center rounded-lg text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
-          title="Back to start"
+          title={t("Back to start")}
         >
           <RotateCcw className="size-4" />
         </button>
@@ -84,7 +86,7 @@ export function Timeline() {
         />
 
         <label className="flex items-center gap-2 text-xs text-zinc-500">
-          Duration
+          {t("Duration")}
           <input
             type="number"
             min={0.5}
@@ -101,7 +103,7 @@ export function Timeline() {
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2">
         {animated.length === 0 ? (
           <p className="py-6 text-center text-xs text-zinc-600">
-            No animated layers yet. Pick a layer and choose a preset in the Animate panel.
+            {t("No animated layers yet. Pick a layer and choose a preset in the Animate panel.")}
           </p>
         ) : (
           <ul className="space-y-1">

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { OverlayStage } from "@/components/overlay/OverlayStage";
 import { Button, cx } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 import { publishLive } from "@/lib/share";
 import { resolveColor } from "@/lib/theme";
 import { downloadBlob, slugify } from "@/lib/export";
@@ -44,6 +45,7 @@ import { Timeline } from "./Timeline";
 const AUTOSAVE_DELAY = 700;
 
 export default function EditorShell({ projectId }: { projectId: string }) {
+  const t = useT();
   const project = useEditorStore((s) => s.project);
   const dirty = useEditorStore((s) => s.dirty);
   const zoom = useEditorStore((s) => s.zoom);
@@ -221,10 +223,10 @@ export default function EditorShell({ projectId }: { projectId: string }) {
     return (
       <div className="app-bg grid min-h-screen place-items-center">
         <div className="text-center">
-          <h1 className="text-lg font-semibold text-white">Project not found</h1>
-          <p className="mt-1 text-sm text-zinc-500">It may have been deleted from this browser.</p>
-          <Link href="/">
-            <Button className="mt-5">Back to templates</Button>
+          <h1 className="text-lg font-semibold text-white">{t("Project not found")}</h1>
+          <p className="mt-1 text-sm text-zinc-500">{t("It may have been deleted from this browser.")}</p>
+          <Link href="/templates">
+            <Button className="mt-5">{t("Back to templates")}</Button>
           </Link>
         </div>
       </div>
@@ -234,7 +236,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   if (!project) {
     return (
       <div className="grid min-h-screen place-items-center bg-ink-950">
-        <p className="text-sm text-zinc-500">Loading project…</p>
+        <p className="text-sm text-zinc-500">{t("Loading project…")}</p>
       </div>
     );
   }
@@ -245,7 +247,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         <Link
           href="/projects"
           className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
-          title="All projects"
+          title={t("All projects")}
         >
           <ArrowLeft className="size-4" />
         </Link>
@@ -258,15 +260,15 @@ export default function EditorShell({ projectId }: { projectId: string }) {
 
         <span className="flex items-center gap-1.5 text-[11px] text-zinc-600">
           <Cloud className="size-3.5" />
-          {dirty ? "Saving…" : "Saved"}
+          {dirty ? t("Saving…") : t("Saved")}
         </span>
 
         <div className="mx-2 h-6 w-px bg-white/8" />
 
-        <ToolButton onClick={undo} disabled={past.length === 0} title="Undo (⌘Z)">
+        <ToolButton onClick={undo} disabled={past.length === 0} title={t("Undo") + " (⌘Z)"}>
           <Undo2 className="size-4" />
         </ToolButton>
-        <ToolButton onClick={redo} disabled={future.length === 0} title="Redo (⇧⌘Z)">
+        <ToolButton onClick={redo} disabled={future.length === 0} title={t("Redo") + " (⇧⌘Z)"}>
           <Redo2 className="size-4" />
         </ToolButton>
 
@@ -279,7 +281,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setBucketTool(false);
           }}
           active={!panTool && !drawTool && !bucketTool}
-          title="Select (V)"
+          title={t("Select") + " (V)"}
         >
           <MousePointer2 className="size-4" />
         </ToolButton>
@@ -290,7 +292,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setBucketTool(false);
           }}
           active={panTool}
-          title="Pan (H or hold Space)"
+          title={t("Pan") + " (H " + t("or hold Space") + ")"}
         >
           <Hand className="size-4" />
         </ToolButton>
@@ -301,7 +303,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setBucketTool(false);
           }}
           active={drawTool}
-          title="Draw (B) — freehand pencil"
+          title={t("Draw") + " (B) — " + t("freehand pencil")}
         >
           <Pencil className="size-4" />
         </ToolButton>
@@ -312,7 +314,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setPanTool(false);
           }}
           active={bucketTool}
-          title="Fill (G) — click a region you drew to fill it with the chosen colour"
+          title={t("Fill") + " (G) — " + t("click a region you drew to fill it with the chosen colour")}
         >
           <PaintBucket className="size-4" />
         </ToolButton>
@@ -320,48 +322,48 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         <ToolButton
           onClick={rotateSelected}
           disabled={selectedIds.length === 0}
-          title="Rotate selection 90° — flip a pattern/split to any direction"
+          title={t("Rotate selection 90° — flip a pattern/split to any direction")}
         >
           <RotateCw className="size-4" />
         </ToolButton>
-        <ToolButton onClick={toggleSnap} active={snap} title="Snap to guides">
+        <ToolButton onClick={toggleSnap} active={snap} title={t("Snap to guides")}>
           <Magnet className="size-4" />
         </ToolButton>
-        <ToolButton onClick={toggleGrid} active={showGrid} title="Grid">
+        <ToolButton onClick={toggleGrid} active={showGrid} title={t("Grid")}>
           <Grid3x3 className="size-4" />
         </ToolButton>
         <ToolButton
           onClick={() => setMotion(project.animationsEnabled === false)}
           active={project.animationsEnabled !== false}
-          title="Motion: when off, the OBS view and exports use the settled still pose"
+          title={t("Motion: when off, the OBS view and exports use the settled still pose")}
         >
           <Clapperboard className="size-4" />
         </ToolButton>
 
         <div className="mx-2 h-6 w-px bg-white/8" />
 
-        <ToolButton onClick={() => setZoom(zoom / 1.2)} title="Zoom out">
+        <ToolButton onClick={() => setZoom(zoom / 1.2)} title={t("Zoom out")}>
           <ZoomOut className="size-4" />
         </ToolButton>
         <span className="w-12 text-center font-mono text-[11px] text-zinc-500">
           {Math.round(zoom * 100)}%
         </span>
-        <ToolButton onClick={() => setZoom(zoom * 1.2)} title="Zoom in">
+        <ToolButton onClick={() => setZoom(zoom * 1.2)} title={t("Zoom in")}>
           <ZoomIn className="size-4" />
         </ToolButton>
-        <ToolButton onClick={() => setZoom(1)} title="Zoom to 100%">
+        <ToolButton onClick={() => setZoom(1)} title={t("Zoom to 100%")}>
           <Maximize className="size-4" />
         </ToolButton>
 
         <div className="ml-auto flex items-center gap-2">
-          <Button onClick={() => setTheme(brandTheme)} title="Apply the colours from your channel profile">
+          <Button onClick={() => setTheme(brandTheme)} title={t("Apply the colours from your channel profile")}>
             <Palette className="size-3.5" />
-            My brand
+            {t("My brand")}
           </Button>
           <Link href={`/live/overlay?code=${project.obsCode}`} target="_blank">
-            <Button title="Open the OBS view in a new tab">
+            <Button title={t("Open the OBS view in a new tab")}>
               <Radio className="size-3.5" />
-              Live view
+              {t("Live view")}
             </Button>
           </Link>
           {devMode && (
@@ -379,10 +381,10 @@ export default function EditorShell({ projectId }: { projectId: string }) {
                   `${slugify(file.name)}.asarayja-design.json`,
                 );
               }}
-              title="Download this whole design as one file to send in and have it baked into the site"
+              title={t("Download this whole design as one file to send in and have it baked into the site")}
             >
               <Send className="size-3.5" />
-              Send to site
+              {t("Send to site")}
             </Button>
           )}
           <Button
@@ -393,7 +395,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             }}
           >
             <Download className="size-4" />
-            Export
+            {t("Export")}
           </Button>
         </div>
       </header>
@@ -484,6 +486,7 @@ function ToolButton({
 const DRAW_TOKENS = ["@accent", "@primary", "@secondary", "@text", "@glow", "@error"];
 
 function DrawSettings() {
+  const t = useT();
   const drawColor = useEditorStore((s) => s.drawColor);
   const drawWidth = useEditorStore((s) => s.drawWidth);
   const drawBrush = useEditorStore((s) => s.drawBrush);
@@ -498,7 +501,7 @@ function DrawSettings() {
           <button
             key={brush.id}
             onClick={() => setDrawBrush(brush.id)}
-            title={brush.label}
+            title={t(brush.label)}
             className={cx(
               "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
               drawBrush === brush.id
@@ -506,21 +509,21 @@ function DrawSettings() {
                 : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300",
             )}
           >
-            {brush.label}
+            {t(brush.label)}
           </button>
         ))}
       </div>
       <span className="mx-0.5 h-4 w-px bg-white/10" />
-      {DRAW_TOKENS.map((t) => (
+      {DRAW_TOKENS.map((tok) => (
         <button
-          key={t}
-          onClick={() => setDrawColor(t)}
-          title={t.slice(1)}
+          key={tok}
+          onClick={() => setDrawColor(tok)}
+          title={tok.slice(1)}
           className={cx(
             "size-4 rounded-full ring-1 ring-white/20 transition",
-            drawColor === t && "ring-2 ring-white",
+            drawColor === tok && "ring-2 ring-white",
           )}
-          style={{ background: theme ? resolveColor(t, theme) : "#fff" }}
+          style={{ background: theme ? resolveColor(tok, theme) : "#fff" }}
         />
       ))}
       <input
@@ -530,7 +533,7 @@ function DrawSettings() {
         value={drawWidth}
         onChange={(e) => setDrawWidth(Number(e.target.value))}
         className="ml-1 w-20 accent-brand-400"
-        title="Brush width"
+        title={t("Brush width")}
       />
       <span className="w-5 text-center font-mono text-[10px] text-zinc-500">{drawWidth}</span>
     </div>

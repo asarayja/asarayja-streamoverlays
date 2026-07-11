@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { googleFontsHref } from "@/data/fonts";
 import { StoreHydrator } from "@/components/StoreHydrator";
+import { Onboarding } from "@/components/site/Onboarding";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-full">
         <StoreHydrator />
         {children}
+        <Onboarding />
       </body>
     </html>
   );

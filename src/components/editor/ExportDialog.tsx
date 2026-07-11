@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { Button, Field, Segmented, Select, Slider, cx } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 import {
   canvasToBlob,
   downloadBlob,
@@ -70,6 +71,7 @@ export function ExportDialog({
   duration,
   onClose,
 }: ExportDialogProps) {
+  const t = useT();
   const [scale, setScale] = useState(1);
   const [fps, setFps] = useState(30);
   const [videoFormat, setVideoFormat] = useState<"mp4" | "webm">("webm");
@@ -110,7 +112,7 @@ export function ExportDialog({
     try {
       await task();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Export failed");
+      setError(cause instanceof Error ? cause.message : t("Export failed"));
     } finally {
       setJob(null);
       setExportTime(0);
@@ -119,23 +121,23 @@ export function ExportDialog({
 
   const stage = () => {
     const s = stageRef.current;
-    if (!s) throw new Error("Export canvas is not ready yet");
+    if (!s) throw new Error(t("Export canvas is not ready yet"));
     return s;
   };
 
   const doPng = () =>
-    run("Rendering PNG", async () => {
+    run(t("Rendering PNG"), async () => {
       downloadBlob(await exportPng(stage(), scale), `${name}@${scale}x.png`);
     });
 
   const doJpg = () =>
-    run("Rendering JPG", async () => {
+    run(t("Rendering JPG"), async () => {
       downloadBlob(await exportJpg(stage(), background, scale), `${name}@${scale}x.jpg`);
     });
 
   const doVideo = () =>
-    run(`Recording ${videoFormat.toUpperCase()} in real time`, async () => {
-      if (!video) throw new Error("This browser cannot record video");
+    run(t("Recording {format} in real time", { format: videoFormat.toUpperCase() }), async () => {
+      if (!video) throw new Error(t("This browser cannot record video"));
       const blob = await recordVideo({
         stage: stage(),
         durationMs: duration,
@@ -144,19 +146,19 @@ export function ExportDialog({
         background,
         startTime: loopVideo ? SETTLED_TIME : 0,
         setTime: setExportTime,
-        onProgress: (progress) => setJob({ label: "Recording", progress }),
+        onProgress: (progress) => setJob({ label: t("Recording"), progress }),
       });
       downloadBlob(blob, `${name}.${video.extension}`);
     });
 
   const doSequence = () =>
-    run("Rendering transparent frames", async () => {
+    run(t("Rendering transparent frames"), async () => {
       const blob = await exportPngSequence({
         stage: stage(),
         durationMs: duration,
         fps,
         setTime: setExportTime,
-        onProgress: (progress) => setJob({ label: "Rendering frames", progress }),
+        onProgress: (progress) => setJob({ label: t("Rendering frames"), progress }),
       });
       downloadBlob(blob, `${name}-png-sequence.zip`);
     });
@@ -167,7 +169,7 @@ export function ExportDialog({
    * camera frame and the social bar as separate images, each with real alpha.
    */
   const doElements = () =>
-    run("Rendering elements", async () => {
+    run(t("Rendering elements"), async () => {
       const layers = project.layers.filter((l) => l.visible);
       const entries: ZipEntry[] = [];
       // Settled pose: entry animations finished, ambient effects at rest.
@@ -184,7 +186,7 @@ export function ExportDialog({
             name: `${String(i + 1).padStart(2, "0")}-${slugify(layers[i].name)}.png`,
             data: new Uint8Array(await blob.arrayBuffer()),
           });
-          setJob({ label: "Rendering elements", progress: (i + 1) / layers.length });
+          setJob({ label: t("Rendering elements"), progress: (i + 1) / layers.length });
         }
       } finally {
         setSoloLayer(null);
@@ -216,9 +218,9 @@ export function ExportDialog({
    * but all share this project's theme so the pack stays coherent.
    */
   const doPack = () =>
-    run("Exporting pack", async () => {
+    run(t("Exporting pack"), async () => {
       const chosen = pack.filter((s) => picked[s.id]);
-      if (chosen.length === 0) throw new Error("Pick at least one screen to export");
+      if (chosen.length === 0) throw new Error(t("Pick at least one screen to export"));
       const withVideo = packVideo && !!video;
       const perScreen = 1 + (withVideo ? 1 : 0);
       const total = chosen.length * perScreen;
@@ -245,7 +247,10 @@ export function ExportDialog({
           const png = await canvasToBlob(stage().toCanvas({ pixelRatio: scale }), "image/png");
           entries.push({ name: `${prefix}.png`, data: new Uint8Array(await png.arrayBuffer()) });
           done++;
-          setJob({ label: `Screen ${i + 1}/${chosen.length} · ${label}`, progress: done / total });
+          setJob({
+            label: t("Screen {n}/{total} · {label}", { n: i + 1, total: chosen.length, label }),
+            progress: done / total,
+          });
 
           if (withVideo) {
             const blob = await recordVideo({
@@ -258,7 +263,11 @@ export function ExportDialog({
               setTime: setExportTime,
               onProgress: (p) =>
                 setJob({
-                  label: `Screen ${i + 1}/${chosen.length} · recording ${label}`,
+                  label: t("Screen {n}/{total} · recording {label}", {
+                    n: i + 1,
+                    total: chosen.length,
+                    label,
+                  }),
                   progress: (done + p) / total,
                 }),
             });
@@ -329,7 +338,7 @@ export function ExportDialog({
       <div className="panel-solid max-h-full w-full max-w-2xl overflow-y-auto rounded-2xl">
         <header className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
           <div>
-            <h2 className="text-base font-semibold text-white">Export</h2>
+            <h2 className="text-base font-semibold text-white">{t("Export")}</h2>
             <p className="text-xs text-zinc-500">{project.name}</p>
           </div>
           <button
@@ -363,10 +372,10 @@ export function ExportDialog({
 
         <div className="space-y-6 p-5">
           <section>
-            <SectionTitle icon={<ImageIcon className="size-3.5" />}>Still image</SectionTitle>
+            <SectionTitle icon={<ImageIcon className="size-3.5" />}>{t("Still image")}</SectionTitle>
             <div className="mb-3">
               <Slider
-                label="Resolution"
+                label={t("Resolution")}
                 min={1}
                 max={4}
                 step={1}
@@ -378,29 +387,30 @@ export function ExportDialog({
             <div className="flex gap-2">
               <Button variant="primary" disabled={!!job} onClick={doPng} className="flex-1">
                 <Download className="size-4" />
-                {isScene ? "PNG · full scene" : "PNG · transparent"}
+                {isScene ? t("PNG · full scene") : t("PNG · transparent")}
               </Button>
               <Button disabled={!!job} onClick={doJpg} className="flex-1">
-                JPG · on background
+                {t("JPG · on background")}
               </Button>
             </div>
             <Note>
               {isScene
-                ? "This is a full screen — its background layer fills the frame, so the export is opaque edge to edge. Only screens like Starting Soon, BRB and Ending work this way."
-                : "This is an overlay — everything outside the drawn elements exports as true transparency, so gameplay shows through. The camera window is always transparent too: OBS layers your webcam behind it."}
+                ? t("This is a full screen — its background layer fills the frame, so the export is opaque edge to edge. Only screens like Starting Soon, BRB and Ending work this way.")
+                : t("This is an overlay — everything outside the drawn elements exports as true transparency, so gameplay shows through. The camera window is always transparent too: OBS layers your webcam behind it.")}
             </Note>
           </section>
 
           <section>
-            <SectionTitle icon={<Film className="size-3.5" />}>Animation</SectionTitle>
+            <SectionTitle icon={<Film className="size-3.5" />}>{t("Animation")}</SectionTitle>
             {!animated && (
               <p className="mb-3 text-xs text-zinc-500">
-                Nothing on this overlay is animated, so a video would be {duration / 1000}s of a
-                still frame.
+                {t("Nothing on this overlay is animated, so a video would be {s}s of a still frame.", {
+                  s: duration / 1000,
+                })}
               </p>
             )}
             <div className="mb-3 grid grid-cols-2 gap-3">
-              <Field label="Frame rate">
+              <Field label={t("Frame rate")}>
                 <Select value={fps} onChange={(e) => setFps(Number(e.target.value))}>
                   {[24, 30, 60].map((f) => (
                     <option key={f} value={f}>
@@ -409,7 +419,7 @@ export function ExportDialog({
                   ))}
                 </Select>
               </Field>
-              <Field label="Container">
+              <Field label={t("Container")}>
                 <Segmented
                   value={videoFormat}
                   onChange={setVideoFormat}
@@ -428,61 +438,62 @@ export function ExportDialog({
                 onChange={(e) => setLoopVideo(e.target.checked)}
                 className="size-3.5 accent-brand-500"
               />
-              Loop-friendly
+              {t("Loop-friendly")}
               <span className="text-zinc-600">
-                (record from the settled pose, so a looped video doesn&apos;t replay the intro)
+                {t("(record from the settled pose, so a looped video doesn’t replay the intro)")}
               </span>
             </label>
 
             <div className="flex gap-2">
               <Button disabled={!!job || !video} onClick={doVideo} className="flex-1">
                 <Film className="size-4" />
-                {video ? `Record ${video.extension.toUpperCase()}` : "Not supported here"}
+                {video ? t("Record {format}", { format: video.extension.toUpperCase() }) : t("Not supported here")}
               </Button>
               <Button variant="primary" disabled={!!job} onClick={doSequence} className="flex-1">
                 <Layers className="size-4" />
-                PNG sequence · alpha
+                {t("PNG sequence · alpha")}
               </Button>
             </div>
 
             <Note>
-              No browser video codec carries an alpha channel, so a recorded {videoFormat.toUpperCase()}{" "}
-              is flattened onto your background colour. For a genuinely transparent animated overlay,
-              export the PNG sequence — it ships with the exact FFmpeg commands for WebM/VP9 and
-              ProRes 4444 — or point OBS at the browser source below, which needs no export at all.
+              {t(
+                "No browser video codec carries an alpha channel, so a recorded {format} is flattened onto your background colour. For a genuinely transparent animated overlay, export the PNG sequence — it ships with the exact FFmpeg commands for WebM/VP9 and ProRes 4444 — or point OBS at the browser source below, which needs no export at all.",
+                { format: videoFormat.toUpperCase() },
+              )}
             </Note>
             <Note>
-              Recording plays the overlay once at normal speed, so it takes about{" "}
-              {(duration / 1000).toFixed(1)}s.
+              {t("Recording plays the overlay once at normal speed, so it takes about {s}s.", {
+                s: (duration / 1000).toFixed(1),
+              })}
             </Note>
           </section>
 
           {pack.length > 1 && (
             <section>
-              <SectionTitle icon={<Package className="size-3.5" />}>Whole pack</SectionTitle>
+              <SectionTitle icon={<Package className="size-3.5" />}>{t("Whole pack")}</SectionTitle>
               <p className="mb-3 text-xs leading-relaxed text-zinc-500">
-                Every screen that belongs to this design — {packLabel} — in one ZIP. Each chosen
-                screen exports as a {scale}× PNG (transparent overlays, full-frame scenes), plus a
-                video if you like. The screens you aren&apos;t editing use this project&apos;s
-                colours, so the whole pack stays coherent.
+                {t(
+                  "Every screen that belongs to this design — {label} — in one ZIP. Each chosen screen exports as a {scale}× PNG (transparent overlays, full-frame scenes), plus a video if you like. The screens you aren’t editing use this project’s colours, so the whole pack stays coherent.",
+                  { label: packLabel, scale },
+                )}
               </p>
 
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-[11px] font-medium text-zinc-400">
-                  {pickedCount} of {pack.length} screens
+                  {t("{picked} of {total} screens", { picked: pickedCount, total: pack.length })}
                 </span>
                 <div className="flex gap-1.5">
                   <button
                     onClick={() => setPicked(Object.fromEntries(pack.map((s) => [s.id, true])))}
                     className="rounded-md px-2 py-1 text-[11px] text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
                   >
-                    Select all
+                    {t("Select all")}
                   </button>
                   <button
                     onClick={() => setPicked({})}
                     className="rounded-md px-2 py-1 text-[11px] text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
                   >
-                    Clear
+                    {t("Clear")}
                   </button>
                 </div>
               </div>
@@ -512,13 +523,13 @@ export function ExportDialog({
                   onChange={(e) => setPackVideo(e.target.checked)}
                   className="size-3.5 accent-brand-500"
                 />
-                Include a video of each screen
+                {t("Include a video of each screen")}
                 {video ? (
                   <span className="text-zinc-600">
-                    ({fps} fps {video.extension.toUpperCase()} — set above)
+                    {t("({fps} fps {format} — set above)", { fps, format: video.extension.toUpperCase() })}
                   </span>
                 ) : (
-                  <span className="text-zinc-600">(video not supported here)</span>
+                  <span className="text-zinc-600">{t("(video not supported here)")}</span>
                 )}
               </label>
 
@@ -529,43 +540,43 @@ export function ExportDialog({
                 className="w-full"
               >
                 <Package className="size-4" />
-                Export {pickedCount} {pickedCount === 1 ? "screen" : "screens"} as ZIP
+                {t(
+                  pickedCount === 1 ? "Export {n} screen as ZIP" : "Export {n} screens as ZIP",
+                  { n: pickedCount },
+                )}
               </Button>
               {packVideo && video && (
                 <Note>
-                  Videos record in real time, one screen at a time — about{" "}
-                  {((duration / 1000) * pickedCount).toFixed(0)}s for {pickedCount}{" "}
-                  {pickedCount === 1 ? "screen" : "screens"}. No video codec carries alpha, so each
-                  is flattened onto your background colour; for transparent motion use the PNG
-                  sequence or the OBS source.
+                  {t(
+                    pickedCount === 1
+                      ? "Videos record in real time, one screen at a time — about {s}s for {n} screen. No video codec carries alpha, so each is flattened onto your background colour; for transparent motion use the PNG sequence or the OBS source."
+                      : "Videos record in real time, one screen at a time — about {s}s for {n} screens. No video codec carries alpha, so each is flattened onto your background colour; for transparent motion use the PNG sequence or the OBS source.",
+                    { s: ((duration / 1000) * pickedCount).toFixed(0), n: pickedCount },
+                  )}
                 </Note>
               )}
             </section>
           )}
 
           <section>
-            <SectionTitle icon={<Layers className="size-3.5" />}>Individual elements</SectionTitle>
+            <SectionTitle icon={<Layers className="size-3.5" />}>{t("Individual elements")}</SectionTitle>
             <p className="mb-3 text-xs leading-relaxed text-zinc-500">
-              Every layer as its own transparent PNG — camera frame, chat box, alert and social bar
-              come apart as separate images, cropped to size with their glow intact. A README lists
-              each element&apos;s position on the canvas.
+              {t("Every layer as its own transparent PNG — camera frame, chat box, alert and social bar come apart as separate images, cropped to size with their glow intact. A README lists each element’s position on the canvas.")}
             </p>
             <Button variant="primary" disabled={!!job} onClick={doElements} className="w-full">
               <Layers className="size-4" />
-              All elements as PNGs (ZIP)
+              {t("All elements as PNGs (ZIP)")}
             </Button>
           </section>
 
           <section>
-            <SectionTitle icon={<Copy className="size-3.5" />}>OBS browser source</SectionTitle>
+            <SectionTitle icon={<Copy className="size-3.5" />}>{t("OBS browser source")}</SectionTitle>
             <p className="mb-3 text-xs leading-relaxed text-zinc-500">
-              A self-contained link: the overlay and your profile are compressed into the URL
-              fragment, which never leaves your machine. Paste it into OBS as a Browser Source at
-              1920×1080.
+              {t("A self-contained link: the overlay and your profile are compressed into the URL fragment, which never leaves your machine. Paste it into OBS as a Browser Source at 1920×1080.")}
             </p>
             <Button variant="primary" onClick={copyObs} className="w-full">
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-              {copied ? "Copied to clipboard" : "Generate and copy OBS URL"}
+              {copied ? t("Copied to clipboard") : t("Generate and copy OBS URL")}
             </Button>
             {obsUrl && (
               <textarea
@@ -577,24 +588,23 @@ export function ExportDialog({
               />
             )}
             <Note>
-              Code <span className="font-mono text-zinc-400">{project.obsCode}</span>. While this tab
-              stays open, edits stream to any open live view instantly.
+              {t("Code")} <span className="font-mono text-zinc-400">{project.obsCode}</span>.{" "}
+              {t("While this tab stays open, edits stream to any open live view instantly.")}
             </Note>
           </section>
 
           <section>
-            <SectionTitle icon={<FileJson className="size-3.5" />}>Design file</SectionTitle>
+            <SectionTitle icon={<FileJson className="size-3.5" />}>{t("Design file")}</SectionTitle>
             <p className="mb-3 text-[11px] leading-relaxed text-zinc-500">
-              Your whole design — every screen + palette — as one re-importable file. Import it back
-              under “My designs”, or send it in to have it baked into the site.
+              {t("Your whole design — every screen + palette — as one re-importable file. Import it back under “My designs”, or send it in to have it baked into the site.")}
             </p>
             <Button variant="primary" onClick={doDesign} className="w-full">
               <Download className="size-4" />
-              Download design (.json)
+              {t("Download design") + " (.json)"}
             </Button>
             <Button onClick={doJson} className="mt-2 w-full">
               <Download className="size-4" />
-              This screen only (.asarayja.json)
+              {t("This screen only") + " (.asarayja.json)"}
             </Button>
           </section>
         </div>

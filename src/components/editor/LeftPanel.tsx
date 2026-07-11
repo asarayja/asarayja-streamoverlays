@@ -41,6 +41,7 @@ import { ContrastCheck } from "@/components/ContrastCheck";
 import { HarmonyGenerator, PaletteGrid, ThemeTokens } from "@/components/ThemeEditor";
 import { Button, Chip, Field, TextInput, cx } from "@/components/ui";
 import { uid } from "@/lib/id";
+import { useT } from "@/lib/i18n";
 import { resolveColor } from "@/lib/theme";
 import { fileToDataUrl } from "@/lib/image";
 import { PLACEHOLDERS } from "@/lib/placeholders";
@@ -104,6 +105,7 @@ const ADDABLE: LayerType[] = [
 
 export function LeftPanel() {
   const [tab, setTab] = useState<Tab>("layers");
+  const t = useT();
 
   return (
     <aside className="flex h-full w-[340px] shrink-0 border-r border-white/[0.06] bg-ink-900">
@@ -118,7 +120,7 @@ export function LeftPanel() {
             )}
           >
             <Icon className="size-[18px]" />
-            {label}
+            {t(label)}
           </button>
         ))}
       </nav>
@@ -156,6 +158,7 @@ function ScreensTab() {
   const removeScreenFromPack = useProjectsStore((s) => s.removeScreenFromPack);
   const profile = useRenderProfile();
   const router = useRouter();
+  const t = useT();
 
   if (!project) return null;
   const packId = project.packId;
@@ -185,8 +188,8 @@ function ScreensTab() {
   return (
     <div>
       <PanelHeader
-        title="Screens"
-        subtitle="Every screen in this pack — switch, add or remove without leaving the editor."
+        title={t("Screens")}
+        subtitle={t("Every screen in this pack — switch, add or remove without leaving the editor.")}
       />
       <div className="space-y-2.5 p-4">
         {siblings.map((s) => {
@@ -214,13 +217,13 @@ function ScreensTab() {
               <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
                 <span className="truncate text-[11px] font-medium text-zinc-300">
                   {s.name}
-                  {active && <span className="ml-1.5 text-[10px] text-brand-400">• editing</span>}
+                  {active && <span className="ml-1.5 text-[10px] text-brand-400">• {t("editing")}</span>}
                 </span>
                 {siblings.length > 1 && (
                   <button
                     onClick={() => remove(s.id)}
                     className="shrink-0 text-zinc-600 transition-colors hover:text-red-400"
-                    title="Remove screen"
+                    title={t("Remove screen")}
                   >
                     <Trash2 className="size-3.5" />
                   </button>
@@ -234,7 +237,7 @@ function ScreensTab() {
             onClick={addScreen}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 py-3 text-[12px] font-medium text-zinc-400 transition-colors hover:border-brand-400/50 hover:text-white"
           >
-            <Plus className="size-4" /> Add blank screen
+            <Plus className="size-4" /> {t("Add blank screen")}
           </button>
         )}
       </div>
@@ -249,6 +252,7 @@ function TemplatesTab() {
   const applyTemplate = useEditorStore((s) => s.applyTemplate);
   const [adoptPalette, setAdoptPalette] = useState(false);
   const [query, setQuery] = useState("");
+  const t = useT();
 
   // Show one card per design; the palette comes from the project, not the variant.
   const bases = useMemo(() => {
@@ -267,9 +271,9 @@ function TemplatesTab() {
 
   return (
     <div>
-      <PanelHeader title="Templates" subtitle="Swap the design. Your OBS link and project stay the same." />
+      <PanelHeader title={t("Templates")} subtitle={t("Swap the design. Your OBS link and project stay the same.")} />
       <div className="space-y-3 p-4">
-        <TextInput value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search…" />
+        <TextInput value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Search…")} />
         <label className="flex cursor-pointer items-center gap-2 text-[11px] text-zinc-400">
           <input
             type="checkbox"
@@ -277,7 +281,7 @@ function TemplatesTab() {
             onChange={(e) => setAdoptPalette(e.target.checked)}
             className="size-3.5 accent-brand-500"
           />
-          Also adopt the template&apos;s palette
+          {t("Also adopt the template's palette")}
         </label>
 
         <div className="space-y-1">
@@ -483,6 +487,7 @@ function NBandGenerator() {
   const [count, setCount] = useState(6);
   const [shape, setShape] = useState<(typeof BAND_SHAPES)[number]["id"]>("straight");
   const [mode, setMode] = useState<"rainbow" | "theme">("rainbow");
+  const t = useT();
 
   const build = () => {
     const stripes: string[] = [];
@@ -532,9 +537,9 @@ function NBandGenerator() {
 
   return (
     <div className="border-t border-white/[0.06] px-4 py-4">
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Band generator</p>
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Band generator")}</p>
       <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
-        Make N stripes in one click — rainbow or your theme, straight, curved, wavy or round.
+        {t("Make N stripes in one click — rainbow or your theme, straight, curved, wavy or round.")}
       </p>
       <div className="mb-3 flex items-center gap-2">
         <input
@@ -557,7 +562,7 @@ function NBandGenerator() {
               mode === m ? "bg-brand-500/25 text-brand-300" : "bg-white/[0.03] text-zinc-400 hover:text-zinc-200",
             )}
           >
-            {m}
+            {t(m)}
           </button>
         ))}
       </div>
@@ -571,13 +576,13 @@ function NBandGenerator() {
               shape === sh.id ? "bg-brand-500/25 text-brand-300" : "bg-white/[0.03] text-zinc-400 hover:text-zinc-200",
             )}
           >
-            {sh.label}
+            {t(sh.label)}
           </button>
         ))}
       </div>
       <Button onClick={build} className="w-full">
         <PlusSquare className="size-3.5" />
-        Add {count} bands
+        {t("Add {n} bands", { n: count })}
       </Button>
     </div>
   );
@@ -585,10 +590,11 @@ function NBandGenerator() {
 
 function AddTab() {
   const addLayer = useEditorStore((s) => s.addLayer);
+  const t = useT();
 
   return (
     <div>
-      <PanelHeader title="Add layer" subtitle="New layers land in the middle of the canvas." />
+      <PanelHeader title={t("Add layer")} subtitle={t("New layers land in the middle of the canvas.")} />
       <div className="grid grid-cols-2 gap-2 p-4">
         {ADDABLE.map((type) => {
           const Icon = LAYER_ICONS[type];
@@ -599,7 +605,7 @@ function AddTab() {
               className="flex flex-col items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] py-4 text-[11px] font-medium capitalize text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
             >
               <Icon className="size-5 text-zinc-500" />
-              {type}
+              {t(type)}
             </button>
           );
         })}
@@ -608,10 +614,9 @@ function AddTab() {
       <NBandGenerator />
 
       <div className="border-t border-white/[0.06] px-4 py-4">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Decor</p>
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Decor")}</p>
         <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
-          Shapes with their own geometry. Every one takes its colour from a theme token, and the
-          moon has a phase and craters you can edit.
+          {t("Shapes with their own geometry. Every one takes its colour from a theme token, and the moon has a phase and craters you can edit.")}
         </p>
         <div className="grid grid-cols-2 gap-2">
           {DECOR_PRESETS.map(({ label, patch, type }) => (
@@ -620,7 +625,7 @@ function AddTab() {
               onClick={() => addLayer(type ?? "shape", patch as Partial<Layer>)}
               className="rounded-xl border border-white/[0.06] bg-white/[0.02] py-2.5 text-[11px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>
@@ -645,6 +650,7 @@ function LayersTab() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ id: string; below: boolean } | null>(null);
+  const t = useT();
 
   if (!project) return null;
 
@@ -665,12 +671,12 @@ function LayersTab() {
 
   return (
     <div>
-      <PanelHeader title="Layers" subtitle={`${project.layers.length} layers · drag to reorder · top of list draws on top`} />
+      <PanelHeader title={t("Layers")} subtitle={t("{n} layers · drag to reorder · top of list draws on top", { n: project.layers.length })} />
 
       <div className="flex gap-1.5 border-b border-white/[0.06] px-4 py-2.5">
         <Button onClick={duplicateSelected} disabled={selectedIds.length === 0} className="flex-1 !px-2 !py-1.5 text-xs">
           <Copy className="size-3.5" />
-          Duplicate
+          {t("Duplicate")}
         </Button>
         <Button variant="danger" onClick={removeSelected} disabled={selectedIds.length === 0} className="!px-2 !py-1.5 text-xs">
           <Trash2 className="size-3.5" />
@@ -743,18 +749,18 @@ function LayersTab() {
               )}
 
               <div className="flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                <IconAction title="Move up" disabled={index === project.layers.length - 1} onClick={() => reorder(layer.id, index + 1)}>
+                <IconAction title={t("Move up")} disabled={index === project.layers.length - 1} onClick={() => reorder(layer.id, index + 1)}>
                   <ArrowUp className="size-3" />
                 </IconAction>
-                <IconAction title="Move down" disabled={index === 0} onClick={() => reorder(layer.id, index - 1)}>
+                <IconAction title={t("Move down")} disabled={index === 0} onClick={() => reorder(layer.id, index - 1)}>
                   <ArrowDown className="size-3" />
                 </IconAction>
               </div>
 
-              <IconAction title={layer.locked ? "Unlock" : "Lock"} onClick={() => toggleLock(layer.id)} active={layer.locked}>
+              <IconAction title={layer.locked ? t("Unlock") : t("Lock")} onClick={() => toggleLock(layer.id)} active={layer.locked}>
                 {layer.locked ? <Lock className="size-3" /> : <Unlock className="size-3" />}
               </IconAction>
-              <IconAction title={layer.visible ? "Hide" : "Show"} onClick={() => toggleVisible(layer.id)}>
+              <IconAction title={layer.visible ? t("Hide") : t("Show")} onClick={() => toggleVisible(layer.id)}>
                 {layer.visible ? <Eye className="size-3" /> : <EyeOff className="size-3" />}
               </IconAction>
             </li>
@@ -799,13 +805,14 @@ function ColorsTab() {
   const project = useEditorStore((s) => s.project);
   const setTheme = useEditorStore((s) => s.setTheme);
   const setThemePatch = useEditorStore((s) => s.setThemePatch);
+  const t = useT();
   if (!project) return null;
 
   return (
     <div>
       <PanelHeader
-        title="Colors"
-        subtitle="Layers reference tokens, not hex codes. Change a token and the whole overlay follows."
+        title={t("Colors")}
+        subtitle={t("Layers reference tokens, not hex codes. Change a token and the whole overlay follows.")}
       />
       <div className="space-y-4 p-4">
         <PaletteGrid theme={project.theme} onApply={setTheme} />
@@ -829,6 +836,7 @@ function TextTab() {
   const updateLayer = useEditorStore((s) => s.updateLayer);
   const isText = layer?.type === "text";
   const [fontQuery, setFontQuery] = useState("");
+  const t = useT();
 
   const shownFonts = useMemo(() => {
     const q = fontQuery.trim().toLowerCase();
@@ -844,16 +852,16 @@ function TextTab() {
 
   return (
     <div>
-      <PanelHeader title="Text" subtitle={isText ? layer.name : "Select a text layer to edit it."} />
+      <PanelHeader title={t("Text")} subtitle={isText ? layer.name : t("Select a text layer to edit it.")} />
 
       <div className="space-y-4 p-4">
         <Button variant="primary" className="w-full" onClick={() => addLayer("text")}>
           <Type className="size-4" />
-          Add text layer
+          {t("Add text layer")}
         </Button>
 
         {isText && (
-          <Field label="Content">
+          <Field label={t("Content")}>
             <textarea
               value={(layer as TextLayer).text}
               onChange={(e) => updateLayer(layer.id, { text: e.target.value }, false)}
@@ -866,15 +874,15 @@ function TextTab() {
 
         <div>
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-            Profile placeholders
+            {t("Profile placeholders")}
           </p>
           <p className="mb-2.5 text-[11px] leading-relaxed text-zinc-600">
-            These resolve from your channel profile every time the overlay renders.
+            {t("These resolve from your channel profile every time the overlay renders.")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {PLACEHOLDERS.filter((p) => !["{{LOGO}}", "{{PROFILE_IMAGE}}"].includes(p.token)).map((p) => (
               <Chip key={p.token} onClick={() => insert(p.token)}>
-                {p.label}
+                {t(p.label)}
               </Chip>
             ))}
           </div>
@@ -882,14 +890,14 @@ function TextTab() {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Fonts</p>
-            <span className="text-[10px] text-zinc-600">{FONTS.length} fonts</span>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Fonts")}</p>
+            <span className="text-[10px] text-zinc-600">{t("{n} fonts", { n: FONTS.length })}</span>
           </div>
           <input
             type="text"
             value={fontQuery}
             onChange={(e) => setFontQuery(e.target.value)}
-            placeholder="Search fonts…"
+            placeholder={t("Search fonts…")}
             className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-brand-500/60 focus:outline-none"
           />
           <div className="max-h-[420px] space-y-1 overflow-y-auto pr-1">
@@ -909,12 +917,12 @@ function TextTab() {
                   {font.family}
                 </span>
                 <span className="ml-2 shrink-0 text-[10px] uppercase tracking-wider text-zinc-600">
-                  {font.category}
+                  {t(font.category)}
                 </span>
               </button>
             ))}
             {shownFonts.length === 0 && (
-              <p className="px-3 py-2 text-xs text-zinc-600">No fonts match “{fontQuery}”.</p>
+              <p className="px-3 py-2 text-xs text-zinc-600">{t("No fonts match “{q}”.", { q: fontQuery })}</p>
             )}
           </div>
         </div>
@@ -928,12 +936,13 @@ function TextTab() {
 function AnimateTab() {
   const layer = useSelectedLayer();
   const updateLayer = useEditorStore((s) => s.updateLayer);
+  const t = useT();
 
   if (!layer) {
     return (
       <div>
-        <PanelHeader title="Animations" />
-        <p className="p-4 text-xs text-zinc-500">Select a layer to animate it.</p>
+        <PanelHeader title={t("Animations")} />
+        <p className="p-4 text-xs text-zinc-500">{t("Select a layer to animate it.")}</p>
       </div>
     );
   }
@@ -943,7 +952,7 @@ function AnimateTab() {
 
   return (
     <div>
-      <PanelHeader title="Animations" subtitle={layer.name} />
+      <PanelHeader title={t("Animations")} subtitle={layer.name} />
       <div className="grid grid-cols-2 gap-2 p-4">
         {ANIMATION_PRESETS.map((preset) => (
           <button
@@ -956,13 +965,12 @@ function AnimateTab() {
                 : "border-white/[0.06] bg-white/[0.02] text-zinc-400 hover:border-white/15 hover:text-zinc-200",
             )}
           >
-            {preset}
+            {t(preset)}
           </button>
         ))}
       </div>
       <p className="px-4 pb-4 text-[11px] leading-relaxed text-zinc-600">
-        Timing, easing and looping live in the Properties panel on the right. Press play in the
-        timeline to preview.
+        {t("Timing, easing and looping live in the Properties panel on the right. Press play in the timeline to preview.")}
       </p>
     </div>
   );
@@ -975,6 +983,7 @@ function UploadsTab() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploads, setUploads] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const t = useT();
 
   const handleFiles = async (files: FileList | null) => {
     if (!files) return;
@@ -985,7 +994,7 @@ function UploadsTab() {
         const dataUrl = await fileToDataUrl(file, 1024);
         setUploads((current) => [dataUrl, ...current]);
       } catch {
-        setError(`Could not read ${file.name}`);
+        setError(t("Could not read {name}", { name: file.name }));
       }
     }
   };
@@ -1013,7 +1022,7 @@ function UploadsTab() {
 
   return (
     <div>
-      <PanelHeader title="Uploads" subtitle="Images stay in your browser — nothing is uploaded to a server." />
+      <PanelHeader title={t("Uploads")} subtitle={t("Images stay in your browser — nothing is uploaded to a server.")} />
       <div className="space-y-3 p-4">
         <input
           ref={inputRef}
@@ -1025,7 +1034,7 @@ function UploadsTab() {
         />
         <Button variant="primary" className="w-full" onClick={() => inputRef.current?.click()}>
           <Upload className="size-4" />
-          Choose images
+          {t("Choose images")}
         </Button>
         {error && <p className="text-xs text-red-400">{error}</p>}
 
@@ -1036,10 +1045,10 @@ function UploadsTab() {
                 key={src.slice(-32)}
                 onClick={() => place(src)}
                 className="checker aspect-square overflow-hidden rounded-lg border border-white/10 transition-colors hover:border-brand-400/60"
-                title="Add to canvas"
+                title={t("Add to canvas")}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt="Upload" className="size-full object-contain" />
+                <img src={src} alt={t("Upload")} className="size-full object-contain" />
               </button>
             ))}
           </div>

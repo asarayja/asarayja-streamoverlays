@@ -12,6 +12,7 @@ import { Chip, cx } from "@/components/ui";
 import { getPalette } from "@/data/palettes";
 import { useElementSize, useInView } from "@/lib/useElementSize";
 import { useRenderProfile } from "@/store/profile";
+import { useT } from "@/lib/i18n";
 import type { Collection } from "@/lib/types";
 
 const SETTLED = 6000;
@@ -24,6 +25,7 @@ const FILTERS: Array<{ id: Collection | "all"; label: string }> = [
 ];
 
 export default function DesignsPage() {
+  const t = useT();
   const profile = useRenderProfile();
   const [collection, setCollection] = useState<Collection | "all">("all");
 
@@ -40,14 +42,13 @@ export default function DesignsPage() {
         <section className="py-12 text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-xs font-medium text-zinc-400">
             <LayoutGrid className="size-3.5 text-brand-400" />
-            {DESIGNS.length} designs
+            {t("{count} designs", { count: DESIGNS.length })}
           </span>
           <h1 className="mx-auto mt-5 max-w-3xl text-balance text-4xl font-bold leading-[1.05] tracking-tight md:text-5xl">
-            <span className="gradient-text">Browse by design</span>
+            <span className="gradient-text">{t("Browse by design")}</span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-balance text-[15px] leading-relaxed text-zinc-400">
-            One card per look. Open a design to see every screen it comes with — and try it in each
-            of its colours.
+            {t("One card per look. Open a design to see every screen it comes with — and try it in each of its colours.")}
           </p>
         </section>
 
@@ -56,7 +57,7 @@ export default function DesignsPage() {
         <div className="mb-8 flex flex-wrap justify-center gap-1.5">
           {FILTERS.map((f) => (
             <Chip key={f.id} active={collection === f.id} onClick={() => setCollection(f.id)}>
-              {f.label}
+              {t(f.label)}
             </Chip>
           ))}
         </div>
@@ -72,6 +73,7 @@ export default function DesignsPage() {
 }
 
 function DesignCard({ design, profile }: { design: Design; profile: ReturnType<typeof useRenderProfile> }) {
+  const t = useT();
   const [viewRef, inView] = useInView<HTMLAnchorElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
   const theme = getPalette(design.coverPalette).theme;
@@ -104,10 +106,10 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-zinc-100">{design.name}</p>
           <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-zinc-500">
-            {design.screenCount} {design.screenCount === 1 ? "screen" : "screens"}
+            {design.screenCount} {design.screenCount === 1 ? t("screen") : t("screens")}
             <span className="text-zinc-700">·</span>
             <PaletteIcon className="size-3" />
-            {design.palettes.length} {design.palettes.length === 1 ? "colour" : "colours"}
+            {design.palettes.length} {design.palettes.length === 1 ? t("colour") : t("colours")}
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-500">

@@ -9,11 +9,13 @@ import { packToDesignFile } from "@/lib/design-file";
 import { SETTLED_TIME } from "@/store/editor";
 import { useProjectsStore } from "@/store/projects";
 import { useRenderProfile } from "@/store/profile";
+import { useT } from "@/lib/i18n";
 import type { Project } from "@/lib/types";
 
 /** User-made / imported packs, grouped by packId, one card per pack. Reads the
     existing projects store — no new persistence. Hidden until there is one. */
 export function MyDesigns() {
+  const t = useT();
   const router = useRouter();
   const profile = useRenderProfile();
   const projects = useProjectsStore((s) => s.projects);
@@ -46,7 +48,7 @@ export function MyDesigns() {
   };
 
   const removePack = (screens: Project[]) => {
-    if (!confirm(`Delete “${screens[0].packName ?? screens[0].name}” and its ${screens.length} screen(s)?`)) return;
+    if (!confirm(t("Delete “{name}” and its {count} screen(s)?", { name: screens[0].packName ?? screens[0].name, count: screens.length }))) return;
     for (const s of screens) remove(s.id);
   };
 
@@ -54,7 +56,7 @@ export function MyDesigns() {
     <section className="mb-10">
       <div className="mb-4 flex items-center gap-2">
         <Layers className="size-4 text-brand-400" />
-        <h2 className="text-lg font-semibold text-white">My designs</h2>
+        <h2 className="text-lg font-semibold text-white">{t("My designs")}</h2>
         <span className="text-sm text-zinc-600">{packs.length}</span>
       </div>
       <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
@@ -83,19 +85,19 @@ export function MyDesigns() {
                   <p className="truncate text-sm font-semibold text-zinc-100">
                     {cover.packName ?? cover.name}
                   </p>
-                  <p className="text-xs text-zinc-500">{screens.length} screens</p>
+                  <p className="text-xs text-zinc-500">{t("{count} screens", { count: screens.length })}</p>
                 </div>
                 <div className="flex shrink-0 gap-1">
                   <button
                     onClick={() => exportPack(screens)}
-                    title="Export design file"
+                    title={t("Export design file")}
                     className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-white/5 hover:text-white"
                   >
                     <Download className="size-3.5" />
                   </button>
                   <button
                     onClick={() => removePack(screens)}
-                    title="Delete design"
+                    title={t("Delete design")}
                     className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-white/5 hover:text-red-400"
                   >
                     <Trash2 className="size-3.5" />

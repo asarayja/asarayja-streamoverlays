@@ -10,6 +10,7 @@ import { useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
 import type { Project } from "@/lib/types";
 import { cx } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 
 /**
  * A compact strip of the most recently edited projects on the home page, so
@@ -17,6 +18,7 @@ import { cx } from "@/components/ui";
  * on a separate page.
  */
 export function RecentProjects() {
+  const t = useT();
   const router = useRouter();
   const projects = useProjectsStore((s) => s.projects);
   const profile = useRenderProfile();
@@ -30,13 +32,13 @@ export function RecentProjects() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
           <Clock className="size-4 text-brand-400" />
-          Continue editing
+          {t("Continue editing")}
         </h2>
         <Link
           href="/projects"
           className="flex items-center gap-1 text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-200"
         >
-          All projects
+          {t("All projects")}
           <ArrowRight className="size-3.5" />
         </Link>
       </div>

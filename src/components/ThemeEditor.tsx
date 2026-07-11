@@ -13,6 +13,7 @@ import {
   type HarmonyScheme,
 } from "@/lib/theme";
 import type { Theme, ThemeToken } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 
 const TOKEN_LABELS: Record<ThemeToken, string> = {
   background: "Background",
@@ -89,6 +90,7 @@ export function ThemeTokens({
   theme: Theme;
   onPatch: (patch: Partial<Theme>) => void;
 }) {
+  const t = useT();
   const [linked, setLinked] = useState(true);
 
   const edit = (token: ThemeToken, color: string) => {
@@ -105,20 +107,20 @@ export function ThemeTokens({
             ? "border-brand-400/40 bg-brand-500/10 text-brand-400"
             : "border-white/10 bg-white/[0.03] text-zinc-500",
         )}
-        title="When on, editing background, text, accent or primary also updates the tones derived from them (surfaces, glow, borders, secondary text)"
+        title={t("When on, editing background, text, accent or primary also updates the tones derived from them (surfaces, glow, borders, secondary text)")}
       >
         {linked ? <Link2 className="size-3.5" /> : <Link2Off className="size-3.5" />}
-        {linked ? "Linked colours: derived tones follow" : "Linked colours off: edit tokens individually"}
+        {linked ? t("Linked colours: derived tones follow") : t("Linked colours off: edit tokens individually")}
       </button>
 
       {TOKEN_GROUPS.map((group) => (
         <div key={group.title}>
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">
-            {group.title}
+            {t(group.title)}
           </p>
           <div className="space-y-2.5">
             {group.tokens.map((token) => (
-              <Field key={token} label={TOKEN_LABELS[token]}>
+              <Field key={token} label={t(TOKEN_LABELS[token])}>
                 <ColorInput
                   value={theme[token]}
                   resolved={resolveColor(theme[token], theme)}
@@ -145,6 +147,7 @@ export function HarmonyGenerator({
   theme: Theme;
   onApply: (theme: Theme) => void;
 }) {
+  const t = useT();
   const [scheme, setScheme] = useState<HarmonyScheme>("analogous");
 
   return (
@@ -162,10 +165,10 @@ export function HarmonyGenerator({
         variant="outline"
         className="flex-1"
         onClick={() => onApply(themeFromSeed(theme.primary, scheme))}
-        title="Build all sixteen tokens from your primary colour using this harmony scheme, with WCAG contrast enforced"
+        title={t("Build all sixteen tokens from your primary colour using this harmony scheme, with WCAG contrast enforced")}
       >
         <Sparkles className="size-3.5 text-brand-400" />
-        Generate from primary
+        {t("Generate from primary")}
       </Button>
     </div>
   );

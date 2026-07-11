@@ -43,8 +43,10 @@ import type {
 const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "moon", "crescent", "coffin", "plaque", "scanlines", "web", "drip", "graveyard", "chain", "shard", "hexmesh", "wave", "chamfer", "carbon"];
 const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs", "ghosts", "bokeh"];
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
+import { useT } from "@/lib/i18n";
 
 export function RightPanel() {
+  const t = useT();
   const layer = useSelectedLayer();
   const project = useEditorStore((s) => s.project);
   const selectedIds = useEditorStore((s) => s.selectedIds);
@@ -59,12 +61,12 @@ export function RightPanel() {
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
           <MousePointerSquareDashed className="size-8 text-zinc-700" />
           <p className="text-sm font-medium text-zinc-400">
-            {selectedIds.length > 1 ? `${selectedIds.length} layers selected` : "Nothing selected"}
+            {selectedIds.length > 1 ? t("{n} layers selected", { n: selectedIds.length }) : t("Nothing selected")}
           </p>
           <p className="text-xs leading-relaxed text-zinc-600">
             {selectedIds.length > 1
-              ? "Select a single layer to edit its properties."
-              : "Click a layer on the canvas or in the Layers panel."}
+              ? t("Select a single layer to edit its properties.")
+              : t("Click a layer on the canvas or in the Layers panel.")}
           </p>
         </div>
       </aside>
@@ -88,15 +90,15 @@ export function RightPanel() {
         <h2 className="truncate text-sm font-semibold text-zinc-100">{layer.name}</h2>
       </div>
 
-      <Section title="Transform">
+      <Section title={t("Transform")}>
         <div className="grid grid-cols-2 gap-2">
-          <NumberField label="X" value={layer.x} onChange={(x) => commit({ x })} />
-          <NumberField label="Y" value={layer.y} onChange={(y) => commit({ y })} />
-          <NumberField label="Width" value={layer.width} min={8} onChange={(width) => commit({ width })} />
-          <NumberField label="Height" value={layer.height} min={8} onChange={(height) => commit({ height })} />
+          <NumberField label={t("X")} value={layer.x} onChange={(x) => commit({ x })} />
+          <NumberField label={t("Y")} value={layer.y} onChange={(y) => commit({ y })} />
+          <NumberField label={t("Width")} value={layer.width} min={8} onChange={(width) => commit({ width })} />
+          <NumberField label={t("Height")} value={layer.height} min={8} onChange={(height) => commit({ height })} />
         </div>
         <Slider
-          label="Rotation"
+          label={t("Rotation")}
           suffix="°"
           min={-180}
           max={180}
@@ -105,7 +107,7 @@ export function RightPanel() {
           onChange={(rotation) => live({ rotation })}
         />
         <Slider
-          label="Opacity"
+          label={t("Opacity")}
           suffix="%"
           min={0}
           max={100}
@@ -117,23 +119,23 @@ export function RightPanel() {
 
       <TypeSection layer={layer} theme={theme} live={live} commit={commit} beginGesture={beginGesture} />
 
-      <Section title="Effects">
+      <Section title={t("Effects")}>
         <Toggle
-          label="Glow"
+          label={t("Glow")}
           checked={layer.effects.glow.enabled}
           onChange={(enabled) => patchEffects({ glow: { ...layer.effects.glow, enabled } })}
         />
         {layer.effects.glow.enabled && (
           <>
             <ColorField
-              label="Glow colour"
+              label={t("Glow colour")}
               theme={theme}
               value={layer.effects.glow.color}
               onChange={(color) => patchEffects({ glow: { ...layer.effects.glow, color } }, false)}
               onCommit={(color) => patchEffects({ glow: { ...layer.effects.glow, color } })}
             />
             <Slider
-              label="Strength"
+              label={t("Strength")}
               min={0}
               max={120}
               value={layer.effects.glow.strength}
@@ -144,7 +146,7 @@ export function RightPanel() {
         )}
 
         <Toggle
-          label="Shadow"
+          label={t("Shadow")}
           checked={layer.effects.shadow.enabled}
           onChange={(enabled) => patchEffects({ shadow: { ...layer.effects.shadow, enabled } })}
         />
@@ -152,18 +154,18 @@ export function RightPanel() {
           <>
             {layer.effects.glow.enabled && (
               <p className="text-[11px] leading-relaxed text-amber-400/80">
-                Canvas allows one shadow per shape, so glow is taking precedence here.
+                {t("Canvas allows one shadow per shape, so glow is taking precedence here.")}
               </p>
             )}
             <ColorField
-              label="Shadow colour"
+              label={t("Shadow colour")}
               theme={theme}
               value={layer.effects.shadow.color}
               onChange={(color) => patchEffects({ shadow: { ...layer.effects.shadow, color } }, false)}
               onCommit={(color) => patchEffects({ shadow: { ...layer.effects.shadow, color } })}
             />
             <Slider
-              label="Blur"
+              label={t("Blur")}
               min={0}
               max={100}
               value={layer.effects.shadow.blur}
@@ -172,12 +174,12 @@ export function RightPanel() {
             />
             <div className="grid grid-cols-2 gap-2">
               <NumberField
-                label="Offset X"
+                label={t("Offset X")}
                 value={layer.effects.shadow.offsetX}
                 onChange={(offsetX) => patchEffects({ shadow: { ...layer.effects.shadow, offsetX } })}
               />
               <NumberField
-                label="Offset Y"
+                label={t("Offset Y")}
                 value={layer.effects.shadow.offsetY}
                 onChange={(offsetY) => patchEffects({ shadow: { ...layer.effects.shadow, offsetY } })}
               />
@@ -186,21 +188,21 @@ export function RightPanel() {
         )}
 
         <Toggle
-          label="Border"
+          label={t("Border")}
           checked={layer.effects.border.enabled}
           onChange={(enabled) => patchEffects({ border: { ...layer.effects.border, enabled } })}
         />
         {layer.effects.border.enabled && (
           <>
             <ColorField
-              label="Border colour"
+              label={t("Border colour")}
               theme={theme}
               value={layer.effects.border.color}
               onChange={(color) => patchEffects({ border: { ...layer.effects.border, color } }, false)}
               onCommit={(color) => patchEffects({ border: { ...layer.effects.border, color } })}
             />
             <Slider
-              label="Width"
+              label={t("Width")}
               min={0}
               max={24}
               value={layer.effects.border.width}
@@ -211,28 +213,28 @@ export function RightPanel() {
         )}
 
         <Toggle
-          label="Gradient fill"
+          label={t("Gradient fill")}
           checked={layer.effects.gradient.enabled}
           onChange={(enabled) => patchEffects({ gradient: { ...layer.effects.gradient, enabled } })}
         />
         {layer.effects.gradient.enabled && (
           <>
             <ColorField
-              label="From"
+              label={t("From")}
               theme={theme}
               value={layer.effects.gradient.from}
               onChange={(from) => patchEffects({ gradient: { ...layer.effects.gradient, from } }, false)}
               onCommit={(from) => patchEffects({ gradient: { ...layer.effects.gradient, from } })}
             />
             <ColorField
-              label="To"
+              label={t("To")}
               theme={theme}
               value={layer.effects.gradient.to}
               onChange={(to) => patchEffects({ gradient: { ...layer.effects.gradient, to } }, false)}
               onCommit={(to) => patchEffects({ gradient: { ...layer.effects.gradient, to } })}
             />
             <Slider
-              label="Angle"
+              label={t("Angle")}
               suffix="°"
               min={0}
               max={360}
@@ -244,7 +246,7 @@ export function RightPanel() {
         )}
 
         <Toggle
-          label="Gloss"
+          label={t("Gloss")}
           checked={layer.effects.gloss?.enabled ?? false}
           onChange={(enabled) =>
             patchEffects({ gloss: { strength: layer.effects.gloss?.strength ?? 0.8, enabled } })
@@ -252,7 +254,7 @@ export function RightPanel() {
         />
         {layer.effects.gloss?.enabled && (
           <Slider
-            label="Gloss strength"
+            label={t("Gloss strength")}
             min={0.1}
             max={1}
             step={0.05}
@@ -263,7 +265,7 @@ export function RightPanel() {
         )}
 
         <Toggle
-          label="Blur"
+          label={t("Blur")}
           checked={layer.effects.blur.enabled}
           onChange={(enabled) => patchEffects({ blur: { ...layer.effects.blur, enabled } })}
         />
@@ -271,12 +273,11 @@ export function RightPanel() {
           <>
             {layer.animation.preset !== "none" && (
               <p className="text-[11px] leading-relaxed text-amber-400/80">
-                Blur needs a cached bitmap, which an animation would freeze. It is skipped while this
-                layer is animated.
+                {t("Blur needs a cached bitmap, which an animation would freeze. It is skipped while this layer is animated.")}
               </p>
             )}
             <Slider
-              label="Amount"
+              label={t("Amount")}
               min={0}
               max={60}
               value={layer.effects.blur.amount}
@@ -287,8 +288,8 @@ export function RightPanel() {
         )}
       </Section>
 
-      <Section title="Animation">
-        <Field label="Preset">
+      <Section title={t("Animation")}>
+        <Field label={t("Preset")}>
           <Select
             value={layer.animation.preset}
             onChange={(e) =>
@@ -308,14 +309,13 @@ export function RightPanel() {
         {(layer.animation.preset === "glow" || layer.animation.preset === "shimmer") &&
           !layer.effects.glow.enabled && (
             <p className="text-[11px] leading-relaxed text-amber-400/80">
-              This preset pulses the glow effect, which is currently off. Enable Glow under Effects
-              to see it.
+              {t("This preset pulses the glow effect, which is currently off. Enable Glow under Effects to see it.")}
             </p>
           )}
         {layer.animation.preset !== "none" && (
           <>
             <Slider
-              label="Duration"
+              label={t("Duration")}
               suffix=" ms"
               min={100}
               max={6000}
@@ -325,7 +325,7 @@ export function RightPanel() {
               onChange={(duration) => live({ animation: { ...layer.animation, duration } })}
             />
             <Slider
-              label="Delay"
+              label={t("Delay")}
               suffix=" ms"
               min={0}
               max={5000}
@@ -335,7 +335,7 @@ export function RightPanel() {
               onChange={(delay) => live({ animation: { ...layer.animation, delay } })}
             />
             <Slider
-              label="Intensity"
+              label={t("Intensity")}
               min={0.2}
               max={3}
               step={0.1}
@@ -343,7 +343,7 @@ export function RightPanel() {
               onBegin={beginGesture}
               onChange={(intensity) => live({ animation: { ...layer.animation, intensity } })}
             />
-            <Field label="Easing">
+            <Field label={t("Easing")}>
               <Select
                 value={layer.animation.easing}
                 onChange={(e) =>
@@ -358,7 +358,7 @@ export function RightPanel() {
               </Select>
             </Field>
             {layer.animation.preset === "slide" && (
-              <Field label="Direction">
+              <Field label={t("Direction")}>
                 <Segmented
                   value={layer.animation.direction}
                   onChange={(direction) =>
@@ -374,7 +374,7 @@ export function RightPanel() {
               </Field>
             )}
             <Toggle
-              label="Loop"
+              label={t("Loop")}
               checked={layer.animation.loop}
               onChange={(loop) => commit({ animation: { ...layer.animation, loop } })}
             />
@@ -396,12 +396,13 @@ interface TypeSectionProps {
 }
 
 function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionProps) {
+  const t = useT();
   switch (layer.type) {
     case "text": {
       const text = layer as TextLayer;
       return (
-        <Section title="Text">
-          <Field label="Content">
+        <Section title={t("Text")}>
+          <Field label={t("Content")}>
             <TextInput
               value={text.text}
               onChange={(e) => live({ text: e.target.value })}
@@ -409,14 +410,14 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             />
           </Field>
           <ColorField
-            label="Colour"
+            label={t("Colour")}
             theme={theme}
             value={text.fill}
             onChange={(fill) => live({ fill })}
             onCommit={(fill) => commit({ fill })}
           />
           <Slider
-            label="Size"
+            label={t("Size")}
             suffix=" px"
             min={8}
             max={220}
@@ -425,7 +426,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(fontSize) => live({ fontSize })}
           />
           <Slider
-            label="Weight"
+            label={t("Weight")}
             min={100}
             max={900}
             step={100}
@@ -434,7 +435,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(fontWeight) => live({ fontWeight })}
           />
           <Slider
-            label="Letter spacing"
+            label={t("Letter spacing")}
             min={-5}
             max={30}
             value={text.letterSpacing}
@@ -442,7 +443,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(letterSpacing) => live({ letterSpacing })}
           />
           <Slider
-            label="Line height"
+            label={t("Line height")}
             min={0.8}
             max={2.5}
             step={0.05}
@@ -450,18 +451,18 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onBegin={beginGesture}
             onChange={(lineHeight) => live({ lineHeight })}
           />
-          <Field label="Align">
+          <Field label={t("Align")}>
             <Segmented
               value={text.align}
               onChange={(align) => commit({ align })}
               options={[
-                { value: "left", label: "Left" },
-                { value: "center", label: "Center" },
-                { value: "right", label: "Right" },
+                { value: "left", label: t("Left") },
+                { value: "center", label: t("Center") },
+                { value: "right", label: t("Right") },
               ]}
             />
           </Field>
-          <Field label="Case">
+          <Field label={t("Case")}>
             <Segmented
               value={text.textTransform}
               onChange={(textTransform) => commit({ textTransform })}
@@ -472,7 +473,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
               ]}
             />
           </Field>
-          <Toggle label="Italic" checked={text.italic} onChange={(italic) => commit({ italic })} />
+          <Toggle label={t("Italic")} checked={text.italic} onChange={(italic) => commit({ italic })} />
         </Section>
       );
     }
@@ -481,8 +482,8 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "background": {
       const shape = layer as ShapeLayer;
       return (
-        <Section title="Shape">
-          <Field label="Kind">
+        <Section title={t("Shape")}>
+          <Field label={t("Kind")}>
             <Select
               value={shape.shape}
               onChange={(e) => commit({ shape: e.target.value as ShapeKind })}
@@ -495,7 +496,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             </Select>
           </Field>
           <ColorField
-            label="Fill"
+            label={t("Fill")}
             theme={theme}
             value={shape.fill}
             onChange={(fill) => live({ fill })}
@@ -503,7 +504,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
           />
           {shape.shape === "rect" && (
             <Slider
-              label="Corner radius"
+              label={t("Corner radius")}
               min={0}
               max={200}
               value={shape.cornerRadius}
@@ -514,17 +515,17 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
           {shape.shape === "moon" && (
             <>
               <Slider
-                label="Phase"
+                label={t("Phase")}
                 min={0.05}
                 max={1}
                 step={0.01}
                 value={shape.moonPhase ?? 1}
-                suffix={(shape.moonPhase ?? 1) >= 0.99 ? " · full" : (shape.moonPhase ?? 1) <= 0.5 ? " · waxing" : " · gibbous"}
+                suffix={(shape.moonPhase ?? 1) >= 0.99 ? ` · ${t("full")}` : (shape.moonPhase ?? 1) <= 0.5 ? ` · ${t("waxing")}` : ` · ${t("gibbous")}`}
                 onBegin={beginGesture}
                 onChange={(moonPhase) => live({ moonPhase })}
               />
               <Toggle
-                label="Craters"
+                label={t("Craters")}
                 checked={shape.craters ?? true}
                 onChange={(craters) => commit({ craters })}
               />
@@ -542,8 +543,8 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
         (discrete ? commit : live)({ stripes });
       };
       return (
-        <Section title="Flag">
-          <Field label="Stripes" hint={`${flag.stripes.length} colours`}>
+        <Section title={t("Flag")}>
+          <Field label={t("Stripes")} hint={t("{n} colours", { n: flag.stripes.length })}>
             <div className="space-y-1.5">
               {flag.stripes.map((stripe, index) => (
                 <div key={index} className="flex items-center gap-1.5">
@@ -554,7 +555,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
                     onCommit={(value) => setStripe(index, value, true)}
                   />
                   <button
-                    title="Remove stripe"
+                    title={t("Remove stripe")}
                     disabled={flag.stripes.length <= 2}
                     onClick={() => commit({ stripes: flag.stripes.filter((_, i) => i !== index) })}
                     className="shrink-0 rounded p-1 text-zinc-600 transition-colors hover:bg-white/10 hover:text-red-400 disabled:opacity-25"
@@ -569,20 +570,20 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onClick={() => commit({ stripes: [...flag.stripes, flag.stripes.at(-1) ?? "#ffffff"] })}
             className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-white/20"
           >
-            + Add stripe
+            {t("+ Add stripe")}
           </button>
-          <Field label="Direction">
+          <Field label={t("Direction")}>
             <Segmented
               value={flag.stackDirection}
               onChange={(stackDirection) => commit({ stackDirection })}
               options={[
-                { value: "horizontal", label: "Side by side" },
-                { value: "vertical", label: "Stacked" },
+                { value: "horizontal", label: t("Side by side") },
+                { value: "vertical", label: t("Stacked") },
               ]}
             />
           </Field>
           <Slider
-            label="Corner radius"
+            label={t("Corner radius")}
             min={0}
             max={100}
             value={flag.cornerRadius}
@@ -590,8 +591,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(cornerRadius) => live({ cornerRadius })}
           />
           <p className="text-[11px] leading-relaxed text-zinc-600">
-            Stripe colours are literal — a flag&apos;s colours belong to the flag, not the theme, so
-            they survive palette swaps.
+            {t("Stripe colours are literal — a flag's colours belong to the flag, not the theme, so they survive palette swaps.")}
           </p>
         </Section>
       );
@@ -600,8 +600,8 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "icon": {
       const ico = layer as IconLayer;
       return (
-        <Section title="Icon">
-          <Field label="Symbol">
+        <Section title={t("Icon")}>
+          <Field label={t("Symbol")}>
             <Select value={ico.symbol} onChange={(e) => commit({ symbol: e.target.value })}>
               {ICON_GROUPS.map(({ group, names }) => (
                 <optgroup key={group} label={group}>
@@ -616,14 +616,14 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
           </Field>
           <IconPreview symbol={ico.symbol} colour={resolveColor(ico.fill, theme)} />
           <ColorField
-            label="Colour"
+            label={t("Colour")}
             theme={theme}
             value={ico.fill}
             onChange={(fill) => live({ fill })}
             onCommit={(fill) => commit({ fill })}
           />
           <Slider
-            label="Outline weight"
+            label={t("Outline weight")}
             min={0.5}
             max={4}
             step={0.1}
@@ -632,8 +632,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(strokeWidth) => live({ strokeWidth })}
           />
           <p className="text-[11px] leading-relaxed text-zinc-600">
-            Icons are plain paths, so the colour is a theme token like any other fill — recolour the
-            theme and every icon follows.
+            {t("Icons are plain paths, so the colour is a theme token like any other fill — recolour the theme and every icon follows.")}
           </p>
         </Section>
       );
@@ -642,43 +641,42 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "window": {
       const win = layer as WindowLayer;
       return (
-        <Section title="Window">
-          <Field label="Title">
+        <Section title={t("Window")}>
+          <Field label={t("Title")}>
             <TextInput
               value={win.title}
               onChange={(e) => live({ title: e.target.value })}
               onBlur={(e) => commit({ title: e.target.value })}
             />
           </Field>
-          <ColorField label="Title bar" theme={theme} value={win.titleBarColor}
+          <ColorField label={t("Title bar")} theme={theme} value={win.titleBarColor}
             onChange={(titleBarColor) => live({ titleBarColor })}
             onCommit={(titleBarColor) => commit({ titleBarColor })} />
-          <ColorField label="Body" theme={theme} value={win.fill}
+          <ColorField label={t("Body")} theme={theme} value={win.fill}
             onChange={(fill) => live({ fill })} onCommit={(fill) => commit({ fill })} />
-          <Slider label="Corner radius" min={0} max={40} value={win.cornerRadius}
+          <Slider label={t("Corner radius")} min={0} max={40} value={win.cornerRadius}
             onBegin={beginGesture} onChange={(cornerRadius) => live({ cornerRadius })} />
-          <Toggle label="Traffic-light buttons" checked={win.buttons} onChange={(buttons) => commit({ buttons })} />
-          <Toggle label="Glass gloss" checked={win.gloss} onChange={(gloss) => commit({ gloss })} />
+          <Toggle label={t("Traffic-light buttons")} checked={win.buttons} onChange={(buttons) => commit({ buttons })} />
+          <Toggle label={t("Glass gloss")} checked={win.gloss} onChange={(gloss) => commit({ gloss })} />
           {win.gloss && win.content === "camera" && (
             <p className="text-[11px] leading-relaxed text-amber-400/80">
-              The gloss paints a faint white sheen across the window, so in OBS it tints your
-              webcam.
+              {t("The gloss paints a faint white sheen across the window, so in OBS it tints your webcam.")}
             </p>
           )}
-          <Field label="Contents">
+          <Field label={t("Contents")}>
             <Segmented
               value={win.content}
               onChange={(content) => commit({ content })}
               options={[
-                { value: "empty", label: "Empty" },
-                { value: "camera", label: "Camera" },
-                { value: "chat", label: "Chat" },
+                { value: "empty", label: t("Empty") },
+                { value: "camera", label: t("Camera") },
+                { value: "chat", label: t("Chat") },
               ]}
             />
           </Field>
           {win.content === "camera" && (
             <p className="text-[11px] leading-relaxed text-zinc-600">
-              The interior stays transparent in OBS so your webcam shows through the window.
+              {t("The interior stays transparent in OBS so your webcam shows through the window.")}
             </p>
           )}
         </Section>
@@ -688,33 +686,33 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "chip": {
       const chip = layer as ChipLayer;
       return (
-        <Section title="Event badge">
-          <Field label="Label">
+        <Section title={t("Event badge")}>
+          <Field label={t("Label")}>
             <TextInput value={chip.label} onChange={(e) => live({ label: e.target.value })}
               onBlur={(e) => commit({ label: e.target.value })} />
           </Field>
-          <Field label="Value">
+          <Field label={t("Value")}>
             <TextInput value={chip.value} onChange={(e) => live({ value: e.target.value })}
               onBlur={(e) => commit({ value: e.target.value })} />
           </Field>
-          <Field label="Icon">
+          <Field label={t("Icon")}>
             <Segmented value={chip.icon} onChange={(icon) => commit({ icon })}
               options={[
-                { value: "heart", label: "Heart" },
-                { value: "star", label: "Star" },
-                { value: "none", label: "None" },
+                { value: "heart", label: t("Heart") },
+                { value: "star", label: t("Star") },
+                { value: "none", label: t("None") },
               ]} />
           </Field>
-          <ColorField label="Background" theme={theme} value={chip.fill}
+          <ColorField label={t("Background")} theme={theme} value={chip.fill}
             onChange={(fill) => live({ fill })} onCommit={(fill) => commit({ fill })} />
-          <ColorField label="Label colour" theme={theme} value={chip.labelColor}
+          <ColorField label={t("Label colour")} theme={theme} value={chip.labelColor}
             onChange={(labelColor) => live({ labelColor })} onCommit={(labelColor) => commit({ labelColor })} />
-          <Slider label="Font size" min={10} max={36} value={chip.fontSize}
+          <Slider label={t("Font size")} min={10} max={36} value={chip.fontSize}
             onBegin={beginGesture} onChange={(fontSize) => live({ fontSize })} />
-          <Slider label="Corner radius" min={0} max={40} value={chip.cornerRadius}
+          <Slider label={t("Corner radius")} min={0} max={40} value={chip.cornerRadius}
             onBegin={beginGesture} onChange={(cornerRadius) => live({ cornerRadius })} />
           <p className="text-[11px] leading-relaxed text-zinc-600">
-            Values are placeholders — without a Twitch connection there is no live event to read.
+            {t("Values are placeholders — without a Twitch connection there is no live event to read.")}
           </p>
         </Section>
       );
@@ -725,8 +723,8 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "video": {
       const image = layer as ImageLayer;
       return (
-        <Section title="Image">
-          <Field label="Source" hint="URL or placeholder">
+        <Section title={t("Image")}>
+          <Field label={t("Source")} hint={t("URL or placeholder")}>
             <TextInput
               value={image.src}
               onChange={(e) => live({ src: e.target.value })}
@@ -735,19 +733,19 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
               className="font-mono text-xs"
             />
           </Field>
-          <Field label="Fit">
+          <Field label={t("Fit")}>
             <Segmented
               value={image.fit}
               onChange={(fit) => commit({ fit })}
               options={[
-                { value: "contain", label: "Contain" },
-                { value: "cover", label: "Cover" },
-                { value: "fill", label: "Fill" },
+                { value: "contain", label: t("Contain") },
+                { value: "cover", label: t("Cover") },
+                { value: "fill", label: t("Fill") },
               ]}
             />
           </Field>
           <Slider
-            label="Corner radius"
+            label={t("Corner radius")}
             min={0}
             max={400}
             value={image.cornerRadius}
@@ -762,27 +760,27 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "camera": {
       const frame = layer as FrameLayer;
       return (
-        <Section title={layer.type === "camera" ? "Camera frame" : "Frame"}>
-          <Field label="Shape">
+        <Section title={layer.type === "camera" ? t("Camera frame") : t("Frame")}>
+          <Field label={t("Shape")}>
             <Segmented
               value={frame.frameShape}
               onChange={(frameShape) => commit({ frameShape })}
               options={[
-                { value: "rect", label: "Rect" },
-                { value: "ellipse", label: "Ellipse" },
-                { value: "hexagon", label: "Hex cut" },
+                { value: "rect", label: t("Rect") },
+                { value: "ellipse", label: t("Ellipse") },
+                { value: "hexagon", label: t("Hex cut") },
               ]}
             />
           </Field>
           <ColorField
-            label="Stroke"
+            label={t("Stroke")}
             theme={theme}
             value={frame.strokeColor}
             onChange={(strokeColor) => live({ strokeColor })}
             onCommit={(strokeColor) => commit({ strokeColor })}
           />
           <Slider
-            label="Stroke width"
+            label={t("Stroke width")}
             min={0}
             max={24}
             value={frame.strokeWidth}
@@ -791,7 +789,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
           />
           {frame.frameShape === "rect" && (
             <Slider
-              label="Corner radius"
+              label={t("Corner radius")}
               min={0}
               max={200}
               value={frame.cornerRadius}
@@ -800,14 +798,13 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             />
           )}
           <Toggle
-            label="Corner accents"
+            label={t("Corner accents")}
             checked={frame.corners}
             onChange={(corners) => commit({ corners })}
           />
           {layer.type === "camera" && (
             <p className="text-[11px] leading-relaxed text-zinc-600">
-              The fill is a studio placeholder only. In OBS the interior stays transparent so your
-              webcam shows through.
+              {t("The fill is a studio placeholder only. In OBS the interior stays transparent so your webcam shows through.")}
             </p>
           )}
         </Section>
@@ -817,40 +814,40 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "chatbox": {
       const chat = layer as ChatBoxLayer;
       return (
-        <Section title="Chat box">
-          <Field label="Panel shape">
+        <Section title={t("Chat box")}>
+          <Field label={t("Panel shape")}>
             <Segmented
               value={chat.boxShape ?? "rect"}
               onChange={(boxShape) => commit({ boxShape })}
               options={[
-                { value: "rect", label: "Rounded" },
-                { value: "coffin", label: "Coffin" },
+                { value: "rect", label: t("Rounded") },
+                { value: "coffin", label: t("Coffin") },
               ]}
             />
           </Field>
           <ColorField
-            label="Background"
+            label={t("Background")}
             theme={theme}
             value={chat.fill}
             onChange={(fill) => live({ fill })}
             onCommit={(fill) => commit({ fill })}
           />
           <ColorField
-            label="Username"
+            label={t("Username")}
             theme={theme}
             value={chat.usernameColor}
             onChange={(usernameColor) => live({ usernameColor })}
             onCommit={(usernameColor) => commit({ usernameColor })}
           />
           <ColorField
-            label="Message"
+            label={t("Message")}
             theme={theme}
             value={chat.messageColor}
             onChange={(messageColor) => live({ messageColor })}
             onCommit={(messageColor) => commit({ messageColor })}
           />
           <Slider
-            label="Font size"
+            label={t("Font size")}
             min={12}
             max={48}
             value={chat.fontSize}
@@ -858,7 +855,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(fontSize) => live({ fontSize })}
           />
           <Slider
-            label="Rows"
+            label={t("Rows")}
             min={1}
             max={11}
             value={chat.rows}
@@ -866,7 +863,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(rows) => live({ rows })}
           />
           <Slider
-            label="Corner radius"
+            label={t("Corner radius")}
             min={0}
             max={60}
             value={chat.cornerRadius}
@@ -880,15 +877,15 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "alert": {
       const alert = layer as AlertLayer;
       return (
-        <Section title="Alert">
-          <Field label="Title">
+        <Section title={t("Alert")}>
+          <Field label={t("Title")}>
             <TextInput
               value={alert.title}
               onChange={(e) => live({ title: e.target.value })}
               onBlur={(e) => commit({ title: e.target.value })}
             />
           </Field>
-          <Field label="Subtitle">
+          <Field label={t("Subtitle")}>
             <TextInput
               value={alert.subtitle}
               onChange={(e) => live({ subtitle: e.target.value })}
@@ -896,14 +893,14 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             />
           </Field>
           <ColorField
-            label="Background"
+            label={t("Background")}
             theme={theme}
             value={alert.fill}
             onChange={(fill) => live({ fill })}
             onCommit={(fill) => commit({ fill })}
           />
           <ColorField
-            label="Title colour"
+            label={t("Title colour")}
             theme={theme}
             value={alert.titleColor}
             onChange={(titleColor) => live({ titleColor })}
@@ -920,18 +917,18 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
         return Number.isFinite(n) ? n : 0;
       };
       return (
-        <Section title="Goal">
-          <Field label="Style">
+        <Section title={t("Goal")}>
+          <Field label={t("Style")}>
             <Segmented
               value={g.goalStyle}
               onChange={(goalStyle) => commit({ goalStyle })}
               options={[
-                { value: "bar", label: "Bar" },
-                { value: "ring", label: "Ring" },
+                { value: "bar", label: t("Bar") },
+                { value: "ring", label: t("Ring") },
               ]}
             />
           </Field>
-          <Field label="Label">
+          <Field label={t("Label")}>
             <TextInput
               value={g.label}
               onChange={(e) => live({ label: e.target.value })}
@@ -939,7 +936,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             />
           </Field>
           <div className="grid grid-cols-2 gap-2">
-            <Field label="Current">
+            <Field label={t("Current")}>
               <TextInput
                 value={String(g.current)}
                 inputMode="numeric"
@@ -947,7 +944,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
                 onBlur={(e) => commit({ current: num(e.target.value) })}
               />
             </Field>
-            <Field label="Target">
+            <Field label={t("Target")}>
               <TextInput
                 value={String(g.target)}
                 inputMode="numeric"
@@ -957,34 +954,34 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             </Field>
           </div>
           {g.goalStyle === "bar" && (
-            <Field label="Plate shape">
+            <Field label={t("Plate shape")}>
               <Segmented
                 value={g.barShape ?? "rect"}
                 onChange={(barShape) => commit({ barShape })}
                 options={[
-                  { value: "rect", label: "Rect" },
-                  { value: "coffin", label: "Coffin" },
-                  { value: "plaque", label: "Plaque" },
+                  { value: "rect", label: t("Rect") },
+                  { value: "coffin", label: t("Coffin") },
+                  { value: "plaque", label: t("Plaque") },
                 ]}
               />
             </Field>
           )}
           <ColorField
-            label="Bar colour"
+            label={t("Bar colour")}
             theme={theme}
             value={g.barColor}
             onChange={(barColor) => live({ barColor })}
             onCommit={(barColor) => commit({ barColor })}
           />
           <ColorField
-            label="Track colour"
+            label={t("Track colour")}
             theme={theme}
             value={g.trackColor}
             onChange={(trackColor) => live({ trackColor })}
             onCommit={(trackColor) => commit({ trackColor })}
           />
           <ColorField
-            label="Label colour"
+            label={t("Label colour")}
             theme={theme}
             value={g.labelColor}
             onChange={(labelColor) => live({ labelColor })}
@@ -997,32 +994,32 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "social": {
       const social = layer as SocialLayer;
       return (
-        <Section title="Social bar">
-          <Field label="Direction">
+        <Section title={t("Social bar")}>
+          <Field label={t("Direction")}>
             <Segmented
               value={social.direction}
               onChange={(direction) => commit({ direction })}
               options={[
-                { value: "horizontal", label: "Row" },
-                { value: "vertical", label: "Column" },
+                { value: "horizontal", label: t("Row") },
+                { value: "vertical", label: t("Column") },
               ]}
             />
           </Field>
           <Toggle
-            label="Show handles"
+            label={t("Show handles")}
             checked={social.showHandles}
             onChange={(showHandles) => commit({ showHandles })}
           />
-          <Toggle label="Pill background" checked={social.pill} onChange={(pill) => commit({ pill })} />
+          <Toggle label={t("Pill background")} checked={social.pill} onChange={(pill) => commit({ pill })} />
           <ColorField
-            label="Icon colour"
+            label={t("Icon colour")}
             theme={theme}
             value={social.iconColor}
             onChange={(iconColor) => live({ iconColor })}
             onCommit={(iconColor) => commit({ iconColor })}
           />
           <Slider
-            label="Font size"
+            label={t("Font size")}
             min={12}
             max={48}
             value={social.fontSize}
@@ -1030,7 +1027,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(fontSize) => live({ fontSize })}
           />
           <Slider
-            label="Gap"
+            label={t("Gap")}
             min={0}
             max={80}
             value={social.gap}
@@ -1038,7 +1035,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(gap) => live({ gap })}
           />
           <p className="text-[11px] leading-relaxed text-zinc-600">
-            Handles come from your channel profile. Clear a field there to drop it from the bar.
+            {t("Handles come from your channel profile. Clear a field there to drop it from the bar.")}
           </p>
         </Section>
       );
@@ -1047,8 +1044,8 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
     case "particle": {
       const particle = layer as ParticleLayer;
       return (
-        <Section title="Particles">
-          <Field label="Kind">
+        <Section title={t("Particles")}>
+          <Field label={t("Kind")}>
             <Select
               value={particle.kind}
               onChange={(e) => commit({ kind: e.target.value as ParticleKind })}
@@ -1061,14 +1058,14 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             </Select>
           </Field>
           <ColorField
-            label="Colour"
+            label={t("Colour")}
             theme={theme}
             value={particle.color}
             onChange={(color) => live({ color })}
             onCommit={(color) => commit({ color })}
           />
           <Slider
-            label="Count"
+            label={t("Count")}
             min={5}
             max={200}
             value={particle.count}
@@ -1076,7 +1073,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(count) => live({ count })}
           />
           <Slider
-            label="Size"
+            label={t("Size")}
             min={1}
             max={20}
             value={particle.size}
@@ -1084,7 +1081,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(size) => live({ size })}
           />
           <Slider
-            label="Speed"
+            label={t("Speed")}
             min={0}
             max={4}
             step={0.1}
@@ -1177,8 +1174,9 @@ function ColorField({
   onChange: (value: string) => void;
   onCommit: (value: string) => void;
 }) {
+  const t = useT();
   return (
-    <Field label={label} hint={value.startsWith("@") ? "theme token" : undefined}>
+    <Field label={label} hint={value.startsWith("@") ? t("theme token") : undefined}>
       <ColorInput
         value={value}
         resolved={resolveColor(value, theme)}

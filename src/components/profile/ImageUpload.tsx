@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { ImagePlus, Trash2 } from "lucide-react";
 import { Button, cx } from "@/components/ui";
 import { fileToDataUrl } from "@/lib/image";
+import { useT } from "@/lib/i18n";
 
 export function ImageUpload({
   label,
@@ -16,6 +17,7 @@ export function ImageUpload({
   onChange: (dataUrl: string) => void;
   round?: boolean;
 }) {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
 
@@ -25,7 +27,7 @@ export function ImageUpload({
     try {
       onChange(await fileToDataUrl(file));
     } catch {
-      setError("Could not read that image.");
+      setError(t("Could not read that image."));
     }
   };
 
@@ -56,19 +58,19 @@ export function ImageUpload({
             onChange={(e) => void pick(e.target.files?.[0])}
           />
           <Button onClick={() => inputRef.current?.click()}>
-            {value ? "Replace" : "Upload"}
+            {value ? t("Replace") : t("Upload")}
           </Button>
           {value && (
             <Button variant="danger" onClick={() => onChange("")}>
               <Trash2 className="size-3.5" />
-              Remove
+              {t("Remove")}
             </Button>
           )}
         </div>
       </div>
       {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
       <p className="mt-2 text-[11px] leading-relaxed text-zinc-600">
-        Scaled to 512 px and stored in your browser. PNG with transparency works best.
+        {t("Scaled to 512 px and stored in your browser. PNG with transparency works best.")}
       </p>
     </div>
   );

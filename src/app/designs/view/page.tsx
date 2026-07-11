@@ -11,9 +11,11 @@ import { TopNav } from "@/components/site/TopNav";
 import { Button, cx } from "@/components/ui";
 import { useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
+import { useT } from "@/lib/i18n";
 import type { Template } from "@/lib/types";
 
 function DesignDetail() {
+  const t = useT();
   const key = useSearchParams().get("d") ?? "";
   const router = useRouter();
   const profile = useRenderProfile();
@@ -33,9 +35,9 @@ function DesignDetail() {
         <TopNav />
         <div className="grid min-h-[60vh] place-items-center text-center">
           <div>
-            <h1 className="text-lg font-semibold text-white">Design not found</h1>
+            <h1 className="text-lg font-semibold text-white">{t("Design not found")}</h1>
             <Link href="/designs">
-              <Button className="mt-4">Back to designs</Button>
+              <Button className="mt-4">{t("Back to designs")}</Button>
             </Link>
           </div>
         </div>
@@ -61,13 +63,13 @@ function DesignDetail() {
             className="mb-5 inline-flex items-center gap-2 text-sm text-zinc-400 transition-colors hover:text-zinc-200"
           >
             <ArrowLeft className="size-4" />
-            All designs
+            {t("All designs")}
           </Link>
           <h1 className="text-3xl font-bold tracking-tight text-white">{design.name}</h1>
           <p className="mt-2 text-sm text-zinc-400">
-            {screens.length} {screens.length === 1 ? "screen" : "screens"} ·{" "}
-            {design.palettes.length} {design.palettes.length === 1 ? "colour" : "colours"} · every
-            screen picks up your channel profile
+            {screens.length} {screens.length === 1 ? t("screen") : t("screens")} ·{" "}
+            {design.palettes.length} {design.palettes.length === 1 ? t("colour") : t("colours")} ·{" "}
+            {t("every screen picks up your channel profile")}
           </p>
         </div>
 
@@ -75,7 +77,7 @@ function DesignDetail() {
             recolours. */}
         <div className="sticky top-16 z-30 -mx-6 mb-8 border-y border-white/[0.06] bg-ink-950/85 px-6 py-4 backdrop-blur-xl">
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-            Colour
+            {t("Colour")}
           </p>
           <div className="flex flex-wrap gap-2">
             {design.palettes.map((id) => (
