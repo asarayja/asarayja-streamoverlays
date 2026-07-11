@@ -3530,57 +3530,6 @@ const SPLASH: FamilyStyle = {
   contentOffsetY: 0,
 };
 
-/** Graffiti: street art. The headline is the piece — a marker-hand spray tag in
-    white with a thick dark outline and a hot accent 3D drop, sat in an overspray
-    cloud with paint dripping off it, over a lit concrete wall with a couple of
-    spray marks. The lettering, not blobs, is what makes it read as graffiti. */
-const GRAFFITI: FamilyStyle = {
-  id: "graffiti",
-  name: "Graffiti",
-  tags: ["Cyberpunk", "RGB", "Dark"],
-  display: "Bungee",
-  displayFill: "@accent",
-  displayWeight: 400,
-  displayTracking: 1,
-  displayTransform: "uppercase",
-  body: "Kanit",
-  radius: 4,
-  frameRadius: 4,
-  corners: false,
-  strokeWidth: 5,
-  frameEffects: {
-    border: { enabled: true, color: "@shadow", width: 5, radius: 4 },
-    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 6, offsetY: 8, opacity: 0.85 },
-  },
-  // A throw-up: bright bubble letters with a thick black keyline and a hard,
-  // zero-blur black 3D block behind them — reads on the grey concrete.
-  headlineEffects: {
-    border: { enabled: true, color: "@shadow", width: 8 },
-    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 8, offsetY: 11, opacity: 1 },
-  },
-  plateShape: "rect",
-  scene: () => [
-    // A lit grey concrete wall (neutral, not palette-dark) so the black keyline
-    // and 3D of the piece read — the surface graffiti actually lives on.
-    shape("Wall", FULL, { background: true, shape: "concreteWall", fill: "@text-58" }),
-    // Two spray-can marks in opposite corners — fewer, so the tag dominates.
-    shape("Splat TL", { x: -180, y: -180, width: 720, height: 640 }, { shape: "spraySplat", fill: "@primary" }),
-    shape("Splat BR", { x: 1380, y: 620, width: 720, height: 640 }, { shape: "spraySplat", fill: "@secondary" }),
-    // A soft accent overspray cloud the tag sits in.
-    shape("Overspray", { x: 320, y: 300, width: 1280, height: 440 }, { shape: "paintSpray", fill: "@accent", opacity: 0.5 }),
-    // Wet paint dripping off the tag.
-    shape("Drip 1", { x: 620, y: 520, width: 82, height: 250 }, { shape: "drip", fill: "@accent", cornerRadius: 0 }),
-    shape("Drip 2", { x: 900, y: 545, width: 104, height: 300 }, { shape: "drip", fill: "@primary", cornerRadius: 0 }),
-    shape("Drip 3", { x: 1180, y: 522, width: 82, height: 230 }, { shape: "drip", fill: "@accent", cornerRadius: 0 }),
-    // Flung specks and faint margin mist.
-    particles("Fine mist L", { kind: "dots", count: 28, size: 3, speed: 0.3, color: "@text", opacity: 0.1, box: MARGIN_LEFT }),
-    particles("Fine mist R", { kind: "dots", count: 28, size: 3, speed: 0.3, color: "@text", opacity: 0.1, box: MARGIN_RIGHT }),
-    particles("Decor — Flecks", { kind: "confetti", count: 20, size: 5, speed: 0.5, color: "@accent", opacity: 0.5 }),
-  ],
-  overlayDecor: () => [],
-  contentOffsetY: 0,
-};
-
 /** Riso Concrete: brutalist print-shop. A flat near-black page ruled like a
     proof sheet (heavy rules, crop marks, a breathing registration crosshair,
     a tick ruler) holding ONE mis-registered red block with a purple ghost and
@@ -3764,7 +3713,6 @@ const NEW_FAMILIES: FamilyStyle[] = [
   MECHA,
   CYBER_PILL,
   SPLASH,
-  GRAFFITI,
   SPECTRAL_GLOW,
 ];
 
