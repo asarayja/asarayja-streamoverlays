@@ -17,6 +17,7 @@ import {
   Pencil,
   Radio,
   Redo2,
+  RotateCw,
   Send,
   Undo2,
   ZoomIn,
@@ -67,6 +68,18 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const upsert = useProjectsStore((s) => s.upsert);
   const syncPackTheme = useProjectsStore((s) => s.syncPackTheme);
   const packScreensOf = useProjectsStore((s) => s.packScreensOf);
+  const selectedIds = useEditorStore((s) => s.selectedIds);
+  const updateLayer = useEditorStore((s) => s.updateLayer);
+
+  // Quick rotate: spin the selected layer(s) 90° — turn a pattern/split to any
+  // direction without dragging the handle.
+  const rotateSelected = () => {
+    if (!project) return;
+    for (const id of selectedIds) {
+      const l = project.layers.find((x) => x.id === id);
+      if (l) updateLayer(id, { rotation: (((l.rotation ?? 0) + 90) % 360 + 360) % 360 });
+    }
+  };
   const renameProject = useEditorStore((s) => s.renameProject);
   const hydrated = useProjectsStore((s) => s.hydrated);
   const saved = useProjectsStore((s) =>
@@ -249,6 +262,13 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           <Pencil className="size-4" />
         </ToolButton>
         {drawTool && <DrawSettings />}
+        <ToolButton
+          onClick={rotateSelected}
+          disabled={selectedIds.length === 0}
+          title="Rotate selection 90° — flip a pattern/split to any direction"
+        >
+          <RotateCw className="size-4" />
+        </ToolButton>
         <ToolButton onClick={toggleSnap} active={snap} title="Snap to guides">
           <Magnet className="size-4" />
         </ToolButton>

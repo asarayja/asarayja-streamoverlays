@@ -41,6 +41,7 @@ import { ContrastCheck } from "@/components/ContrastCheck";
 import { HarmonyGenerator, PaletteGrid, ThemeTokens } from "@/components/ThemeEditor";
 import { Button, Chip, Field, TextInput, cx } from "@/components/ui";
 import { uid } from "@/lib/id";
+import { resolveColor } from "@/lib/theme";
 import { fileToDataUrl } from "@/lib/image";
 import { PLACEHOLDERS } from "@/lib/placeholders";
 import { ANIMATION_PRESETS, DEFAULT_ANIMATION, DEFAULT_EFFECTS } from "@/lib/types";
@@ -320,11 +321,16 @@ function TemplatesTab() {
  */
 const PRIDE_FLAGS: Array<{ label: string; stripes: string[] }> = [
   { label: "Rainbow", stripes: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"] },
+  { label: "Progress", stripes: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982", "#FFFFFF", "#F5A9B8", "#5BCEFA", "#613915", "#2C2C2C"] },
   { label: "Trans", stripes: ["#5BCEFA", "#F5A9B8", "#FFFFFF", "#F5A9B8", "#5BCEFA"] },
   { label: "Bisexual", stripes: ["#D60270", "#D60270", "#9B4F96", "#0038A8", "#0038A8"] },
   { label: "Pansexual", stripes: ["#FF218C", "#FFD800", "#21B1FF"] },
   { label: "Lesbian", stripes: ["#D52D00", "#EF7627", "#FFFFFF", "#D162A4", "#A30262"] },
   { label: "Nonbinary", stripes: ["#FCF434", "#FFFFFF", "#9C59D1", "#2C2C2C"] },
+  { label: "Asexual", stripes: ["#000000", "#A3A3A3", "#FFFFFF", "#800080"] },
+  { label: "Genderfluid", stripes: ["#FF75A2", "#FFFFFF", "#BE18D6", "#000000", "#333EBD"] },
+  { label: "Agender", stripes: ["#000000", "#B9B9B9", "#FFFFFF", "#B8F483", "#FFFFFF", "#B9B9B9", "#000000"] },
+  { label: "Aromantic", stripes: ["#3DA542", "#A7D379", "#FFFFFF", "#A9A9A9", "#000000"] },
 ];
 
 const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType }> = [
@@ -449,6 +455,115 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
   ]),
 ];
 
+/** h 0..360, s/l 0..1 → #rrggbb. */
+function hslHex(h: number, s: number, l: number): string {
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const c = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * c).toString(16).padStart(2, "0");
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+const BAND_SHAPES = [
+  { id: "straight", label: "Straight" },
+  { id: "curved", label: "Curved" },
+  { id: "waves", label: "Waves" },
+  { id: "round", label: "Round" },
+] as const;
+
+/** Make N stripes in any colours + shape in one click. */
+function NBandGenerator() {
+  const addLayer = useEditorStore((s) => s.addLayer);
+  const theme = useEditorStore((s) => s.project?.theme);
+  const [count, setCount] = useState(6);
+  const [shape, setShape] = useState<(typeof BAND_SHAPES)[number]["id"]>("straight");
+  const [mode, setMode] = useState<"rainbow" | "theme">("rainbow");
+
+  const build = () => {
+    const stripes: string[] = [];
+    if (mode === "rainbow") {
+      for (let i = 0; i < count; i++) stripes.push(hslHex((i / count) * 300, 0.85, 0.52));
+    } else {
+      const toks = ["@primary", "@secondary", "@accent", "@accentSecondary", "@glow", "@text"];
+      for (let i = 0; i < count; i++) {
+        stripes.push(theme ? resolveColor(toks[i % toks.length], theme) : "#ffffff");
+      }
+    }
+    if (shape === "straight") {
+      addLayer("flag", {
+        stripes,
+        stackDirection: "vertical",
+        x: 0,
+        y: 0,
+        width: 1920,
+        height: 1080,
+        cornerRadius: 0,
+      } as Partial<Layer>);
+    } else {
+      const map = { curved: "flagarc", waves: "flagwave", round: "flaground" } as const;
+      const patch =
+        shape === "round"
+          ? { shape: map[shape], facetColors: stripes, x: 560, y: 60, width: 960, height: 960, cornerRadius: 0 }
+          : { shape: map[shape], facetColors: stripes, x: 0, y: 220, width: 1920, height: 640, cornerRadius: shape === "waves" ? 80 : 120 };
+      addLayer("shape", patch as Partial<Layer>);
+    }
+  };
+
+  return (
+    <div className="border-t border-white/[0.06] px-4 py-4">
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Band generator</p>
+      <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
+        Make N stripes in one click — rainbow or your theme, straight, curved, wavy or round.
+      </p>
+      <div className="mb-3 flex items-center gap-2">
+        <input
+          type="range"
+          min={2}
+          max={12}
+          value={count}
+          onChange={(e) => setCount(Number(e.target.value))}
+          className="flex-1 accent-brand-400"
+        />
+        <span className="w-6 text-center font-mono text-[11px] text-zinc-400">{count}</span>
+      </div>
+      <div className="mb-2 grid grid-cols-2 gap-1.5">
+        {(["rainbow", "theme"] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className={cx(
+              "rounded-lg py-1.5 text-[11px] font-medium capitalize transition-colors",
+              mode === m ? "bg-brand-500/25 text-brand-300" : "bg-white/[0.03] text-zinc-400 hover:text-zinc-200",
+            )}
+          >
+            {m}
+          </button>
+        ))}
+      </div>
+      <div className="mb-3 grid grid-cols-4 gap-1.5">
+        {BAND_SHAPES.map((sh) => (
+          <button
+            key={sh.id}
+            onClick={() => setShape(sh.id)}
+            className={cx(
+              "rounded-lg py-1.5 text-[10px] font-medium transition-colors",
+              shape === sh.id ? "bg-brand-500/25 text-brand-300" : "bg-white/[0.03] text-zinc-400 hover:text-zinc-200",
+            )}
+          >
+            {sh.label}
+          </button>
+        ))}
+      </div>
+      <Button onClick={build} className="w-full">
+        <PlusSquare className="size-3.5" />
+        Add {count} bands
+      </Button>
+    </div>
+  );
+}
+
 function AddTab() {
   const addLayer = useEditorStore((s) => s.addLayer);
 
@@ -470,6 +585,8 @@ function AddTab() {
           );
         })}
       </div>
+
+      <NBandGenerator />
 
       <div className="border-t border-white/[0.06] px-4 py-4">
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Decor</p>
