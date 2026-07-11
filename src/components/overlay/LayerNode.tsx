@@ -2693,7 +2693,10 @@ function ImageContent({ layer, ctx, glowBoost }: { layer: ImageLayer; ctx: Rende
   const { width: w, height: h } = layer;
 
   if (status !== "loaded" || !image) {
-    if (ctx.mode === "live") return null;
+    // Only the editor shows the "add an image" placeholder; the gallery preview
+    // and the OBS source render nothing for an unset/loading image, so an empty
+    // logo never appears as a stray icon.
+    if (ctx.mode !== "edit") return null;
     const label = layer.src.includes("{{")
       ? layer.src.replace(/[{}]/g, "").replace(/_/g, " ")
       : status === "failed"

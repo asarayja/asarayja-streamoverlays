@@ -49,8 +49,10 @@ export function buildPlaceholderMap(profile: ChannelProfile): Record<string, str
     CHANNEL_NAME: profile.channelName,
     DISPLAY_NAME: profile.displayName || profile.channelName,
     SLOGAN: profile.slogan,
-    LOGO: profile.logo,
-    PROFILE_IMAGE: profile.profileImage,
+    // A dedicated logo wins, but fall back to the profile picture (what the
+    // first-run popup and the profile page collect) so a set image just shows.
+    LOGO: profile.logo || profile.profileImage,
+    PROFILE_IMAGE: profile.profileImage || profile.logo,
   };
   for (const [token, platform] of Object.entries(SOCIAL_TOKENS)) {
     map[token] = profile.socials[platform] ?? "";
