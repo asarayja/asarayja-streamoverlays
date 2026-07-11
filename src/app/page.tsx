@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Palette, PenTool, Search, Wand2 } from "lucide-react";
+import { Palette, PenTool, Search, Upload, Wand2 } from "lucide-react";
 import { PALETTES } from "@/data/palettes";
 import { TEMPLATES } from "@/data/templates";
 import { TemplateCard } from "@/components/gallery/TemplateCard";
 import { RecentProjects } from "@/components/gallery/RecentProjects";
+import { MyDesigns } from "@/components/gallery/MyDesigns";
 import { TopNav } from "@/components/site/TopNav";
 import { Button, Chip, Select, TextInput, cx } from "@/components/ui";
 import { useProfileStore, useRenderProfile } from "@/store/profile";
@@ -23,6 +24,25 @@ export default function GalleryPage() {
   const profileConfigured = useProfileStore((s) => s.configured);
   const profileHydrated = useProfileStore((s) => s.hydrated);
   const createDraft = useProjectsStore((s) => s.createDraft);
+  const importDesign = useProjectsStore((s) => s.importDesign);
+  const importRef = useRef<HTMLInputElement>(null);
+
+  const onImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (parsed?.kind !== "asarayja-design") {
+        alert("That isn't an Asarayja design file.");
+        return;
+      }
+      const cover = importDesign(parsed);
+      if (cover) router.push(`/editor?id=${cover.id}`);
+    } catch {
+      alert("Could not read that design file.");
+    }
+  };
 
   // Channel profile comes first. A brand-new visitor is sent to fill it in;
   // once it exists it is remembered, and every later visit lands here on the
@@ -108,6 +128,8 @@ export default function GalleryPage() {
 
         <RecentProjects />
 
+        <MyDesigns />
+
         <div className="sticky top-16 z-30 -mx-6 mb-8 border-y border-white/[0.06] bg-ink-950/85 px-6 py-4 backdrop-blur-xl">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative min-w-[220px] flex-1">
@@ -126,6 +148,17 @@ export default function GalleryPage() {
             <Button onClick={openBlank} title="Open an empty canvas and build from scratch">
               <PenTool className="size-3.5" />
               Start from scratch
+            </Button>
+            <input
+              ref={importRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={onImportFile}
+            />
+            <Button onClick={() => importRef.current?.click()} title="Import a design file (.asarayja-design.json)">
+              <Upload className="size-3.5" />
+              Import design
             </Button>
 
             <div className="w-40">

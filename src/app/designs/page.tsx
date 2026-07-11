@@ -7,6 +7,7 @@ import { DESIGNS } from "@/lib/designs";
 import type { Design } from "@/lib/designs";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { TopNav } from "@/components/site/TopNav";
+import { MyDesigns } from "@/components/gallery/MyDesigns";
 import { Chip, cx } from "@/components/ui";
 import { getPalette } from "@/data/palettes";
 import { useElementSize, useInView } from "@/lib/useElementSize";
@@ -49,6 +50,8 @@ export default function DesignsPage() {
             of its colours.
           </p>
         </section>
+
+        <MyDesigns />
 
         <div className="mb-8 flex flex-wrap justify-center gap-1.5">
           {FILTERS.map((f) => (

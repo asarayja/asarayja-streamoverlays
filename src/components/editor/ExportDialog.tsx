@@ -32,6 +32,8 @@ import { buildObsUrl } from "@/lib/share";
 import { resolveColor } from "@/lib/theme";
 import { cloneLayers, getTemplate, packScreens } from "@/data/templates";
 import { getPalette } from "@/data/palettes";
+import { useProjectsStore } from "@/store/projects";
+import { packToDesignFile } from "@/lib/design-file";
 import type { ChannelProfile, Layer, Project, Template, Theme } from "@/lib/types";
 
 type Job = { label: string; progress: number } | null;
@@ -78,6 +80,7 @@ export function ExportDialog({
   const [obsUrl, setObsUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const packScreensOf = useProjectsStore((s) => s.packScreensOf);
 
   // The other screens of this pack: same design family, same palette.
   const pack = useMemo(() => packScreens(project.templateId), [project.templateId]);
@@ -296,6 +299,17 @@ export function ExportDialog({
       type: "application/json",
     });
     downloadBlob(blob, `${name}.asarayja.json`);
+  };
+
+  // A self-contained, re-importable design file: every screen of this pack (with
+  // the live edit of the active one) plus the one shared palette — no profile.
+  const doDesign = () => {
+    const saved = project.packId ? packScreensOf(project.packId) : [project];
+    const merged = saved.map((s) => (s.id === project.id ? project : s));
+    if (!merged.some((s) => s.id === project.id)) merged.push(project);
+    const file = packToDesignFile(merged);
+    const blob = new Blob([JSON.stringify(file, null, 2)], { type: "application/json" });
+    downloadBlob(blob, `${slugify(file.name)}.asarayja-design.json`);
   };
 
   const copyObs = async () => {
@@ -569,10 +583,18 @@ export function ExportDialog({
           </section>
 
           <section>
-            <SectionTitle icon={<FileJson className="size-3.5" />}>Project file</SectionTitle>
-            <Button onClick={doJson} className="w-full">
+            <SectionTitle icon={<FileJson className="size-3.5" />}>Design file</SectionTitle>
+            <p className="mb-3 text-[11px] leading-relaxed text-zinc-500">
+              Your whole design — every screen + palette — as one re-importable file. Import it back
+              under “My designs”, or send it in to have it baked into the site.
+            </p>
+            <Button variant="primary" onClick={doDesign} className="w-full">
               <Download className="size-4" />
-              Download .asarayja.json
+              Download design (.json)
+            </Button>
+            <Button onClick={doJson} className="mt-2 w-full">
+              <Download className="size-4" />
+              This screen only (.asarayja.json)
             </Button>
           </section>
         </div>
