@@ -368,7 +368,10 @@ export type ShapeKind =
       overspray halo and wet drips. Matte. */
   | "spraySplat"
   /** A procedurally lit, mottled, cracked and speckled concrete wall. */
-  | "concreteWall";
+  | "concreteWall"
+  /** A freehand stroke drawn with the pencil tool — a smoothed polyline through
+      `points` (layer-local coords), stroked in the layer's fill colour. */
+  | "freehand";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";
@@ -387,6 +390,11 @@ export interface ShapeLayer extends LayerBase {
       "sides" a few thicker lines hugging each edge (default), or "stripes" a
       full field of thin diagonal pinstripes. */
   facetMode?: "sides" | "stripes";
+  /** For `shape: "freehand"`. Smoothed polyline points [x0,y0,x1,y1,…] in
+      layer-local coordinates. */
+  points?: number[];
+  /** For `shape: "freehand"`. Stroke width of the drawn line. */
+  strokeWidth?: number;
 }
 
 /**

@@ -24,6 +24,10 @@ interface EditorState {
   showGuides: boolean;
   snap: boolean;
 
+  // freehand pencil tool
+  drawColor: string;
+  drawWidth: number;
+
   // timeline
   playing: boolean;
   time: number;
@@ -75,6 +79,9 @@ interface EditorState {
   setPlaying: (playing: boolean) => void;
   setTime: (time: number) => void;
   setDuration: (duration: number) => void;
+
+  setDrawColor: (color: string) => void;
+  setDrawWidth: (width: number) => void;
 
   undo: () => void;
   redo: () => void;
@@ -310,6 +317,8 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     showGrid: false,
     showGuides: true,
     snap: true,
+    drawColor: "@accent",
+    drawWidth: 8,
     // Paused at a settled frame: entry animations have finished, so what you
     // see is the layout you are editing rather than a mid-flight pose.
     playing: false,
@@ -478,6 +487,9 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     setPlaying: (playing) => set({ playing }),
     setTime: (time) => set({ time }),
     setDuration: (duration) => set({ duration: Math.max(500, duration) }),
+
+    setDrawColor: (drawColor) => set({ drawColor }),
+    setDrawWidth: (drawWidth) => set({ drawWidth: Math.max(1, Math.min(80, drawWidth)) }),
 
     undo: () => {
       const s = get();

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Palette, Search, Wand2 } from "lucide-react";
+import { Palette, PenTool, Search, Wand2 } from "lucide-react";
 import { PALETTES } from "@/data/palettes";
 import { TEMPLATES } from "@/data/templates";
 import { TemplateCard } from "@/components/gallery/TemplateCard";
@@ -70,6 +70,11 @@ export default function GalleryPage() {
     if (project) router.push(`/editor?id=${project.id}`);
   };
 
+  const openBlank = () => {
+    const project = createDraft("blank", useBrand ? brandTheme : undefined);
+    if (project) router.push(`/editor?id=${project.id}`);
+  };
+
   const clearAll = () => {
     setTags([]);
     setCollection("all");
@@ -117,6 +122,11 @@ export default function GalleryPage() {
                 className="pl-9"
               />
             </div>
+
+            <Button onClick={openBlank} title="Open an empty canvas and build from scratch">
+              <PenTool className="size-3.5" />
+              Start from scratch
+            </Button>
 
             <div className="w-40">
               <Select

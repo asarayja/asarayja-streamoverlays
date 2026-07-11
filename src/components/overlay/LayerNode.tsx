@@ -560,6 +560,22 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     return <KonvaShape listening={false} sceneFunc={(c) => concreteWallPaint(c, w, h, base)} />;
   }
 
+  if (layer.shape === "freehand") {
+    // A hand-drawn stroke: a smoothed polyline stroked in the fill colour.
+    const pts = layer.points ?? [];
+    return (
+      <Line
+        points={pts}
+        stroke={resolveColor(layer.fill, ctx.theme)}
+        strokeWidth={layer.strokeWidth ?? 8}
+        lineCap="round"
+        lineJoin="round"
+        tension={0.4}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+      />
+    );
+  }
+
   if (layer.shape === "chamfer") {
     return <Line closed points={chamferPoints(w, h)} {...paint} />;
   }

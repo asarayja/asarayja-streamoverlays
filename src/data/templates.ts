@@ -13,7 +13,7 @@ import {
   type TemplateCategory,
   type StyleTag,
 } from "@/lib/types";
-import { CORE_PALETTES, GOTHIC_PALETTES, PRIDE_PALETTES, PRISM_PALETTES, paletteTags } from "./palettes";
+import { CORE_PALETTES, DEFAULT_PALETTE_ID, GOTHIC_PALETTES, PRIDE_PALETTES, PRISM_PALETTES, paletteTags } from "./palettes";
 import type { Palette } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
@@ -4622,7 +4622,21 @@ export const TEMPLATES: Template[] = [
 
 const TEMPLATE_BY_ID = new Map(TEMPLATES.map((t) => [t.id, t]));
 
+/** An empty overlay to build from scratch. Not published to the gallery grid —
+    reached through the "Start from scratch" action — so opening it drops you on
+    a transparent canvas with the full Add / Decor palette at hand. */
+export const BLANK_TEMPLATE: Template = {
+  id: "blank",
+  name: "Blank Canvas",
+  category: "Complete Stream Package",
+  tags: ["Minimal"],
+  collection: "core",
+  paletteId: DEFAULT_PALETTE_ID,
+  layers: [],
+};
+
 export function getTemplate(id: string): Template | undefined {
+  if (id === BLANK_TEMPLATE.id) return BLANK_TEMPLATE;
   return TEMPLATE_BY_ID.get(id);
 }
 

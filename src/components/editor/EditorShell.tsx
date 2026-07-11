@@ -14,6 +14,7 @@ import {
   Maximize,
   MousePointer2,
   Palette,
+  Pencil,
   Radio,
   Redo2,
   Undo2,
@@ -23,6 +24,7 @@ import {
 import { OverlayStage } from "@/components/overlay/OverlayStage";
 import { Button, cx } from "@/components/ui";
 import { publishLive } from "@/lib/share";
+import { resolveColor } from "@/lib/theme";
 import { CANVAS_WIDTH } from "@/lib/types";
 import type { Layer, Theme } from "@/lib/types";
 import { useEditorStore } from "@/store/editor";
@@ -70,6 +72,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const brandTheme = useProfileStore((s) => s.profile.theme);
 
   const [panTool, setPanTool] = useState(false);
+  const [drawTool, setDrawTool] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [exportTime, setExportTime] = useState(0);
   /** When set, the export stage renders only this layer — per-element export. */
@@ -121,8 +124,13 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         setPanTool(true);
       } else if (e.key.toLowerCase() === "v") {
         setPanTool(false);
+        setDrawTool(false);
       } else if (e.key.toLowerCase() === "h") {
         setPanTool(true);
+        setDrawTool(false);
+      } else if (e.key.toLowerCase() === "b") {
+        setDrawTool(true);
+        setPanTool(false);
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
@@ -192,12 +200,37 @@ export default function EditorShell({ projectId }: { projectId: string }) {
 
         <div className="mx-2 h-6 w-px bg-white/8" />
 
-        <ToolButton onClick={() => setPanTool(false)} active={!panTool} title="Select (V)">
+        <ToolButton
+          onClick={() => {
+            setPanTool(false);
+            setDrawTool(false);
+          }}
+          active={!panTool && !drawTool}
+          title="Select (V)"
+        >
           <MousePointer2 className="size-4" />
         </ToolButton>
-        <ToolButton onClick={() => setPanTool(true)} active={panTool} title="Pan (H or hold Space)">
+        <ToolButton
+          onClick={() => {
+            setPanTool(true);
+            setDrawTool(false);
+          }}
+          active={panTool}
+          title="Pan (H or hold Space)"
+        >
           <Hand className="size-4" />
         </ToolButton>
+        <ToolButton
+          onClick={() => {
+            setDrawTool(true);
+            setPanTool(false);
+          }}
+          active={drawTool}
+          title="Draw (B) — freehand pencil"
+        >
+          <Pencil className="size-4" />
+        </ToolButton>
+        {drawTool && <DrawSettings />}
         <ToolButton onClick={toggleSnap} active={snap} title="Snap to guides">
           <Magnet className="size-4" />
         </ToolButton>
@@ -255,7 +288,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         <LeftPanel />
         <main className="flex min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1">
-            <EditorCanvas profile={profile} panTool={panTool} />
+            <EditorCanvas profile={profile} panTool={panTool} drawTool={drawTool} />
           </div>
           <Timeline />
         </main>
@@ -331,5 +364,41 @@ function ToolButton({
     >
       {children}
     </button>
+  );
+}
+
+const DRAW_TOKENS = ["@accent", "@primary", "@secondary", "@text", "@glow", "@error"];
+
+function DrawSettings() {
+  const drawColor = useEditorStore((s) => s.drawColor);
+  const drawWidth = useEditorStore((s) => s.drawWidth);
+  const setDrawColor = useEditorStore((s) => s.setDrawColor);
+  const setDrawWidth = useEditorStore((s) => s.setDrawWidth);
+  const theme = useEditorStore((s) => s.project?.theme);
+  return (
+    <div className="ml-1 flex items-center gap-1.5 rounded-lg bg-white/5 px-2 py-1">
+      {DRAW_TOKENS.map((t) => (
+        <button
+          key={t}
+          onClick={() => setDrawColor(t)}
+          title={t.slice(1)}
+          className={cx(
+            "size-4 rounded-full ring-1 ring-white/20 transition",
+            drawColor === t && "ring-2 ring-white",
+          )}
+          style={{ background: theme ? resolveColor(t, theme) : "#fff" }}
+        />
+      ))}
+      <input
+        type="range"
+        min={1}
+        max={40}
+        value={drawWidth}
+        onChange={(e) => setDrawWidth(Number(e.target.value))}
+        className="ml-1 w-20 accent-brand-400"
+        title="Brush width"
+      />
+      <span className="w-5 text-center font-mono text-[10px] text-zinc-500">{drawWidth}</span>
+    </div>
   );
 }

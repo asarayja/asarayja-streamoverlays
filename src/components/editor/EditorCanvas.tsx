@@ -6,8 +6,9 @@ import { Group, Layer as KonvaLayer, Line, Rect, Stage, Transformer } from "reac
 import { LayerNode } from "@/components/overlay/LayerNode";
 import { useFontsReady } from "@/components/overlay/OverlayStage";
 import { resolveColor } from "@/lib/theme";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/lib/types";
-import type { ChannelProfile, LayerPatch } from "@/lib/types";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, DEFAULT_ANIMATION, DEFAULT_EFFECTS } from "@/lib/types";
+import type { ChannelProfile, LayerPatch, ShapeLayer } from "@/lib/types";
+import { uid } from "@/lib/id";
 import { useElementSize } from "@/lib/useElementSize";
 import { useEditorStore } from "@/store/editor";
 
@@ -19,7 +20,15 @@ interface Guide {
   position: number;
 }
 
-export function EditorCanvas({ profile, panTool }: { profile: ChannelProfile; panTool: boolean }) {
+export function EditorCanvas({
+  profile,
+  panTool,
+  drawTool = false,
+}: {
+  profile: ChannelProfile;
+  panTool: boolean;
+  drawTool?: boolean;
+}) {
   const [containerRef, size] = useElementSize<HTMLDivElement>();
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
@@ -39,10 +48,78 @@ export function EditorCanvas({ profile, panTool }: { profile: ChannelProfile; pa
   const select = useEditorStore((s) => s.select);
   const toggleSelect = useEditorStore((s) => s.toggleSelect);
   const updateLayer = useEditorStore((s) => s.updateLayer);
+  const insertLayer = useEditorStore((s) => s.insertLayer);
   const beginGesture = useEditorStore((s) => s.beginGesture);
   const setZoom = useEditorStore((s) => s.setZoom);
   const setPan = useEditorStore((s) => s.setPan);
   const zoomToFit = useEditorStore((s) => s.zoomToFit);
+  const drawColor = useEditorStore((s) => s.drawColor);
+  const drawWidth = useEditorStore((s) => s.drawWidth);
+
+  // Freehand pencil: capture pointer points in overlay (canvas) coordinates,
+  // preview live, and on release commit a smoothed stroke as a shape layer.
+  const [stroke, setStroke] = useState<number[] | null>(null);
+  const drawing = useRef(false);
+
+  const toOverlay = useCallback(
+    (p: { x: number; y: number }) => ({ x: (p.x - panX) / zoom, y: (p.y - panY) / zoom }),
+    [panX, panY, zoom],
+  );
+
+  const startDraw = useCallback(() => {
+    const p = stageRef.current?.getPointerPosition();
+    if (!p) return;
+    const o = toOverlay(p);
+    drawing.current = true;
+    setStroke([o.x, o.y]);
+  }, [toOverlay]);
+
+  const moveDraw = useCallback(() => {
+    if (!drawing.current) return;
+    const p = stageRef.current?.getPointerPosition();
+    if (!p) return;
+    const o = toOverlay(p);
+    setStroke((prev) => (prev ? [...prev, o.x, o.y] : [o.x, o.y]));
+  }, [toOverlay]);
+
+  const endDraw = useCallback(() => {
+    if (!drawing.current) return;
+    drawing.current = false;
+    const pts = stroke;
+    setStroke(null);
+    if (!pts || pts.length < 4) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < pts.length; i += 2) {
+      minX = Math.min(minX, pts[i]);
+      maxX = Math.max(maxX, pts[i]);
+      minY = Math.min(minY, pts[i + 1]);
+      maxY = Math.max(maxY, pts[i + 1]);
+    }
+    const pad = drawWidth;
+    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+    const local = pts.map((v, i) => (i % 2 === 0 ? v - minX : v - minY));
+    const layer: ShapeLayer = {
+      id: uid(),
+      name: "Drawing",
+      type: "shape",
+      shape: "freehand",
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+      rotation: 0,
+      opacity: 1,
+      visible: true,
+      locked: false,
+      fill: drawColor,
+      cornerRadius: 0,
+      points: local,
+      strokeWidth: drawWidth,
+      effects: structuredClone(DEFAULT_EFFECTS),
+      animation: { ...DEFAULT_ANIMATION },
+    };
+    insertLayer(layer);
+  }, [stroke, drawWidth, drawColor, insertLayer]);
 
   // Fit once, as soon as the container has been measured.
   const fitted = useRef(false);
@@ -185,14 +262,22 @@ export function EditorCanvas({ profile, panTool }: { profile: ChannelProfile; pa
           ref={stageRef}
           width={size.width}
           height={size.height}
-          draggable={panTool}
+          draggable={panTool && !drawTool}
           x={panTool ? panX : 0}
           y={panTool ? panY : 0}
           onDragEnd={(e) => panTool && setPan(e.target.x(), e.target.y())}
           onWheel={handleWheel}
           onMouseDown={(e) => {
+            if (drawTool) {
+              startDraw();
+              return;
+            }
             if (e.target === e.target.getStage()) select([]);
           }}
+          onMouseMove={drawTool ? moveDraw : undefined}
+          onMouseUp={drawTool ? endDraw : undefined}
+          onMouseLeave={drawTool ? endDraw : undefined}
+          style={drawTool ? { cursor: "crosshair" } : undefined}
           key={fontsReady ? "fonts" : "fallback"}
         >
           <KonvaLayer>
@@ -226,7 +311,7 @@ export function EditorCanvas({ profile, panTool }: { profile: ChannelProfile; pa
                     key={layer.id}
                     layer={layer}
                     ctx={ctx}
-                    draggable={!panTool}
+                    draggable={!panTool && !drawTool}
                     onSelect={(id, additive) => toggleSelect(id, additive)}
                     onDragStart={beginGesture}
                     onDragMove={handleDragMove}
@@ -238,6 +323,18 @@ export function EditorCanvas({ profile, panTool }: { profile: ChannelProfile; pa
                   />
                 ))}
               </Group>
+
+              {stroke && stroke.length >= 4 && (
+                <Line
+                  points={stroke}
+                  stroke={resolveColor(drawColor, project.theme)}
+                  strokeWidth={drawWidth}
+                  lineCap="round"
+                  lineJoin="round"
+                  tension={0.4}
+                  listening={false}
+                />
+              )}
 
               {guides.map((guide, i) => (
                 <Line
