@@ -2864,7 +2864,9 @@ const MOONLIT_GROVE: FamilyStyle = {
       effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
       animation: anim("float", { duration: 7400, intensity: 0.3 }),
     }),
-    particles("Decor — Clouds", { kind: "clouds", count: 4, size: 100, speed: 0.26, color: "@secondary", opacity: 0.32 }),
+    // Clouds stay up in the sky so they never drift over the roses and blossom
+    // masses along the bottom.
+    particles("Decor — Clouds", { kind: "clouds", count: 4, size: 100, speed: 0.26, color: "@secondary", opacity: 0.32, box: { x: 0, y: 0, width: 1920, height: 520 } }),
     particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.4, color: "@accent", opacity: 0.4 }),
   ],
   overlayDecor: () => [
