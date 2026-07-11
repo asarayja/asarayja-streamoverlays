@@ -602,6 +602,57 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
       );
     }
 
+    // Pencil sketch: a few jittered overlaid strokes for a hand-drawn look.
+    if (layer.drawStyle === "sketch") {
+      const sw = layer.strokeWidth ?? 6;
+      return (
+        <KonvaShape
+          listening={false}
+          sceneFunc={(c) => {
+            c.setAttr("strokeStyle", col);
+            c.setAttr("lineCap", "round");
+            c.setAttr("lineJoin", "round");
+            c.setAttr("lineWidth", sw);
+            for (let pass = 0; pass < 3; pass++) {
+              const jx = (noise(pass * 3.1) - 0.5) * sw * 1.5;
+              const jy = (noise(pass * 5.7 + 1) - 0.5) * sw * 1.5;
+              c.setAttr("globalAlpha", 0.5);
+              c.beginPath();
+              for (let i = 0; i + 1 < pts.length; i += 2) {
+                const x = pts[i] + jx + (noise(i * 0.7 + pass) - 0.5) * sw * 0.6;
+                const y = pts[i + 1] + jy + (noise(i * 0.9 + pass + 2) - 0.5) * sw * 0.6;
+                if (i === 0) c.moveTo(x, y);
+                else c.lineTo(x, y);
+              }
+              c.stroke();
+            }
+            c.setAttr("globalAlpha", 1);
+          }}
+        />
+      );
+    }
+
+    // Rainbow: a smoothed polyline stroked with a rainbow gradient.
+    if (layer.rainbow) {
+      return (
+        <Line
+          points={pts}
+          strokeLinearGradientStartPoint={{ x: 0, y: 0 }}
+          strokeLinearGradientEndPoint={{ x: w, y: 0 }}
+          strokeLinearGradientColorStops={[
+            0, "#ff2d55", 0.17, "#ff8c00", 0.34, "#ffe000", 0.5, "#00c853",
+            0.67, "#00b0ff", 0.84, "#7c4dff", 1, "#ff2d55",
+          ]}
+          strokeWidth={layer.strokeWidth ?? 8}
+          lineCap="round"
+          lineJoin="round"
+          tension={0.4}
+          dash={layer.dash}
+          {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        />
+      );
+    }
+
     // Default: a smoothed polyline stroked in the fill colour.
     return (
       <Line

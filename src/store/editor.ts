@@ -21,20 +21,36 @@ export type BrushKind =
   | "dashed"
   | "dotted"
   | "ink"
+  | "calligraphy"
   | "spray"
+  | "crayon"
+  | "rainbow"
+  | "sketch"
+  | "ribbon"
   | "eraser";
 
 export const BRUSH_KINDS: { id: BrushKind; label: string }[] = [
   { id: "pen", label: "Pen" },
   { id: "marker", label: "Marker" },
   { id: "ink", label: "Ink" },
+  { id: "calligraphy", label: "Calligraphy" },
+  { id: "ribbon", label: "Ribbon" },
   { id: "highlighter", label: "Highlight" },
   { id: "neon", label: "Neon" },
+  { id: "rainbow", label: "Rainbow" },
   { id: "spray", label: "Spray" },
+  { id: "crayon", label: "Crayon" },
+  { id: "sketch", label: "Sketch" },
   { id: "dashed", label: "Dashed" },
   { id: "dotted", label: "Dotted" },
   { id: "eraser", label: "Eraser" },
 ];
+
+/** A camera layer punches a transparent hole; drawings sit below it so the
+    webcam always shows through (you can't paint over the camera). */
+export function isCameraLayer(l: Layer): boolean {
+  return l.type === "camera" || (l.type === "window" && l.content === "camera");
+}
 
 /** How a brush turns a raw width into stroke width, opacity, dash and glow. */
 export function brushStyle(
@@ -96,6 +112,9 @@ interface EditorState {
 
   addLayer: (type: LayerType, partial?: Partial<Layer>) => void;
   insertLayer: (layer: Layer) => void;
+  /** Insert a drawing just below the first camera layer so the webcam hole cuts
+      through it (draw around, never over, the camera). Appends if no camera. */
+  insertDrawing: (layer: Layer) => void;
   removeSelected: () => void;
   duplicateSelected: () => void;
   reorder: (id: string, toIndex: number) => void;
@@ -413,6 +432,18 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     insertLayer: (layer) => {
       pushHistory();
       mapLayers((layers) => [...layers, layer]);
+      set({ selectedIds: [layer.id] });
+    },
+
+    insertDrawing: (layer) => {
+      pushHistory();
+      mapLayers((layers) => {
+        const camIdx = layers.findIndex(isCameraLayer);
+        if (camIdx === -1) return [...layers, layer];
+        const next = layers.slice();
+        next.splice(camIdx, 0, layer);
+        return next;
+      });
       set({ selectedIds: [layer.id] });
     },
 

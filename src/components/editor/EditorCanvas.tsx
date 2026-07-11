@@ -49,7 +49,7 @@ export function EditorCanvas({
   const select = useEditorStore((s) => s.select);
   const toggleSelect = useEditorStore((s) => s.toggleSelect);
   const updateLayer = useEditorStore((s) => s.updateLayer);
-  const insertLayer = useEditorStore((s) => s.insertLayer);
+  const insertDrawing = useEditorStore((s) => s.insertDrawing);
   const eraseStrokes = useEditorStore((s) => s.eraseStrokes);
   const beginGesture = useEditorStore((s) => s.beginGesture);
   const setZoom = useEditorStore((s) => s.setZoom);
@@ -103,27 +103,36 @@ export function EditorCanvas({
     let strokeWidth = drawWidth;
     let opacity = 1;
     let dash: number[] | undefined;
+    let rainbow = false;
     const effects = structuredClone(DEFAULT_EFFECTS);
     let pad = drawWidth;
 
-    if (drawBrush === "ink") {
-      // Pressure/velocity-variable ink: a filled outline polygon.
+    if (drawBrush === "ink" || drawBrush === "calligraphy" || drawBrush === "ribbon") {
+      // Variable-width filled strokes via perfect-freehand.
+      const opts =
+        drawBrush === "calligraphy"
+          ? { size: drawWidth * 2.6, thinning: 0.85, smoothing: 0.5, streamline: 0.4, simulatePressure: true }
+          : drawBrush === "ribbon"
+            ? { size: drawWidth * 2.4, thinning: 0, smoothing: 0.6, streamline: 0.5, simulatePressure: false }
+            : { size: drawWidth * 2.2, thinning: 0.65, smoothing: 0.55, streamline: 0.5, simulatePressure: true };
       const input: number[][] = [];
       for (let i = 0; i < pts.length; i += 2) input.push([pts[i], pts[i + 1]]);
-      const outline = getStroke(input, {
-        size: drawWidth * 2.2,
-        thinning: 0.65,
-        smoothing: 0.55,
-        streamline: 0.5,
-        simulatePressure: true,
-      });
-      renderPts = outline.flat();
+      renderPts = getStroke(input, opts).flat();
       drawStyle = "fill";
       pad = 2;
-    } else if (drawBrush === "spray") {
+    } else if (drawBrush === "spray" || drawBrush === "crayon") {
       drawStyle = "spray";
       opacity = 0.9;
-      pad = drawWidth * 3;
+      strokeWidth = drawBrush === "crayon" ? Math.max(3, drawWidth * 0.6) : drawWidth;
+      pad = strokeWidth * 3;
+    } else if (drawBrush === "sketch") {
+      drawStyle = "sketch";
+      strokeWidth = Math.max(2, drawWidth * 0.7);
+      pad = strokeWidth * 2;
+    } else if (drawBrush === "rainbow") {
+      rainbow = true;
+      strokeWidth = drawWidth;
+      pad = drawWidth + 2;
     } else {
       const bs = brushStyle(drawBrush, drawWidth);
       strokeWidth = bs.strokeWidth;
@@ -162,11 +171,12 @@ export function EditorCanvas({
       strokeWidth,
       dash,
       drawStyle,
+      rainbow,
       effects,
       animation: { ...DEFAULT_ANIMATION },
     };
-    insertLayer(layer);
-  }, [stroke, drawWidth, drawBrush, drawColor, insertLayer, eraseStrokes]);
+    insertDrawing(layer);
+  }, [stroke, drawWidth, drawBrush, drawColor, insertDrawing, eraseStrokes]);
 
   // Fit once, as soon as the container has been measured.
   const fitted = useRef(false);
@@ -386,20 +396,37 @@ export function EditorCanvas({
                     />
                   );
                 }
-                if (drawBrush === "ink") {
+                if (drawBrush === "ink" || drawBrush === "calligraphy" || drawBrush === "ribbon") {
+                  const opts =
+                    drawBrush === "calligraphy"
+                      ? { size: drawWidth * 2.6, thinning: 0.85, smoothing: 0.5, streamline: 0.4, simulatePressure: true }
+                      : drawBrush === "ribbon"
+                        ? { size: drawWidth * 2.4, thinning: 0, smoothing: 0.6, streamline: 0.5, simulatePressure: false }
+                        : { size: drawWidth * 2.2, thinning: 0.65, smoothing: 0.55, streamline: 0.5, simulatePressure: true };
                   const input: number[][] = [];
                   for (let i = 0; i < stroke.length; i += 2) input.push([stroke[i], stroke[i + 1]]);
-                  const outline = getStroke(input, {
-                    size: drawWidth * 2.2,
-                    thinning: 0.65,
-                    smoothing: 0.55,
-                    streamline: 0.5,
-                    simulatePressure: true,
-                  });
-                  return <Line points={outline.flat()} closed fill={col} listening={false} />;
+                  return <Line points={getStroke(input, opts).flat()} closed fill={col} listening={false} />;
+                }
+                if (drawBrush === "rainbow") {
+                  return (
+                    <Line
+                      points={stroke}
+                      strokeLinearGradientStartPoint={{ x: stroke[0], y: 0 }}
+                      strokeLinearGradientEndPoint={{ x: stroke[stroke.length - 2], y: 0 }}
+                      strokeLinearGradientColorStops={[
+                        0, "#ff2d55", 0.17, "#ff8c00", 0.34, "#ffe000", 0.5, "#00c853",
+                        0.67, "#00b0ff", 0.84, "#7c4dff", 1, "#ff2d55",
+                      ]}
+                      strokeWidth={drawWidth}
+                      lineCap="round"
+                      lineJoin="round"
+                      tension={0.4}
+                      listening={false}
+                    />
+                  );
                 }
                 const bs = brushStyle(drawBrush, drawWidth);
-                const opacity = drawBrush === "spray" ? 0.6 : bs.opacity;
+                const opacity = drawBrush === "spray" || drawBrush === "crayon" ? 0.6 : bs.opacity;
                 return (
                   <Line
                     points={stroke}
