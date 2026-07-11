@@ -893,16 +893,17 @@ function drawGlassSheet(
       }
     } else {
       // A few thicker pride lines running at the same angle as the reflection,
-      // grouped down one side (the left) — a diagonal rainbow accent parallel to
-      // the caught light, not a field across the whole pane. Colours scroll
-      // slowly through the stack so it shimmers.
+      // grouped down one side (the left). They run the full height of the pane —
+      // clipped to it, top edge to bottom edge — like the reflection, not a
+      // short segment floating in the middle. Colours scroll slowly so it
+      // shimmers.
       const lineW = glossy ? 15 : 17;
       const gap = 9;
-      const len = h * 0.4; // half-length along the diagonal
+      const len = h * 1.2; // over-long, clipped to the pane so it spans edge to edge
       c.save();
-      c.translate(w * 0.14, h / 2); // left-side anchor
+      c.translate(w * 0.1, h / 2); // left-side anchor
       c.rotate(-0.5); // the reflection's angle
-      c.setAttr("lineCap", "round");
+      c.setAttr("lineCap", "butt");
       c.setAttr("lineWidth", lineW);
       for (let i = 0; i < n; i++) {
         const idx = (((i + scroll) % n) + n) % n;
