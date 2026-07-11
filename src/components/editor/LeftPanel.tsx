@@ -1101,6 +1101,23 @@ const TEXT3D_PRESETS: Array<{ label: string; patch: Partial<Layer> }> = [
       },
     } as Partial<Layer>,
   },
+  {
+    label: "Rainbow",
+    patch: {
+      text: "RAINBOW", fontFamily: "Anton", fontWeight: 800, fontSize: 180, align: "center",
+      x: 260, y: 420, width: 1400, height: 240, fill: "@text",
+      fillStripes: ["#FF3B30", "#FF9500", "#FFCC00", "#34C759", "#00A2FF", "#AF52DE"],
+      effects: { text3d: { enabled: true, depth: 26, angle: 45, color: "@accent" } },
+    } as Partial<Layer>,
+  },
+  {
+    label: "Curved",
+    patch: {
+      text: "CURVE", fontFamily: "Anton", fontWeight: 800, fontSize: 150, align: "center",
+      x: 360, y: 360, width: 1200, height: 360, fill: "@text", curve: 60,
+      effects: { text3d: { enabled: true, depth: 20, angle: 45, color: "@accent" } },
+    } as Partial<Layer>,
+  },
 ];
 
 function TextTab() {

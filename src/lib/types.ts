@@ -598,6 +598,9 @@ export interface TextLayer extends LayerBase {
    * fallback when unset.
    */
   fillStripes?: string[];
+  /** Bend the text along an arc: 0 straight, positive arches up, negative down
+      (roughly -100…100). Rendered along a path, single-line only. */
+  curve?: number;
   textTransform: TextTransform;
 }
 

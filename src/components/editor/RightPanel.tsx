@@ -62,6 +62,9 @@ import { useT } from "@/lib/i18n";
 /** Presets that drive the glow effect — picking one enables glow. */
 const GLOW_ANIM_PRESETS = new Set<AnimationPreset>(["glow", "shimmer", "blink", "neon"]);
 
+/** A vivid cycle for the "multi-colour letters" toggle. */
+const MULTI_LETTER_COLORS = ["#FF3B30", "#FF9500", "#FFCC00", "#34C759", "#00A2FF", "#AF52DE"];
+
 export function RightPanel() {
   const t = useT();
   const layer = useSelectedLayer();
@@ -513,6 +516,20 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             />
           </Field>
           <Toggle label={t("Italic")} checked={text.italic} onChange={(italic) => commit({ italic })} />
+
+          <Slider
+            label={t("Curve")}
+            min={-100}
+            max={100}
+            value={Math.round(text.curve ?? 0)}
+            onBegin={beginGesture}
+            onChange={(curve) => live({ curve })}
+          />
+          <Toggle
+            label={t("Multi-colour letters")}
+            checked={!!(text.fillStripes && text.fillStripes.length)}
+            onChange={(on) => commit({ fillStripes: on ? MULTI_LETTER_COLORS : undefined })}
+          />
 
           {(() => {
             const cur: Text3D = text.effects.text3d ?? { enabled: false, depth: 16, angle: 45, color: "@accent" };

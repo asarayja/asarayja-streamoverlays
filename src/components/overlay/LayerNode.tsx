@@ -13,6 +13,7 @@ import {
   Shape as KonvaShape,
   Star,
   Text,
+  TextPath,
 } from "react-konva";
 import { ICONS, type IconName } from "@/data/icons";
 import { sample } from "@/lib/animation";
@@ -1590,6 +1591,19 @@ function mixColors(a: string, b: string, t: number): string {
   return `rgb(${lerp(16)},${lerp(8)},${lerp(0)})`;
 }
 
+/** An SVG arc path spanning the box width for curved text. `curve` (-100…100)
+    bends it: positive arches up, negative down; ~0 is a straight baseline. */
+function arcPathData(w: number, h: number, curve: number): string {
+  const c = Math.max(-100, Math.min(100, curve)) / 100;
+  const yMid = h / 2;
+  if (Math.abs(c) < 0.02) return `M0,${yMid} L${w},${yMid}`;
+  const sag = Math.abs(c) * w * 0.32;
+  const R = (sag * sag + (w / 2) * (w / 2)) / (2 * sag);
+  const sweep = c > 0 ? 1 : 0;
+  const y0 = c > 0 ? yMid + sag * 0.5 : yMid - sag * 0.5;
+  return `M0,${y0} A${R.toFixed(2)},${R.toFixed(2)} 0 0 ${sweep} ${w},${y0}`;
+}
+
 /** A literal hex (#rrggbb) as an rgba() string at alpha `a`. */
 function hexAlpha(hex: string, a: number): string {
   const h = hex.replace("#", "");
@@ -2505,6 +2519,17 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
     let x = layer.align === "center" ? (layer.width - total) / 2 : layer.align === "right" ? layer.width - total : 0;
     let colorIndex = 0;
     const shadow = shadowProps(layer.effects, ctx.theme, glowBoost);
+    const style = fontStyleOf(layer.fontWeight, layer.italic);
+
+    // Per-letter 3D: each letter is extruded in a darker shade of its own
+    // colour, so a rainbow headline pops off the screen — the SELF look.
+    const td = layer.effects.text3d;
+    const ext = !!(td?.enabled && td.depth > 0);
+    const steps = ext ? Math.min(48, Math.max(1, Math.round(td!.depth))) : 0;
+    const stepLen = ext ? td!.depth / steps : 0;
+    const rad = ext ? (td!.angle * Math.PI) / 180 : 0;
+    const ux = Math.cos(rad);
+    const uy = Math.sin(rad);
 
     return (
       <Group listening={false}>
@@ -2513,21 +2538,62 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
           x += advances[i];
           if (ch.trim() === "") return null; // spaces advance but don't consume a stripe
           const fill = stripes[colorIndex++ % stripes.length];
-          return (
-            <Text
-              key={i}
-              x={cx}
-              text={ch}
-              fontFamily={layer.fontFamily}
-              fontSize={fontSize}
-              fontStyle={fontStyleOf(layer.fontWeight, layer.italic)}
-              fill={fill}
-              {...shadow}
-            />
-          );
+          const glyph = { text: ch, fontFamily: layer.fontFamily, fontSize, fontStyle: style };
+          if (ext) {
+            return (
+              <Group key={i} x={cx}>
+                {Array.from({ length: steps }).map((_, s) => {
+                  const k = steps - s;
+                  const g = steps > 1 ? (k - 1) / (steps - 1) : 0;
+                  const col = mixColors(darken(fill, 0.22), darken(fill, 0.58), g);
+                  return <Text key={s} {...glyph} x={ux * k * stepLen} y={uy * k * stepLen} fill={col} {...(s === 0 ? shadow : {})} />;
+                })}
+                <Text {...glyph} fill={fill} />
+              </Group>
+            );
+          }
+          return <Text key={i} x={cx} {...glyph} fill={fill} {...shadow} />;
         })}
       </Group>
     );
+  }
+
+  // Curved text: laid along an arc via a text path. Single-line; supports the
+  // same 3D extrusion by repeating the path in the side colour.
+  if (layer.curve && Math.abs(layer.curve) > 1 && !resolved.includes("\n")) {
+    const data = arcPathData(layer.width, layer.height, layer.curve);
+    const base = {
+      data,
+      text: visible,
+      fontFamily: layer.fontFamily,
+      fontSize,
+      fontStyle: fontStyleOf(layer.fontWeight, layer.italic),
+      letterSpacing: layer.letterSpacing,
+      align: "center" as const,
+    };
+    const td = layer.effects.text3d;
+    const front = { ...base, fill: resolveColor(layer.fill, ctx.theme), ...shadowProps(layer.effects, ctx.theme, glowBoost) };
+    if (td?.enabled && td.depth > 0) {
+      const steps = Math.min(48, Math.max(1, Math.round(td.depth)));
+      const stepLen = td.depth / steps;
+      const rad = (td.angle * Math.PI) / 180;
+      const ux = Math.cos(rad);
+      const uy = Math.sin(rad);
+      const sideFront = resolveColor(td.color, ctx.theme);
+      const sideBack = td.colorTo ? resolveColor(td.colorTo, ctx.theme) : darken(sideFront, 0.4);
+      return (
+        <Group listening={false}>
+          {Array.from({ length: steps }).map((_, i) => {
+            const k = steps - i;
+            const g = steps > 1 ? (k - 1) / (steps - 1) : 0;
+            const col = mixColors(sideFront, sideBack, g);
+            return <TextPath key={i} {...base} x={ux * k * stepLen} y={uy * k * stepLen} fill={col} {...(i === 0 ? shadowProps(layer.effects, ctx.theme, glowBoost) : {})} />;
+          })}
+          <TextPath {...front} />
+        </Group>
+      );
+    }
+    return <TextPath {...front} />;
   }
 
   // A border on a text layer is a stencil-cut outline: the stroke is drawn

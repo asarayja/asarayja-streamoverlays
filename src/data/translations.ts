@@ -76,6 +76,8 @@ export const NO: Record<string, string> = {
   "Group": "Grupper",
   "Ungroup": "Del opp gruppe",
   "Align, distribute or group the selected layers above.": "Juster, fordel eller grupper de valgte lagene over.",
+  "Curve": "Bue",
+  "Multi-colour letters": "Flerfargede bokstaver",
   "3D extrude": "3D-ekstrudering",
   "Depth": "Dybde",
   "Side colour": "Sidefarge",
