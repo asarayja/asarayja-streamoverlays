@@ -12,6 +12,39 @@ interface Snapshot {
   theme: Theme;
 }
 
+/** Freehand brush presets for the pencil tool. */
+export type BrushKind = "pen" | "marker" | "highlighter" | "neon" | "dashed" | "dotted";
+
+export const BRUSH_KINDS: { id: BrushKind; label: string }[] = [
+  { id: "pen", label: "Pen" },
+  { id: "marker", label: "Marker" },
+  { id: "highlighter", label: "Highlight" },
+  { id: "neon", label: "Neon" },
+  { id: "dashed", label: "Dashed" },
+  { id: "dotted", label: "Dotted" },
+];
+
+/** How a brush turns a raw width into stroke width, opacity, dash and glow. */
+export function brushStyle(
+  brush: BrushKind,
+  width: number,
+): { strokeWidth: number; opacity: number; dash?: number[]; glow?: number } {
+  switch (brush) {
+    case "marker":
+      return { strokeWidth: width * 1.8, opacity: 0.9 };
+    case "highlighter":
+      return { strokeWidth: width * 3.5, opacity: 0.3 };
+    case "neon":
+      return { strokeWidth: width, opacity: 1, glow: Math.max(12, width * 2.4) };
+    case "dashed":
+      return { strokeWidth: width, opacity: 1, dash: [width * 2.4, width * 2] };
+    case "dotted":
+      return { strokeWidth: width, opacity: 1, dash: [0.1, width * 2.6] };
+    default:
+      return { strokeWidth: width, opacity: 1 };
+  }
+}
+
 interface EditorState {
   project: Project | null;
   selectedIds: string[];
@@ -27,6 +60,7 @@ interface EditorState {
   // freehand pencil tool
   drawColor: string;
   drawWidth: number;
+  drawBrush: BrushKind;
 
   // timeline
   playing: boolean;
@@ -82,6 +116,7 @@ interface EditorState {
 
   setDrawColor: (color: string) => void;
   setDrawWidth: (width: number) => void;
+  setDrawBrush: (brush: BrushKind) => void;
 
   undo: () => void;
   redo: () => void;
@@ -319,6 +354,7 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     snap: true,
     drawColor: "@accent",
     drawWidth: 8,
+    drawBrush: "pen",
     // Paused at a settled frame: entry animations have finished, so what you
     // see is the layout you are editing rather than a mid-flight pose.
     playing: false,
@@ -490,6 +526,7 @@ export const useEditorStore = create<EditorState>()((set, get) => {
 
     setDrawColor: (drawColor) => set({ drawColor }),
     setDrawWidth: (drawWidth) => set({ drawWidth: Math.max(1, Math.min(80, drawWidth)) }),
+    setDrawBrush: (drawBrush) => set({ drawBrush }),
 
     undo: () => {
       const s = get();

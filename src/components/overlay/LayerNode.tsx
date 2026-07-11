@@ -571,6 +571,7 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
         lineCap="round"
         lineJoin="round"
         tension={0.4}
+        dash={layer.dash}
         {...shadowProps(layer.effects, ctx.theme, glowBoost)}
       />
     );

@@ -1710,6 +1710,9 @@ interface FamilyStyle {
       horizontal lines beside the copy (default), or "stripes" a full field of
       diagonal pinstripes. */
   facetMode?: "sides" | "stripes";
+  /** Social-bar pill colour. Defaults to "@surface/90"; near-black families
+      set a light translucent pill so the icons read. */
+  socialPill?: string;
   /** Panels use windows instead of plates. */
   windowChrome?: boolean;
   /** Chat panel silhouette. */
@@ -1781,7 +1784,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     social("Socials", { x: 460, y: y + dy, width: 1000, height: 56 }, {
       platforms: platforms ?? ["twitch", "youtube", "discord", "instagram"],
       fontFamily: f.body,
-      pillColor: "@surface/90",
+      pillColor: f.socialPill ?? "@surface/90",
       animation: anim("fade", { duration: 900, delay }),
     });
 
@@ -3568,6 +3571,7 @@ const RISO_CONCRETE: FamilyStyle = {
   frameEffects: { border: { enabled: true, color: "@text", width: 3, radius: 0 } },
   headlineEffects: { border: { enabled: true, color: "@text", width: 3 } },
   plateShape: "rect",
+  socialPill: "@text/90",
   contentOffsetY: -40,
   scene: () => [
     shape("Backdrop", FULL, { background: true, fill: "@background" }),
@@ -3615,6 +3619,7 @@ const AURORA_SILK: FamilyStyle = {
     border: { enabled: true, color: "@text/30", width: 1 },
   },
   plateShape: "rect",
+  socialPill: "@text/16",
   scene: () => [
     shape("Backdrop", FULL, {
       background: true,

@@ -27,7 +27,7 @@ import { publishLive } from "@/lib/share";
 import { resolveColor } from "@/lib/theme";
 import { CANVAS_WIDTH } from "@/lib/types";
 import type { Layer, Theme } from "@/lib/types";
-import { useEditorStore } from "@/store/editor";
+import { BRUSH_KINDS, useEditorStore } from "@/store/editor";
 import { useProfileStore, useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
 import { EditorCanvas } from "./EditorCanvas";
@@ -372,11 +372,31 @@ const DRAW_TOKENS = ["@accent", "@primary", "@secondary", "@text", "@glow", "@er
 function DrawSettings() {
   const drawColor = useEditorStore((s) => s.drawColor);
   const drawWidth = useEditorStore((s) => s.drawWidth);
+  const drawBrush = useEditorStore((s) => s.drawBrush);
   const setDrawColor = useEditorStore((s) => s.setDrawColor);
   const setDrawWidth = useEditorStore((s) => s.setDrawWidth);
+  const setDrawBrush = useEditorStore((s) => s.setDrawBrush);
   const theme = useEditorStore((s) => s.project?.theme);
   return (
     <div className="ml-1 flex items-center gap-1.5 rounded-lg bg-white/5 px-2 py-1">
+      <div className="flex items-center gap-0.5">
+        {BRUSH_KINDS.map((brush) => (
+          <button
+            key={brush.id}
+            onClick={() => setDrawBrush(brush.id)}
+            title={brush.label}
+            className={cx(
+              "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+              drawBrush === brush.id
+                ? "bg-brand-500/30 text-brand-300"
+                : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300",
+            )}
+          >
+            {brush.label}
+          </button>
+        ))}
+      </div>
+      <span className="mx-0.5 h-4 w-px bg-white/10" />
       {DRAW_TOKENS.map((t) => (
         <button
           key={t}

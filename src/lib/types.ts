@@ -412,6 +412,8 @@ export interface ShapeLayer extends LayerBase {
   points?: number[];
   /** For `shape: "freehand"`. Stroke width of the drawn line. */
   strokeWidth?: number;
+  /** For `shape: "freehand"`. Dash pattern (marker/dashed/dotted brushes). */
+  dash?: number[];
 }
 
 /**

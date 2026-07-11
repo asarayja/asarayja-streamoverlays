@@ -10,7 +10,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH, DEFAULT_ANIMATION, DEFAULT_EFFECTS } from 
 import type { ChannelProfile, LayerPatch, ShapeLayer } from "@/lib/types";
 import { uid } from "@/lib/id";
 import { useElementSize } from "@/lib/useElementSize";
-import { useEditorStore } from "@/store/editor";
+import { brushStyle, useEditorStore } from "@/store/editor";
 
 const SNAP_THRESHOLD = 8;
 const GRID_STEP = 60;
@@ -55,6 +55,7 @@ export function EditorCanvas({
   const zoomToFit = useEditorStore((s) => s.zoomToFit);
   const drawColor = useEditorStore((s) => s.drawColor);
   const drawWidth = useEditorStore((s) => s.drawWidth);
+  const drawBrush = useEditorStore((s) => s.drawBrush);
 
   // Freehand pencil: capture pointer points in overlay (canvas) coordinates,
   // preview live, and on release commit a smoothed stroke as a shape layer.
@@ -88,6 +89,7 @@ export function EditorCanvas({
     const pts = stroke;
     setStroke(null);
     if (!pts || pts.length < 4) return;
+    const bs = brushStyle(drawBrush, drawWidth);
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (let i = 0; i < pts.length; i += 2) {
       minX = Math.min(minX, pts[i]);
@@ -95,9 +97,11 @@ export function EditorCanvas({
       minY = Math.min(minY, pts[i + 1]);
       maxY = Math.max(maxY, pts[i + 1]);
     }
-    const pad = drawWidth;
+    const pad = bs.strokeWidth + (bs.glow ?? 0);
     minX -= pad; minY -= pad; maxX += pad; maxY += pad;
     const local = pts.map((v, i) => (i % 2 === 0 ? v - minX : v - minY));
+    const effects = structuredClone(DEFAULT_EFFECTS);
+    if (bs.glow) effects.glow = { ...effects.glow, enabled: true, color: drawColor, strength: bs.glow };
     const layer: ShapeLayer = {
       id: uid(),
       name: "Drawing",
@@ -108,18 +112,19 @@ export function EditorCanvas({
       width: maxX - minX,
       height: maxY - minY,
       rotation: 0,
-      opacity: 1,
+      opacity: bs.opacity,
       visible: true,
       locked: false,
       fill: drawColor,
       cornerRadius: 0,
       points: local,
-      strokeWidth: drawWidth,
-      effects: structuredClone(DEFAULT_EFFECTS),
+      strokeWidth: bs.strokeWidth,
+      dash: bs.dash,
+      effects,
       animation: { ...DEFAULT_ANIMATION },
     };
     insertLayer(layer);
-  }, [stroke, drawWidth, drawColor, insertLayer]);
+  }, [stroke, drawWidth, drawBrush, drawColor, insertLayer]);
 
   // Fit once, as soon as the container has been measured.
   const fitted = useRef(false);
@@ -324,17 +329,25 @@ export function EditorCanvas({
                 ))}
               </Group>
 
-              {stroke && stroke.length >= 4 && (
-                <Line
-                  points={stroke}
-                  stroke={resolveColor(drawColor, project.theme)}
-                  strokeWidth={drawWidth}
-                  lineCap="round"
-                  lineJoin="round"
-                  tension={0.4}
-                  listening={false}
-                />
-              )}
+              {stroke && stroke.length >= 4 && (() => {
+                const bs = brushStyle(drawBrush, drawWidth);
+                const col = resolveColor(drawColor, project.theme);
+                return (
+                  <Line
+                    points={stroke}
+                    stroke={col}
+                    strokeWidth={bs.strokeWidth}
+                    opacity={bs.opacity}
+                    dash={bs.dash}
+                    lineCap="round"
+                    lineJoin="round"
+                    tension={0.4}
+                    shadowColor={bs.glow ? col : undefined}
+                    shadowBlur={bs.glow}
+                    listening={false}
+                  />
+                );
+              })()}
 
               {guides.map((guide, i) => (
                 <Line
