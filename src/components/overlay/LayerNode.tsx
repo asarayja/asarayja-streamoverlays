@@ -2536,6 +2536,39 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
     ...outline,
   };
 
+  // Extruded 3D lettering: the glyphs repeated along a depth vector in the side
+  // colour (darker toward the back), the front face on top. Editable — changing
+  // the text re-extrudes every face. Cap the copies so a deep extrusion stays
+  // cheap; the step length grows to keep the depth.
+  const td = layer.effects.text3d;
+  if (td?.enabled && td.depth > 0) {
+    const steps = Math.min(48, Math.max(1, Math.round(td.depth)));
+    const stepLen = td.depth / steps;
+    const rad = (td.angle * Math.PI) / 180;
+    const ux = Math.cos(rad);
+    const uy = Math.sin(rad);
+    const side = resolveColor(td.color, ctx.theme);
+    return (
+      <Group listening={false}>
+        {Array.from({ length: steps }).map((_, i) => {
+          const k = steps - i; // draw back (k = steps) to front (k = 1)
+          const col = darken(side, (k / steps) * 22);
+          return (
+            <Text
+              key={i}
+              {...common}
+              x={ux * k * stepLen}
+              y={uy * k * stepLen}
+              fill={col}
+              {...(i === 0 ? shadowProps(layer.effects, ctx.theme, glowBoost) : {})}
+            />
+          );
+        })}
+        <Text {...common} {...fillProps(layer.fill, layer.effects, ctx.theme, layer.width, layer.height)} />
+      </Group>
+    );
+  }
+
   // Bevelled lettering: a light copy above-left and a dark copy below-right,
   // with the real glyphs on top. Canvas has no emboss filter, and the shadow
   // slot is already spoken for by glow.

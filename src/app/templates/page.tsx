@@ -24,6 +24,7 @@ export default function GalleryPage() {
   const profile = useRenderProfile();
   const brandTheme = useProfileStore((s) => s.profile.theme);
   const createDraft = useProjectsStore((s) => s.createDraft);
+  const createPack = useProjectsStore((s) => s.createPack);
   const importDesign = useProjectsStore((s) => s.importDesign);
   const importRef = useRef<HTMLInputElement>(null);
 
@@ -81,9 +82,14 @@ export default function GalleryPage() {
   };
 
   const open = (template: Template) => {
-    // Opening a template makes a draft, not a saved project. It only enters
-    // history once you actually edit it — browsing never clutters the list.
-    const project = createDraft(template.id, useBrand ? brandTheme : undefined);
+    // A template that belongs to a design family opens as the whole pack, so
+    // the Screens tab shows every screen to see and customise — matching what
+    // opening a design does. A one-off template stays a single draft (it only
+    // enters history once you edit it, so browsing never clutters the list).
+    const theme = useBrand ? brandTheme : undefined;
+    const project = template.family
+      ? createPack(template.id, theme)
+      : createDraft(template.id, theme);
     if (project) router.push(`/editor?id=${project.id}`);
   };
 

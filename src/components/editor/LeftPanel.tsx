@@ -1035,6 +1035,31 @@ function TextTab() {
           {t("Add text layer")}
         </Button>
 
+        <Button
+          className="w-full"
+          onClick={() =>
+            addLayer("text", {
+              text: "BOLD",
+              fontFamily: "Anton",
+              fontWeight: 800,
+              fontSize: 200,
+              align: "center",
+              fill: "@text",
+              x: 360,
+              y: 420,
+              width: 1200,
+              height: 240,
+              effects: { text3d: { enabled: true, depth: 26, angle: 45, color: "@accent" } },
+            } as Partial<Layer>)
+          }
+        >
+          <Type className="size-4" />
+          {t("Add 3D text")}
+        </Button>
+        <p className="-mt-2 text-[11px] leading-relaxed text-zinc-600">
+          {t("Type any text — every side re-extrudes automatically. Tune depth, direction and side colour in the panel on the right.")}
+        </p>
+
         {isText && (
           <Field label={t("Content")}>
             <textarea

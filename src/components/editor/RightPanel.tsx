@@ -498,6 +498,46 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             />
           </Field>
           <Toggle label={t("Italic")} checked={text.italic} onChange={(italic) => commit({ italic })} />
+
+          {(() => {
+            const cur = text.effects.text3d ?? { enabled: false, depth: 16, angle: 45, color: "@accent" };
+            const setTd = (patch: Partial<typeof cur>, discrete = true) =>
+              (discrete ? commit : live)({ effects: { ...text.effects, text3d: { ...cur, ...patch } } });
+            return (
+              <>
+                <Toggle label={t("3D extrude")} checked={cur.enabled} onChange={(enabled) => setTd({ enabled })} />
+                {cur.enabled && (
+                  <>
+                    <Slider
+                      label={t("Depth")}
+                      suffix=" px"
+                      min={0}
+                      max={60}
+                      value={Math.round(cur.depth)}
+                      onBegin={beginGesture}
+                      onChange={(depth) => setTd({ depth }, false)}
+                    />
+                    <Slider
+                      label={t("Direction")}
+                      suffix="°"
+                      min={-180}
+                      max={180}
+                      value={Math.round(cur.angle)}
+                      onBegin={beginGesture}
+                      onChange={(angle) => setTd({ angle }, false)}
+                    />
+                    <ColorField
+                      label={t("Side colour")}
+                      theme={theme}
+                      value={cur.color}
+                      onChange={(color) => setTd({ color }, false)}
+                      onCommit={(color) => setTd({ color })}
+                    />
+                  </>
+                )}
+              </>
+            );
+          })()}
         </Section>
       );
     }

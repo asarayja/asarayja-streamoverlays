@@ -274,6 +274,18 @@ export interface Gloss {
   style?: "sheen" | "streak" | "liquid";
 }
 
+/** Extruded 3D lettering: the glyphs repeated along a depth vector in a side
+    colour, with the front face on top. Editable text re-extrudes automatically. */
+export interface Text3D {
+  enabled: boolean;
+  /** Extrusion length in px. */
+  depth: number;
+  /** Direction of the extrusion in degrees — 45 is down-right. */
+  angle: number;
+  /** The side/extrusion colour (the front face uses the layer's own fill). */
+  color: ColorValue;
+}
+
 export interface Effects {
   shadow: Shadow;
   glow: Glow;
@@ -283,6 +295,7 @@ export interface Effects {
   gradientStroke?: GradientStroke;
   emboss?: Emboss;
   gloss?: Gloss;
+  text3d?: Text3D;
 }
 
 export const DEFAULT_EFFECTS: Effects = {

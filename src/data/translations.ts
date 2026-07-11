@@ -53,6 +53,12 @@ export const NO: Record<string, string> = {
   "Finish": "Finish",
   "Glints": "Glimt",
   "Liquid": "Flytende",
+  "Add 3D text": "Legg til 3D-tekst",
+  "Type any text — every side re-extrudes automatically. Tune depth, direction and side colour in the panel on the right.":
+    "Skriv hvilken som helst tekst — hver side ekstruderes på nytt automatisk. Juster dybde, retning og sidefarge i panelet til høyre.",
+  "3D extrude": "3D-ekstrudering",
+  "Depth": "Dybde",
+  "Side colour": "Sidefarge",
   ", so every overlay you open is already filled in with your details. You can change any of it later.": ", så hvert overlay du åpner allerede er fylt ut med opplysningene dine. Du kan endre alt sammen senere.",
   "({fps} fps {format} — set above)": "({fps} fps {format} — angitt ovenfor)",
   "(record from the settled pose, so a looped video doesn’t replay the intro)": "(ta opp fra den avsluttede posisjonen, så en løkket video ikke spiller introen på nytt)",
