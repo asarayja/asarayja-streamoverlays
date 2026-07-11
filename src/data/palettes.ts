@@ -288,8 +288,10 @@ const DEFS: PaletteDef[] = [
     collection: "core",
     tags: ["Green", "Neon", "Dark", "RGB"],
     theme: {
-      primary: "#7cff3c", secondary: "#00e5a0", accent: "#c6ff00",
-      background: "#0a0f0a", text: "#effde6", border: "#7cff3c", glow: "#a6ff4d", shadow: "#000000",
+      // Acid lime family on a neutral near-black so it pops without the green
+      // washing into the background.
+      primary: "#8dff2e", secondary: "#00e5a0", accent: "#d4ff00",
+      background: "#0b0d10", text: "#f5ffe9", border: "#8dff2e", glow: "#a8ff45", shadow: "#000000",
       success: "#35d492", warning: "#ffe14d", error: "#ff5252",
     },
   },
@@ -429,8 +431,10 @@ const DEFS: PaletteDef[] = [
     collection: "core",
     tags: ["Pink", "Blue", "Cyberpunk", "RGB"],
     theme: {
-      primary: "#ff2e97", secondary: "#00e5ff", accent: "#b026ff",
-      background: "#0a0714", text: "#f0eaff", border: "#ff2e97", glow: "#ff5fb0", shadow: "#000000",
+      // Hot pink + cyan cyberpunk — the accent stays in the pink family so it
+      // doesn't clash as a lone purple.
+      primary: "#ff2e97", secondary: "#00e5ff", accent: "#ff6fd8",
+      background: "#0a0812", text: "#ffe9f6", border: "#ff2e97", glow: "#ff5fb0", shadow: "#000000",
     },
   },
 
