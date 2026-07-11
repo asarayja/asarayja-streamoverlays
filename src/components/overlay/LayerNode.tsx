@@ -476,6 +476,16 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "glasssheet") {
+    const strength = layer.effects.gloss?.strength ?? 1;
+    return (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) => drawGlassSheet(c, w, h, strength)}
+      />
+    );
+  }
+
   if (layer.shape === "chamfer") {
     return <Line closed points={chamferPoints(w, h)} {...paint} />;
   }
@@ -811,6 +821,63 @@ function drawReflection(c: Konva.Context, w: number, h: number, r: number, stren
   streak(w * 0.3, w * 0.19, 0.26); // wide soft reflection body
   streak(w * 0.47, w * 0.022, 0.7); // crisp glint on its leading edge
   streak(w * 0.53, w * 0.012, 0.45); // faint trailing glint
+  c.restore();
+}
+
+/**
+ * A full-sheet of glass laid over the scene: a faint facet pattern, a few
+ * prismatic colour spots where light refracts, and wide diagonal reflections.
+ * Everything is drawn with light, translucent highlights only, so whatever sits
+ * beneath still reads through — it just looks like it is behind a pane of glass.
+ */
+function drawGlassSheet(c: Konva.Context, w: number, h: number, strength: number) {
+  c.save();
+  c.beginPath();
+  c.rect(0, 0, w, h);
+  c.clip();
+
+  // Faint diagonal facet lines — the texture of the glass.
+  c.setAttr("strokeStyle", `rgba(255,255,255,${0.03 * strength})`);
+  c.setAttr("lineWidth", 1.5);
+  for (let x = -h; x < w; x += 94) {
+    c.beginPath();
+    c.moveTo(x, 0);
+    c.lineTo(x + h, h);
+    c.stroke();
+  }
+
+  // Prismatic facets: soft colour patches where the glass splits the light, so
+  // a few spots pick up a slightly different tint — cyan, magenta, warm gold.
+  const facet = (cx: number, cy: number, rad: number, col: string) => {
+    const g = c.createRadialGradient(cx, cy, 0, cx, cy, rad);
+    g.addColorStop(0, col);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    c.setAttr("fillStyle", g);
+    c.beginPath();
+    c.arc(cx, cy, rad, 0, Math.PI * 2);
+    c.fill();
+  };
+  facet(w * 0.52, h * 0.24, w * 0.2, `rgba(90,200,255,${0.13 * strength})`);
+  facet(w * 0.66, h * 0.52, w * 0.17, `rgba(255,120,220,${0.11 * strength})`);
+  facet(w * 0.58, h * 0.78, w * 0.15, `rgba(255,225,130,${0.1 * strength})`);
+
+  // Wide diagonal reflections sweeping the whole sheet, with a crisp glint on
+  // the leading edge — the tell that a light source is caught in the glass.
+  const streak = (centreX: number, band: number, alpha: number) => {
+    c.save();
+    c.translate(centreX, h / 2);
+    c.rotate(-0.5);
+    const g = c.createLinearGradient(-band, 0, band, 0);
+    g.addColorStop(0, "rgba(255,255,255,0)");
+    g.addColorStop(0.5, `rgba(255,255,255,${alpha * strength})`);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    c.setAttr("fillStyle", g);
+    c.fillRect(-band, -h * 1.8, band * 2, h * 3.6);
+    c.restore();
+  };
+  streak(w * 0.34, w * 0.15, 0.1); // wide soft reflection body
+  streak(w * 0.64, w * 0.05, 0.14); // second, narrower body
+  streak(w * 0.7, w * 0.016, 0.28); // crisp glint on its leading edge
   c.restore();
 }
 

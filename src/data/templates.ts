@@ -1864,23 +1864,18 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       }),
     ]);
 
-  // A frosted-glass pane behind a message scene's copy — so glass families show
-  // the glass effect on Starting Soon etc., sitting over the solid backdrop.
-  const glassPane = (): LayerSpec[] =>
+  // A full sheet of glass laid over the whole message scene — a facet pattern,
+  // prismatic colour spots and diagonal reflections. It sits ON TOP of the copy
+  // so the scene reads as being behind a pane of glass, over the solid backdrop.
+  // Reflection families catch more light; frost stays softer.
+  const glassSheet = (): LayerSpec[] =>
     f.glass
       ? [
-          shape("Glass pane", { x: 300, y: 330 + dy, width: 1320, height: 640 }, {
-            shape: "rect",
-            fill: "@text/10",
-            cornerRadius: f.radius,
+          shape("Glass sheet", FULL, {
+            shape: "glasssheet",
+            fill: "@text/6",
             effects: {
-              border: { enabled: true, color: "@text/35", width: 2, radius: f.radius },
-              glow: { enabled: true, color: "@glow", strength: 14 },
-              gloss: {
-                enabled: true,
-                strength: 0.55,
-                style: f.glassStyle === "reflection" ? "streak" : "sheen",
-              },
+              gloss: { enabled: true, strength: f.glassStyle === "reflection" ? 1 : 0.65 },
             },
           }),
         ]
@@ -1890,12 +1885,12 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
   const scene = (id: string, name: string, category: TemplateCategory, copy: string, extra: LayerSpec[] = []) =>
     base(id, name, category, [
       ...f.scene(),
-      ...glassPane(),
       ...extra,
       headline(copy),
       channelName(600),
       slogan(700),
       socials(880),
+      ...glassSheet(),
     ]);
 
   const PANELS = ["ABOUT ME", "COMMANDS", "DONATE", "DISCORD", "LINKS", "MERCH"];

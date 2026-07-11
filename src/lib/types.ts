@@ -349,6 +349,9 @@ export type ShapeKind =
   | "hexmesh"
   /** A flowing curved energy ribbon: a thick, round-capped bezier stroke. */
   | "wave"
+  /** A full-sheet glass overlay: facet pattern, prismatic colour spots and
+      diagonal light reflections, over whatever is beneath it. */
+  | "glasssheet"
   /** A rectangle with its four corners cut at 45° — the mecha panel. */
   | "chamfer"
   /** A woven carbon-fibre texture fill. */
