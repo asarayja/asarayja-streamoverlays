@@ -79,7 +79,9 @@ function DesignDetail() {
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
             {t("Colour")}
           </p>
-          <div className="flex flex-wrap gap-2">
+          {/* One swipeable row on a phone (so the sticky bar stays short), a
+              wrapped grid on bigger screens. */}
+          <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:pb-0">
             {design.palettes.map((id) => (
               <PaletteSwatch
                 key={id}
@@ -108,7 +110,7 @@ function PaletteSwatch({ id, active, onClick }: { id: string; active: boolean; o
     <button
       onClick={onClick}
       className={cx(
-        "flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3 text-xs font-medium transition-colors",
+        "flex shrink-0 items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3 text-xs font-medium transition-colors",
         active
           ? "border-brand-400/60 bg-brand-500/15 text-white"
           : "border-white/10 bg-white/[0.02] text-zinc-400 hover:border-white/20 hover:text-zinc-200",

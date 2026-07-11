@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { googleFontsHref } from "@/data/fonts";
 import { StoreHydrator } from "@/components/StoreHydrator";
 import { Onboarding } from "@/components/site/Onboarding";
+import { BackToTop } from "@/components/site/BackToTop";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <StoreHydrator />
         {children}
         <Onboarding />
+        <BackToTop />
       </body>
     </html>
   );

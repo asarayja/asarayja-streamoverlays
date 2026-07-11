@@ -100,6 +100,7 @@ export const NO: Record<string, string> = {
   "Open this on a computer to design and edit overlays. You can browse all the designs on your phone.":
     "Åpne dette på en datamaskin for å designe og redigere overlays. Du kan bla gjennom alle designene på mobilen.",
   "Browse designs": "Bla gjennom design",
+  "Back to top": "Til toppen",
   "3D extrude": "3D-ekstrudering",
   "Depth": "Dybde",
   "Side colour": "Sidefarge",
