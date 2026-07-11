@@ -828,6 +828,14 @@ function TextTab() {
   const addLayer = useEditorStore((s) => s.addLayer);
   const updateLayer = useEditorStore((s) => s.updateLayer);
   const isText = layer?.type === "text";
+  const [fontQuery, setFontQuery] = useState("");
+
+  const shownFonts = useMemo(() => {
+    const q = fontQuery.trim().toLowerCase();
+    return q
+      ? FONTS.filter((f) => f.family.toLowerCase().includes(q) || f.category.includes(q))
+      : FONTS;
+  }, [fontQuery]);
 
   const insert = (token: string) => {
     if (!isText) return;
@@ -873,9 +881,19 @@ function TextTab() {
         </div>
 
         <div>
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Fonts</p>
-          <div className="space-y-1">
-            {FONTS.map((font) => (
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Fonts</p>
+            <span className="text-[10px] text-zinc-600">{FONTS.length} fonts</span>
+          </div>
+          <input
+            type="text"
+            value={fontQuery}
+            onChange={(e) => setFontQuery(e.target.value)}
+            placeholder="Search fonts…"
+            className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-brand-500/60 focus:outline-none"
+          />
+          <div className="max-h-[420px] space-y-1 overflow-y-auto pr-1">
+            {shownFonts.map((font) => (
               <button
                 key={font.family}
                 disabled={!isText}
@@ -895,6 +913,9 @@ function TextTab() {
                 </span>
               </button>
             ))}
+            {shownFonts.length === 0 && (
+              <p className="px-3 py-2 text-xs text-zinc-600">No fonts match “{fontQuery}”.</p>
+            )}
           </div>
         </div>
       </div>

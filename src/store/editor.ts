@@ -92,6 +92,9 @@ interface EditorState {
   drawWidth: number;
   drawBrush: BrushKind;
 
+  /** Detached copies of layers held for paste — survives screen switches. */
+  clipboard: Layer[];
+
   // timeline
   playing: boolean;
   time: number;
@@ -125,6 +128,13 @@ interface EditorState {
   insertFillLayer: (layer: Layer) => void;
   removeSelected: () => void;
   duplicateSelected: () => void;
+  /** Copy the selected layers to the in-editor clipboard (Ctrl/Cmd+C). */
+  copySelected: () => void;
+  /** Copy then delete the selected layers (Ctrl/Cmd+X). */
+  cutSelected: () => void;
+  /** Paste the clipboard layers with a small offset, and select them
+      (Ctrl/Cmd+V). Works across screens in a pack. */
+  pasteClipboard: () => void;
   reorder: (id: string, toIndex: number) => void;
   /** Replace the whole paint order in one undoable step — drag & drop commits here. */
   setLayersOrder: (orderedIds: string[]) => void;
@@ -397,6 +407,7 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     drawColor: "@accent",
     drawWidth: 8,
     drawBrush: "pen",
+    clipboard: [],
     // Paused at a settled frame: entry animations have finished, so what you
     // see is the layout you are editing rather than a mid-flight pose.
     playing: false,
@@ -510,6 +521,38 @@ export const useEditorStore = create<EditorState>()((set, get) => {
       }
       mapLayers((layers) => [...layers, ...copies]);
       set({ selectedIds: copies.map((c) => c.id) });
+    },
+
+    copySelected: () => {
+      const { selectedIds, project } = get();
+      if (!project || selectedIds.length === 0) return;
+      const picked = project.layers.filter((l) => selectedIds.includes(l.id));
+      if (picked.length) set({ clipboard: structuredClone(picked) });
+    },
+
+    cutSelected: () => {
+      get().copySelected();
+      get().removeSelected();
+    },
+
+    pasteClipboard: () => {
+      const { clipboard, project } = get();
+      if (!project || clipboard.length === 0) return;
+      pushHistory();
+      // Fresh ids and a small offset so the paste lands just off the original
+      // and never collides with the layer it came from.
+      const copies: Layer[] = clipboard.map((l) => ({
+        ...structuredClone(l),
+        id: uid(),
+        x: l.x + 24,
+        y: l.y + 24,
+      }));
+      mapLayers((layers) => [...layers, ...copies]);
+      // Keep pasting from the same clipboard walking further out each time.
+      set({
+        selectedIds: copies.map((c) => c.id),
+        clipboard: structuredClone(copies),
+      });
     },
 
     reorder: (id, toIndex) => {

@@ -142,32 +142,51 @@ export default function EditorShell({ projectId }: { projectId: string }) {
       if (target.matches("input, textarea, select, [contenteditable]")) return;
 
       const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key.toLowerCase() === "z") {
+      const key = e.key.toLowerCase();
+      if (mod && key === "z") {
         e.preventDefault();
         if (e.shiftKey) redo();
         else undo();
-      } else if (mod && e.key.toLowerCase() === "d") {
+      } else if (mod && key === "d") {
         e.preventDefault();
         duplicateSelected();
+      } else if (mod && key === "c") {
+        e.preventDefault();
+        useEditorStore.getState().copySelected();
+      } else if (mod && key === "x") {
+        e.preventDefault();
+        useEditorStore.getState().cutSelected();
+      } else if (mod && key === "v") {
+        e.preventDefault();
+        useEditorStore.getState().pasteClipboard();
+      } else if (mod && key === "a") {
+        const st = useEditorStore.getState();
+        if (!st.project) return;
+        e.preventDefault();
+        st.select(st.project.layers.filter((l) => !l.locked).map((l) => l.id));
+      } else if (mod) {
+        // Any other modifier combo (copy shortcuts on other layouts, browser
+        // chrome) — leave it to the browser rather than swallowing a tool key.
+        return;
       } else if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
         removeSelected();
       } else if (e.key === " ") {
         e.preventDefault();
         setPanTool(true);
-      } else if (e.key.toLowerCase() === "v") {
+      } else if (key === "v") {
         setPanTool(false);
         setDrawTool(false);
         setBucketTool(false);
-      } else if (e.key.toLowerCase() === "h") {
+      } else if (key === "h") {
         setPanTool(true);
         setDrawTool(false);
         setBucketTool(false);
-      } else if (e.key.toLowerCase() === "b") {
+      } else if (key === "b") {
         setDrawTool(true);
         setPanTool(false);
         setBucketTool(false);
-      } else if (e.key.toLowerCase() === "g") {
+      } else if (key === "g") {
         setBucketTool(true);
         setDrawTool(false);
         setPanTool(false);
