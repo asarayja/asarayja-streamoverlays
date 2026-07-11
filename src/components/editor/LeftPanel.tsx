@@ -36,6 +36,8 @@ import {
 } from "lucide-react";
 import { FONTS } from "@/data/fonts";
 import { TEMPLATES } from "@/data/templates";
+import { ICONS, ICON_GROUPS } from "@/data/icons";
+import type { IconName } from "@/data/icons";
 import { getPalette } from "@/data/palettes";
 import { ContrastCheck } from "@/components/ContrastCheck";
 import { HarmonyGenerator, PaletteGrid, ThemeTokens } from "@/components/ThemeEditor";
@@ -654,12 +656,43 @@ function NBandGenerator() {
 
 function AddTab() {
   const addLayer = useEditorStore((s) => s.addLayer);
+  const insertLayer = useEditorStore((s) => s.insertLayer);
   const t = useT();
+  const imgInput = useRef<HTMLInputElement>(null);
+
+  const uploadImages = async (files: FileList | null) => {
+    if (!files) return;
+    for (const file of Array.from(files)) {
+      try {
+        const src = await fileToDataUrl(file, 1024);
+        insertLayer({
+          id: uid(),
+          name: file.name || "Image",
+          type: "image",
+          src,
+          fit: "contain",
+          cornerRadius: 0,
+          x: 660,
+          y: 340,
+          width: 600,
+          height: 400,
+          rotation: 0,
+          opacity: 1,
+          visible: true,
+          locked: false,
+          effects: structuredClone(DEFAULT_EFFECTS),
+          animation: { ...DEFAULT_ANIMATION },
+        } as Layer);
+      } catch {
+        /* unreadable file — skip */
+      }
+    }
+  };
 
   return (
     <div>
       <PanelHeader title={t("Add layer")} subtitle={t("New layers land in the middle of the canvas.")} />
-      <div className="grid grid-cols-2 gap-2 p-4">
+      <div className="grid grid-cols-2 gap-2 p-4 pb-2">
         {ADDABLE.map((type) => {
           const Icon = LAYER_ICONS[type];
           return (
@@ -673,6 +706,24 @@ function AddTab() {
             </button>
           );
         })}
+      </div>
+
+      <div className="px-4 pb-2">
+        <input
+          ref={imgInput}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => void uploadImages(e.target.files)}
+        />
+        <Button className="w-full" onClick={() => imgInput.current?.click()}>
+          <Upload className="size-4" />
+          {t("Upload image")}
+        </Button>
+        <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-600">
+          {t("Your own images stay in your browser — nothing is uploaded to a server.")}
+        </p>
       </div>
 
       <NBandGenerator />
@@ -693,6 +744,43 @@ function AddTab() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="border-t border-white/[0.06] px-4 py-4">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Icons")}</p>
+        <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
+          {t("Click one to drop it on the canvas. Icons take their colour from a theme token, like any other layer.")}
+        </p>
+        {ICON_GROUPS.map(({ group, names }) => (
+          <div key={group} className="mb-3">
+            <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-zinc-600">{t(group)}</p>
+            <div className="grid grid-cols-6 gap-1.5">
+              {names.map((name) => {
+                const def = ICONS[name as IconName];
+                const outlined = "stroke" in def && def.stroke;
+                return (
+                  <button
+                    key={name}
+                    title={name}
+                    onClick={() => addLayer("icon", { symbol: name } as Partial<Layer>)}
+                    className="grid aspect-square place-items-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
+                  >
+                    <svg viewBox="0 0 24 24" className="size-5">
+                      <path
+                        d={def.d}
+                        fill={outlined ? "none" : "currentColor"}
+                        stroke={outlined ? "currentColor" : undefined}
+                        strokeWidth={outlined ? 2 * (("strokeScale" in def && def.strokeScale) || 1) : 0}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

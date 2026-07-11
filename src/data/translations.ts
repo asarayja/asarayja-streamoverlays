@@ -35,6 +35,16 @@ export const NO: Record<string, string> = {
   "Banner": "Banner",
   "Speech bubble": "Snakkeboble",
   "Diamond plate": "Diamantplate",
+  "Upload image": "Last opp bilde",
+  "Your own images stay in your browser — nothing is uploaded to a server.":
+    "Dine egne bilder blir værende i nettleseren din — ingenting lastes opp til en server.",
+  "Icons": "Ikoner",
+  "Click one to drop it on the canvas. Icons take their colour from a theme token, like any other layer.":
+    "Klikk på et for å legge det på lerretet. Ikoner henter fargen fra et tematoken, som ethvert annet lag.",
+  "Occult": "Okkult",
+  "Nature": "Natur",
+  "Objects": "Objekter",
+  "Generic": "Generelt",
   "Gem — glow": "Edelsten — glød",
   "Gem — inset": "Edelsten — innfelt",
   "Gem — drop shadow": "Edelsten — slagskygge",
