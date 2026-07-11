@@ -1000,6 +1000,127 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     ],
   },
   {
+    id: "neon-pause",
+    name: "Pause",
+    category: "Pause",
+    tags: ["Esports", "Minimal"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      ...neonScene(),
+      text("Headline", { x: 460, y: 470, width: 1000, height: 60 }, "PAUSED", {
+        fontFamily: "Orbitron",
+        fontSize: 60,
+        fontWeight: 900,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 12,
+        effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+        animation: anim("fade", { duration: 900 }),
+      }),
+      text("Sub", { x: 460, y: 570, width: 1000, height: 36 }, "Back in a moment", {
+        fontFamily: "Inter",
+        fontSize: 22,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 900, delay: 350 }),
+      }),
+      social("Socials", { x: 660, y: 700, width: 600, height: 44 }, {
+        platforms: ["twitch", "discord", "x"],
+        fontSize: 18,
+        animation: anim("fade", { duration: 900, delay: 600 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-intermission",
+    name: "Intermission",
+    category: "Intermission",
+    tags: ["Esports"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      ...neonScene(),
+      text("Label", { x: 120, y: 108, width: 700, height: 50 }, "INTERMISSION", {
+        fontFamily: "Orbitron",
+        fontSize: 30,
+        fontWeight: 900,
+        fill: "@accent",
+        letterSpacing: 8,
+        animation: anim("fade", { duration: 900 }),
+      }),
+      frame("Webcam", { x: 120, y: 190, width: 1080, height: 600 }, {
+        camera: true,
+        strokeColor: "@accent",
+        strokeWidth: 3,
+        cornerRadius: 8,
+        corners: true,
+        effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+        animation: anim("glow", { duration: 4200 }),
+      }),
+      chatbox("Chat", { x: 1260, y: 190, width: 540, height: 600 }, {
+        cornerRadius: 8,
+        rows: 8,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 8 } },
+      }),
+      social("Socials", { x: 120, y: 862, width: 1000, height: 56 }, {
+        platforms: ["twitch", "discord", "instagram"],
+        animation: anim("fade", { duration: 900, delay: 600 }),
+      }),
+    ],
+  },
+  {
+    id: "neon-events",
+    name: "Event Badges",
+    category: "Social Bars",
+    tags: ["Esports"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      ...["Recent sub", "Top donator", "Recent donator", "Recent follower"].map((label, i) =>
+        chip(label, { x: 60, y: 300 + i * 76, width: 420, height: 52 }, label, "pixel_wren", {
+          fontFamily: "Inter",
+          cornerRadius: 6,
+          effects: { border: { enabled: true, color: "@border", width: 1, radius: 6 } },
+          animation: anim("slide", { direction: "left", duration: 700, delay: i * 120 }),
+        }),
+      ),
+    ],
+  },
+  {
+    id: "neon-panels",
+    name: "Stream Panels",
+    category: "Stream Panels",
+    tags: ["Esports", "Minimal"],
+    collection: "core",
+    family: "Neon Grid",
+    layers: [
+      ...["ABOUT ME", "COMMANDS", "DONATE", "DISCORD", "LINKS", "MERCH"].flatMap((label, i) => {
+        const x = 160 + (i % 3) * 560;
+        const y = 260 + Math.floor(i / 3) * 300;
+        return [
+          shape(`Panel ${i + 1}`, { x, y, width: 480, height: 160 }, {
+            fill: "@surface/92",
+            cornerRadius: 8,
+            effects: {
+              border: { enabled: true, color: "@accent/60", width: 1, radius: 8 },
+              glow: { enabled: true, color: "@glow", strength: 12 },
+            },
+          }),
+          text(`Panel label ${i + 1}`, { x, y: y + 56, width: 480, height: 56 }, label, {
+            fontFamily: "Orbitron",
+            fontSize: 30,
+            fontWeight: 900,
+            align: "center",
+            fill: "@text",
+            letterSpacing: 3,
+          }),
+        ];
+      }),
+    ],
+  },
+  {
     id: "minimal-play",
     name: "Minimal Play",
     category: "Gameplay",
@@ -4528,6 +4649,122 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
       }),
     ],
   },
+  {
+    id: "gothic-pause",
+    name: "Pause",
+    category: "Pause",
+    tags: ["Dark", "Minimal"],
+    collection: "gothic",
+    layers: [
+      ...gothicScene(),
+      text("Headline", { x: 310, y: 460, width: 1300, height: 130 }, "STREAM ON PAUSE", {
+        fontFamily: "Cinzel Decorative",
+        fontSize: 92,
+        fontWeight: 700,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 12,
+        effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+        animation: anim("fade", { duration: 1600 }),
+      }),
+      text("Sub", { x: 360, y: 620, width: 1200, height: 44 }, "The ritual pauses — back shortly", {
+        fontFamily: "IM Fell English SC",
+        fontSize: 28,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 1300, delay: 400 }),
+      }),
+      social("Socials", { x: 510, y: 800, width: 900, height: 56 }, {
+        platforms: ["twitch", "youtube", "discord", "instagram"],
+        animation: anim("fade", { duration: 1000, delay: 800 }),
+      }),
+    ],
+  },
+  {
+    id: "gothic-intermission",
+    name: "Intermission",
+    category: "Intermission",
+    tags: ["Dark"],
+    collection: "gothic",
+    layers: [
+      ...gothicScene(),
+      text("Label", { x: 120, y: 110, width: 700, height: 50 }, "INTERMISSION", {
+        fontFamily: "Cinzel Decorative",
+        fontSize: 34,
+        fontWeight: 700,
+        fill: "@accent",
+        letterSpacing: 8,
+        animation: anim("fade", { duration: 900 }),
+      }),
+      frame("Webcam", { x: 120, y: 190, width: 1080, height: 608 }, {
+        camera: true,
+        strokeColor: "@accent",
+        strokeWidth: 4,
+        cornerRadius: 10,
+        effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+        animation: anim("glow", { duration: 4600 }),
+      }),
+      chatbox("Chat", { x: 1260, y: 190, width: 540, height: 608 }, {
+        boxShape: "coffin",
+        cornerRadius: 12,
+        rows: 8,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 12 } },
+      }),
+      social("Socials", { x: 120, y: 862, width: 1000, height: 56 }, {
+        platforms: ["twitch", "discord", "instagram"],
+        animation: anim("fade", { duration: 900, delay: 600 }),
+      }),
+    ],
+  },
+  {
+    id: "gothic-events",
+    name: "Event Badges",
+    category: "Social Bars",
+    tags: ["Dark"],
+    collection: "gothic",
+    layers: [
+      ...["Recent sub", "Top donator", "Recent donator", "Recent follower"].map((label, i) =>
+        chip(label, { x: 60, y: 300 + i * 76, width: 420, height: 52 }, label, "pixel_wren", {
+          fontFamily: "Inter",
+          cornerRadius: 10,
+          effects: { border: { enabled: true, color: "@border", width: 1, radius: 10 } },
+          animation: anim("slide", { direction: "left", duration: 700, delay: i * 120 }),
+        }),
+      ),
+    ],
+  },
+  {
+    id: "gothic-panels",
+    name: "Stream Panels",
+    category: "Stream Panels",
+    tags: ["Dark", "Minimal"],
+    collection: "gothic",
+    layers: [
+      ...["ABOUT ME", "COMMANDS", "DONATE", "DISCORD", "LINKS", "MERCH"].flatMap((label, i) => {
+        const x = 160 + (i % 3) * 560;
+        const y = 260 + Math.floor(i / 3) * 300;
+        return [
+          shape(`Panel ${i + 1}`, { x, y, width: 480, height: 160 }, {
+            fill: "@surface/92",
+            cornerRadius: 12,
+            effects: {
+              border: { enabled: true, color: "@border", width: 1, radius: 12 },
+              glow: { enabled: true, color: "@glow", strength: 14 },
+            },
+          }),
+          text(`Panel label ${i + 1}`, { x, y: y + 55, width: 480, height: 56 }, label, {
+            fontFamily: "Cinzel Decorative",
+            fontSize: 34,
+            fontWeight: 700,
+            align: "center",
+            fill: "@text",
+            letterSpacing: 4,
+          }),
+        ];
+      }),
+    ],
+  },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -5026,6 +5263,138 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         gap: 20,
         fontSize: 22,
         animation: anim("fade", { duration: 900 }),
+      }),
+    ],
+  },
+  {
+    id: "pride-pause",
+    name: "Pause",
+    category: "Pause",
+    tags: ["Minimal", "Cozy"],
+    collection: "pride",
+    layers: [
+      ...prideScene(),
+      shape("Card", { x: 610, y: 340, width: 700, height: 400 }, {
+        fill: "@surface/90",
+        cornerRadius: 28,
+        effects: {
+          border: { enabled: true, color: "@border", width: 1, radius: 28 },
+          shadow: { enabled: true, color: "@shadow", blur: 60, offsetY: 20, opacity: 0.5 },
+        },
+        animation: anim("scale", { duration: 900 }),
+      }),
+      text("Headline", { x: 660, y: 470, width: 600, height: 64 }, "PAUSED", {
+        fontFamily: "Poppins",
+        fontSize: 48,
+        fontWeight: 800,
+        align: "center",
+        fill: "@text",
+        letterSpacing: 8,
+        animation: anim("fade", { duration: 900, delay: 300 }),
+      }),
+      text("Sub", { x: 660, y: 552, width: 600, height: 40 }, "Back in a moment", {
+        fontFamily: "Inter",
+        fontSize: 22,
+        fontWeight: 400,
+        align: "center",
+        fill: "@textSecondary",
+        animation: anim("fade", { duration: 900, delay: 450 }),
+      }),
+      flag("Decor — Pride flag", { x: 760, y: 660, width: 400, height: 10 }, {
+        cornerRadius: 5,
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
+    ],
+  },
+  {
+    id: "pride-intermission",
+    name: "Intermission",
+    category: "Intermission",
+    tags: ["Minimal"],
+    collection: "pride",
+    layers: [
+      ...prideScene(),
+      text("Label", { x: 120, y: 108, width: 700, height: 50 }, "INTERMISSION", {
+        fontFamily: "Poppins",
+        fontSize: 32,
+        fontWeight: 800,
+        fill: "@accent",
+        letterSpacing: 6,
+        animation: anim("fade", { duration: 900 }),
+      }),
+      flag("Decor — Pride flag", { x: 120, y: 170, width: 1680, height: 8 }, {
+        cornerRadius: 4,
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
+      frame("Webcam", { x: 120, y: 200, width: 1080, height: 600 }, {
+        camera: true,
+        strokeColor: "@accent",
+        strokeWidth: 3,
+        cornerRadius: 20,
+        effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+        animation: anim("glow", { duration: 4600 }),
+      }),
+      chatbox("Chat", { x: 1260, y: 200, width: 540, height: 600 }, {
+        cornerRadius: 20,
+        rows: 8,
+        effects: { border: { enabled: true, color: "@border", width: 1, radius: 20 } },
+      }),
+      social("Socials", { x: 120, y: 862, width: 1000, height: 56 }, {
+        platforms: ["twitch", "discord", "instagram"],
+        animation: anim("fade", { duration: 900, delay: 600 }),
+      }),
+    ],
+  },
+  {
+    id: "pride-events",
+    name: "Event Badges",
+    category: "Social Bars",
+    tags: ["Minimal"],
+    collection: "pride",
+    layers: [
+      flag("Decor — Pride flag", { x: 60, y: 262, width: 420, height: 8 }, {
+        cornerRadius: 4,
+        animation: anim("shimmer", { duration: 4600 }),
+      }),
+      ...["Recent sub", "Top donator", "Recent donator", "Recent follower"].map((label, i) =>
+        chip(label, { x: 60, y: 300 + i * 76, width: 420, height: 52 }, label, "pixel_wren", {
+          fontFamily: "Inter",
+          cornerRadius: 14,
+          effects: { border: { enabled: true, color: "@border", width: 1, radius: 14 } },
+          animation: anim("slide", { direction: "left", duration: 700, delay: i * 120 }),
+        }),
+      ),
+    ],
+  },
+  {
+    id: "pride-panels",
+    name: "Stream Panels",
+    category: "Stream Panels",
+    tags: ["Minimal"],
+    collection: "pride",
+    layers: [
+      ...["ABOUT ME", "COMMANDS", "DONATE", "DISCORD", "LINKS", "MERCH"].flatMap((label, i) => {
+        const x = 160 + (i % 3) * 560;
+        const y = 260 + Math.floor(i / 3) * 300;
+        return [
+          shape(`Panel ${i + 1}`, { x, y, width: 480, height: 160 }, {
+            fill: "@surface/92",
+            cornerRadius: 22,
+            effects: {
+              border: { enabled: true, color: "@border", width: 1, radius: 22 },
+              glow: { enabled: true, color: "@glow", strength: 12 },
+            },
+          }),
+          flag("Pride bar", { x, y: y - 2, width: 480, height: 12 }, { cornerRadius: 6 }),
+          text(`Panel label ${i + 1}`, { x, y: y + 55, width: 480, height: 56 }, label, {
+            fontFamily: "Poppins",
+            fontSize: 34,
+            fontWeight: 800,
+            align: "center",
+            fill: "@text",
+            letterSpacing: 2,
+          }),
+        ];
       }),
     ],
   },
