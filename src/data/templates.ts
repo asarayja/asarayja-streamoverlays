@@ -2853,19 +2853,8 @@ const MOONLIT_GROVE: FamilyStyle = {
       opacity: 0.85,
       effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
     }),
-    // Soft roses nestled in the blossom corners.
-    icon("Decor — Rose left", { x: 250, y: 792, width: 96, height: 96 }, "rose", {
-      fill: "@primary/75",
-      effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
-      animation: anim("float", { duration: 6800, intensity: 0.3 }),
-    }),
-    icon("Decor — Rose right", { x: 1584, y: 812, width: 104, height: 104 }, "rose", {
-      fill: "@secondary/75",
-      effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
-      animation: anim("float", { duration: 7400, intensity: 0.3 }),
-    }),
-    // Clouds stay up in the sky so they never drift over the roses and blossom
-    // masses along the bottom.
+    // Clouds stay up in the sky so they never drift over the blossom masses
+    // along the bottom.
     particles("Decor — Clouds", { kind: "clouds", count: 4, size: 100, speed: 0.26, color: "@secondary", opacity: 0.32, box: { x: 0, y: 0, width: 1920, height: 520 } }),
     particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.4, color: "@accent", opacity: 0.4 }),
   ],
@@ -3991,10 +3980,18 @@ const RISO_CONCRETE: FamilyStyle = {
   contentOffsetY: -40,
   scene: () => [
     shape("Backdrop", FULL, { background: true, fill: "@background" }),
-    shape("Texture — Halftone", { x: 1300, y: 560, width: 620, height: 520 }, { shape: "halftoneField", fill: "@text", opacity: 0.06 }),
+    // A big colour halftone bleeding off the right edge — the riso ink wash,
+    // now in the theme's accent so it carries real colour.
+    shape("Halftone — accent", { x: 1180, y: 220, width: 820, height: 900 }, { shape: "halftoneField", fill: "@accent", opacity: 0.55 }),
+    shape("Halftone — foot", { x: 120, y: 800, width: 460, height: 320 }, { shape: "halftoneField", fill: "@text", opacity: 0.12 }),
     shape("Scaffold — Rules", FULL, { shape: "printRules", fill: "@text", opacity: 0.5 }),
-    shape("Red Block", { x: 236, y: 150, width: 300, height: 188 }, { shape: "misprintBlock", fill: "@accent" }),
-    text("Index", { x: 150, y: 150, width: 40, height: 640 }, "NO.01 — LIVE FEED / {{CHANNEL_NAME}}", {
+    // Overprinted colour blocks, slightly misregistered — the riso tell.
+    shape("Block — accent", { x: 210, y: 150, width: 380, height: 220 }, { shape: "misprintBlock", fill: "@accent" }),
+    shape("Block — ghost", { x: 250, y: 186, width: 380, height: 220 }, { shape: "misprintBlock", fill: "@secondary", opacity: 0.45 }),
+    // Solid structural bars anchor the copy so it doesn't float in empty space.
+    shape("Bar — top", { x: 210, y: 452, width: 900, height: 16 }, { fill: "@accent" }),
+    shape("Bar — thin", { x: 210, y: 720, width: 560, height: 8 }, { fill: "@text/70" }),
+    text("Index", { x: 150, y: 150, width: 40, height: 760 }, "NO.01 — LIVE FEED / {{CHANNEL_NAME}}", {
       fontFamily: "Space Grotesk",
       fontSize: 15,
       fontWeight: 600,
@@ -4002,6 +3999,14 @@ const RISO_CONCRETE: FamilyStyle = {
       textTransform: "uppercase",
       fill: "@textSecondary",
       rotation: 90,
+    }),
+    text("Footer", { x: 210, y: 1000, width: 900, height: 30 }, "RISO / CONCRETE — PROOF SHEET", {
+      fontFamily: "Space Grotesk",
+      fontSize: 15,
+      fontWeight: 600,
+      letterSpacing: 6,
+      textTransform: "uppercase",
+      fill: "@textSecondary",
     }),
     particles("Grain — Dots", { kind: "dots", count: 9, size: 2, color: "@text", opacity: 0.22, box: MARGIN_LEFT }),
   ],
@@ -4163,8 +4168,9 @@ const AURORA_PALETTES = ABSTRACT_PALETTES.filter((p) => p.id.includes("aurora"))
 // expand it across the full core set (plus its own signature aurora palette) so
 // it comes in every colour like the other families, not just one.
 const AURORA_SILK_PALETTES = [...CORE_PALETTES, ...AURORA_PALETTES];
+const RISO_CONCRETE_PALETTES = [...CORE_PALETTES, ...RISO_PALETTES];
 const ABSTRACT_TEMPLATES: Template[] = [
-  ...expand(familyScreens(RISO_CONCRETE), RISO_PALETTES),
+  ...expand(familyScreens(RISO_CONCRETE), RISO_CONCRETE_PALETTES),
   ...expand([...familyScreens(AURORA_SILK), ...familyScreens(AURORA_SILK_NEON)], AURORA_SILK_PALETTES),
 ];
 
