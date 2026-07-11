@@ -743,6 +743,51 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "wavesplit") {
+    // Fills below a multi-peak wave across the box — a wavy divider.
+    const amp = (layer.cornerRadius ?? 40) || 1;
+    const peaks = 3;
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, s) => {
+          const steps = 64;
+          c.beginPath();
+          c.moveTo(0, amp);
+          for (let i = 1; i <= steps; i++) {
+            const x = (w * i) / steps;
+            const y = amp + Math.sin((i / steps) * Math.PI * 2 * peaks) * amp;
+            c.lineTo(x, y);
+          }
+          c.lineTo(w, h);
+          c.lineTo(0, h);
+          c.closePath();
+          c.fillStrokeShape(s);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "diagonalsplit") {
+    // Fills below a straight slanted edge through the box — a diagonal divider.
+    const slant = layer.cornerRadius ?? 0;
+    const mid = h / 2;
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, s) => {
+          c.beginPath();
+          c.moveTo(0, mid - slant);
+          c.lineTo(w, mid + slant);
+          c.lineTo(w, h);
+          c.lineTo(0, h);
+          c.closePath();
+          c.fillStrokeShape(s);
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "chamfer") {
     return <Line closed points={chamferPoints(w, h)} {...paint} />;
   }

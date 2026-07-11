@@ -443,7 +443,13 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     addLayer: (type, partial) => {
       pushHistory();
       const s = get();
-      const layer = { ...makeLayer(type, (s.project?.layers.length ?? 0) + 1), ...partial } as Layer;
+      const base = makeLayer(type, (s.project?.layers.length ?? 0) + 1);
+      // Merge effects (shallow, per effect) so a preset can set just a gradient
+      // or glow without dropping the other default effect blocks.
+      const effects = partial?.effects
+        ? { ...base.effects, ...(partial.effects as Partial<typeof base.effects>) }
+        : base.effects;
+      const layer = { ...base, ...partial, effects } as Layer;
       mapLayers((layers) => [...layers, layer]);
       set({ selectedIds: [layer.id] });
     },
