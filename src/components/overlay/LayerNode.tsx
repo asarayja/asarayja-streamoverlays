@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, useEffect, useRef } from "react";
+import { cloneElement, useEffect, useRef, type ReactNode } from "react";
 import Konva from "konva";
 import {
   Circle,
@@ -563,16 +563,27 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
   if (layer.shape === "freehand") {
     const pts = layer.points ?? [];
     const col = resolveColor(layer.fill, ctx.theme);
+    // A stroke can be masked to a rect (the webcam-frame band): only the part
+    // inside the "selection" paints, like drawing inside a Photoshop marquee.
+    const clip = layer.clip;
+    const wrap = (el: ReactNode) =>
+      clip ? (
+        <Group listening={false} clipX={clip.x} clipY={clip.y} clipWidth={clip.width} clipHeight={clip.height}>
+          {el}
+        </Group>
+      ) : (
+        el
+      );
 
     // Ink / calligraphy: `points` is a closed outline polygon — render it filled.
     if (layer.drawStyle === "fill") {
-      return <Line points={pts} closed fill={col} {...shadowProps(layer.effects, ctx.theme, glowBoost)} />;
+      return wrap(<Line points={pts} closed fill={col} {...shadowProps(layer.effects, ctx.theme, glowBoost)} />);
     }
 
     // Airbrush: scatter soft deterministic dots along the drawn path.
     if (layer.drawStyle === "spray") {
       const r = layer.strokeWidth ?? 8;
-      return (
+      return wrap(
         <KonvaShape
           listening={false}
           sceneFunc={(c) => {
@@ -598,14 +609,14 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
             }
             c.setAttr("globalAlpha", 1);
           }}
-        />
+        />,
       );
     }
 
     // Pencil sketch: a few jittered overlaid strokes for a hand-drawn look.
     if (layer.drawStyle === "sketch") {
       const sw = layer.strokeWidth ?? 6;
-      return (
+      return wrap(
         <KonvaShape
           listening={false}
           sceneFunc={(c) => {
@@ -628,13 +639,13 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
             }
             c.setAttr("globalAlpha", 1);
           }}
-        />
+        />,
       );
     }
 
     // Rainbow: a smoothed polyline stroked with a rainbow gradient.
     if (layer.rainbow) {
-      return (
+      return wrap(
         <Line
           points={pts}
           strokeLinearGradientStartPoint={{ x: 0, y: 0 }}
@@ -649,12 +660,12 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
           tension={0.4}
           dash={layer.dash}
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
-        />
+        />,
       );
     }
 
     // Default: a smoothed polyline stroked in the fill colour.
-    return (
+    return wrap(
       <Line
         points={pts}
         stroke={col}
@@ -664,7 +675,7 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
         tension={0.4}
         dash={layer.dash}
         {...shadowProps(layer.effects, ctx.theme, glowBoost)}
-      />
+      />,
     );
   }
 

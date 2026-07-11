@@ -11,7 +11,7 @@ import type { ChannelProfile, LayerPatch, ShapeLayer } from "@/lib/types";
 import { uid } from "@/lib/id";
 import { getStroke } from "perfect-freehand";
 import { useElementSize } from "@/lib/useElementSize";
-import { brushStyle, useEditorStore } from "@/store/editor";
+import { brushStyle, isCameraLayer, useEditorStore } from "@/store/editor";
 
 const SNAP_THRESHOLD = 8;
 const GRID_STEP = 60;
@@ -152,6 +152,27 @@ export function EditorCanvas({
     }
     minX -= pad; minY -= pad; maxX += pad; maxY += pad;
     const local = renderPts.map((v, i) => (i % 2 === 0 ? v - minX : v - minY));
+
+    // With a webcam frame present, mask the stroke to a band around it — like
+    // drawing inside a Photoshop marquee — so paint never spills far outside the
+    // frame (and the camera hole below cuts the inside).
+    const MARGIN = 90;
+    let clip: ShapeLayer["clip"];
+    const cams = (useEditorStore.getState().project?.layers ?? []).filter(isCameraLayer);
+    if (cams.length) {
+      const sx = pts[0], sy = pts[1];
+      const cam =
+        cams.find(
+          (l) => sx >= l.x - MARGIN && sx <= l.x + l.width + MARGIN && sy >= l.y - MARGIN && sy <= l.y + l.height + MARGIN,
+        ) ?? cams[0];
+      clip = {
+        x: cam.x - MARGIN - minX,
+        y: cam.y - MARGIN - minY,
+        width: cam.width + 2 * MARGIN,
+        height: cam.height + 2 * MARGIN,
+      };
+    }
+
     const layer: ShapeLayer = {
       id: uid(),
       name: "Drawing",
@@ -172,6 +193,7 @@ export function EditorCanvas({
       dash,
       drawStyle,
       rainbow,
+      clip,
       effects,
       animation: { ...DEFAULT_ANIMATION },
     };

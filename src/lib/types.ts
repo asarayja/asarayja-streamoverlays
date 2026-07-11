@@ -421,6 +421,9 @@ export interface ShapeLayer extends LayerBase {
   drawStyle?: "line" | "fill" | "spray" | "sketch";
   /** For `shape: "freehand"`. Stroke the line with a rainbow gradient. */
   rainbow?: boolean;
+  /** For `shape: "freehand"`. Clip the stroke to this rect (layer-local coords)
+      — used to keep webcam-frame drawings in a band around the frame. */
+  clip?: { x: number; y: number; width: number; height: number };
 }
 
 /**
