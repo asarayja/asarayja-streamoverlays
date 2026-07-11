@@ -1693,6 +1693,9 @@ interface FamilyStyle {
   overlayDecor?: () => LayerSpec[];
   /** Alert and panel silhouette. */
   plateShape: "rect" | "plaque" | "chamfer";
+  /** Frosted-glass panels: translucent fill, light hairline border and a gloss
+      sweep, so the colourful backdrop shows through the plates and boxes. */
+  glass?: boolean;
   /** Panels use windows instead of plates. */
   windowChrome?: boolean;
   /** Chat panel silhouette. */
@@ -1811,15 +1814,20 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           cornerRadius: f.radius,
           rows,
           fontFamily: f.body,
-          effects: { border: { enabled: true, color: "@border", width: 1, radius: f.radius } },
+          fill: f.glass ? "@text/10" : undefined,
+          effects: { border: { enabled: true, color: f.glass ? "@text/35" : "@border", width: 1, radius: f.radius } },
         });
 
   const plate = (name: string, box: Box, o: Parameters<typeof shape>[2] = {}) =>
     shape(name, box, {
       shape: f.plateShape,
-      fill: "@surface/90",
+      fill: f.glass ? "@text/10" : "@surface/90",
       cornerRadius: f.radius,
-      effects: { border: { enabled: true, color: "@border", width: 1, radius: f.radius }, ...o.effects },
+      effects: {
+        border: { enabled: true, color: f.glass ? "@text/35" : "@border", width: 1, radius: f.radius },
+        ...(f.glass ? { gloss: { enabled: true, strength: 0.55 } } : {}),
+        ...o.effects,
+      },
       ...o,
     });
 
@@ -1835,14 +1843,14 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         // overlay, not a bright slab pasted over it. The hero (subscriber) is
         // set apart by an accent border and a stronger glow, not by inverting
         // to a near-white fill.
-        fill: hero ? "@surface/95" : "@surface/92",
+        fill: f.glass ? "@text/12" : hero ? "@surface/95" : "@surface/92",
         titleColor: "@accent",
         subtitleColor: "@text",
         effects: {
           glow: { enabled: true, color: "@glow", strength: hero ? 46 : 34 },
           border: {
             enabled: true,
-            color: hero ? "@accent" : "@border",
+            color: f.glass ? "@text/40" : hero ? "@accent" : "@border",
             width: hero ? 2 : 1,
             radius: f.radius,
           },
@@ -2858,6 +2866,45 @@ const SILK: FamilyStyle = {
   contentOffsetY: -40,
 };
 
+/** Frost: glassmorphism — soft colourful blurred orbs behind frosted-glass
+    panels (translucent fill, hairline border, gloss). On overlays the glass
+    plates sit over the gameplay itself. */
+const FROST: FamilyStyle = {
+  id: "frost",
+  name: "Frost",
+  tags: ["Minimal", "Sci-Fi", "Cozy"],
+  display: "Poppins",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 22,
+  frameRadius: 22,
+  corners: false,
+  strokeWidth: 2,
+  glass: true,
+  frameEffects: {
+    border: { enabled: true, color: "@text/45", width: 2, radius: 22 },
+    glow: { enabled: true, color: "@glow", strength: 18 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 135 } },
+    }),
+    // Soft colourful orbs — the frosted glass shows these through the panels.
+    particles("Decor — Orbs A", { kind: "blobs", count: 5, size: 160, speed: 0.28, color: "@primary", opacity: 0.55 }),
+    particles("Decor — Orbs B", { kind: "blobs", count: 4, size: 138, speed: 0.32, color: "@secondary", opacity: 0.5 }),
+    particles("Decor — Orbs C", { kind: "blobs", count: 3, size: 120, speed: 0.3, color: "@accent", opacity: 0.4 }),
+    particles("Decor — Sparkle", { kind: "stars", count: 24, size: 2, speed: 0.1, color: "@text", opacity: 0.5 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 /** Mecha (spec theme B): industrial military-tech — carbon-fibre bands, toxic
     green accent lines with intense glow, 45° chamfered frames and panels, and a
     compact tall display. Green in a green palette; colour follows the palette. */
@@ -3015,6 +3062,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   AURORA,
   NEBULA,
   SILK,
+  FROST,
   MECHA,
   CYBER_PILL,
 ];
