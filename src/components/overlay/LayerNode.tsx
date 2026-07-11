@@ -170,9 +170,43 @@ function polygonPoints(shape: string, w: number, h: number): number[] {
       // A parallelogram leaning top-left → bottom-right, the way esports
       // diagonals sweep. (Top edge sits left, bottom edge sits right.)
       return [0, 0, w * 0.68, 0, w, h, w * 0.32, h];
+    case "star":
+      return starPoints(w, h, 5, 0.42);
+    case "burst":
+      return starPoints(w, h, 12, 0.66);
+    case "arrow":
+      // A right-pointing block arrow; rotate the layer for any direction.
+      return [
+        0, h * 0.28, w * 0.6, h * 0.28, w * 0.6, 0, w, h * 0.5,
+        w * 0.6, h, w * 0.6, h * 0.72, 0, h * 0.72,
+      ];
+    case "bolt":
+      // A lightning bolt.
+      return [
+        w * 0.56, 0, w * 0.12, h * 0.56, w * 0.42, h * 0.56, w * 0.32, h,
+        w * 0.9, h * 0.4, w * 0.56, h * 0.4,
+      ];
+    case "banner": {
+      // A title ribbon: a bar with both ends forked inward.
+      const n = Math.min(w * 0.14, h * 0.6);
+      return [0, 0, w, 0, w - n, h * 0.5, w, h, 0, h, n, h * 0.5];
+    }
     default:
       return [0, 0, w, 0, w, h, 0, h];
   }
+}
+
+/** Points of an n-pointed star filling the box; `inner` is the valley radius. */
+function starPoints(w: number, h: number, n: number, inner: number): number[] {
+  const cx = w / 2;
+  const cy = h / 2;
+  const pts: number[] = [];
+  for (let i = 0; i < n * 2; i++) {
+    const a = -Math.PI / 2 + (i * Math.PI) / n;
+    const f = i % 2 ? inner : 1;
+    pts.push(cx + Math.cos(a) * (w / 2) * f, cy + Math.sin(a) * (h / 2) * f);
+  }
+  return pts;
 }
 
 /** A honeycomb lattice: pointy-top hexagon outlines tiled across the box. */
@@ -1074,7 +1108,41 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "bubble") {
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          bubblePath(c, w, h);
+          c.fillStrokeShape(shape);
+        }}
+      />
+    );
+  }
+
   return <Line closed points={polygonPoints(layer.shape, w, h)} {...paint} />;
+}
+
+/** A rounded speech bubble with a tail hanging from the lower-left. */
+function bubblePath(c: Konva.Context, w: number, h: number) {
+  const bodyH = h * 0.8;
+  const r = Math.min(30, w * 0.1, bodyH * 0.4);
+  c.beginPath();
+  c.moveTo(r, 0);
+  c.lineTo(w - r, 0);
+  c.arcTo(w, 0, w, r, r);
+  c.lineTo(w, bodyH - r);
+  c.arcTo(w, bodyH, w - r, bodyH, r);
+  c.lineTo(r, bodyH);
+  c.arcTo(0, bodyH, 0, bodyH - r, r);
+  c.lineTo(0, r);
+  c.arcTo(0, 0, r, 0, r);
+  c.closePath();
+  // The tail — a triangle overlapping the body so the fill unions cleanly.
+  c.moveTo(w * 0.2, bodyH - 6);
+  c.lineTo(w * 0.32, bodyH - 6);
+  c.lineTo(w * 0.16, h);
+  c.closePath();
 }
 
 

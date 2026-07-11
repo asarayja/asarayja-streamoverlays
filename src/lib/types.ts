@@ -148,12 +148,16 @@ export const ANIMATION_PRESETS = [
   "sway",
   "wobble",
   "orbit",
-  // One-shot entrances.
+  "breathe",
+  // One-shot entrances / accents.
   "flip",
   "pop",
   "drop",
   "swing",
   "glitch",
+  "tada",
+  "rubberBand",
+  "roll",
 ] as const;
 
 export type AnimationPreset = (typeof ANIMATION_PRESETS)[number];
@@ -429,7 +433,19 @@ export type ShapeKind =
   | "damask"
   /** A parchment scroll plate: a rounded sheet flanked by two rolled rods, the
       witch-grimoire panel/alert silhouette. */
-  | "scroll";
+  | "scroll"
+  /** A five-pointed star. */
+  | "star"
+  /** A many-pointed sunburst / seal. */
+  | "burst"
+  /** A block arrow pointing right (rotate for any direction). */
+  | "arrow"
+  /** A lightning bolt. */
+  | "bolt"
+  /** A title ribbon/banner with forked ends. */
+  | "banner"
+  /** A rounded speech bubble with a tail — for callouts. */
+  | "bubble";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";

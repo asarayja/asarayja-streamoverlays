@@ -2,13 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { LayoutGrid, Palette as PaletteIcon } from "lucide-react";
+import { LayoutGrid, Palette as PaletteIcon, Search } from "lucide-react";
 import { DESIGNS } from "@/lib/designs";
 import type { Design } from "@/lib/designs";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { TopNav } from "@/components/site/TopNav";
 import { MyDesigns } from "@/components/gallery/MyDesigns";
-import { Chip, cx } from "@/components/ui";
+import { Chip, TextInput, cx } from "@/components/ui";
 import { getPalette } from "@/data/palettes";
 import { useElementSize, useInView } from "@/lib/useElementSize";
 import { useRenderProfile } from "@/store/profile";
@@ -28,11 +28,20 @@ export default function DesignsPage() {
   const t = useT();
   const profile = useRenderProfile();
   const [collection, setCollection] = useState<Collection | "all">("all");
+  const [query, setQuery] = useState("");
 
-  const shown = useMemo(
-    () => (collection === "all" ? DESIGNS : DESIGNS.filter((d) => d.collection === collection)),
-    [collection],
-  );
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return DESIGNS.filter((d) => {
+      if (collection !== "all" && d.collection !== collection) return false;
+      if (!q) return true;
+      return (
+        d.name.toLowerCase().includes(q) ||
+        d.collection.toLowerCase().includes(q) ||
+        (d.cover.tags ?? []).some((tag) => tag.toLowerCase().includes(q))
+      );
+    });
+  }, [collection, query]);
 
   return (
     <div className="app-bg min-h-screen">
@@ -54,6 +63,18 @@ export default function DesignsPage() {
 
         <MyDesigns />
 
+        <div className="mx-auto mb-5 max-w-md">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />
+            <TextInput
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("Search designs…")}
+              className="pl-9"
+            />
+          </div>
+        </div>
+
         <div className="mb-8 flex flex-wrap justify-center gap-1.5">
           {FILTERS.map((f) => (
             <Chip key={f.id} active={collection === f.id} onClick={() => setCollection(f.id)}>
@@ -62,11 +83,15 @@ export default function DesignsPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {shown.map((design) => (
-            <DesignCard key={design.key} design={design} profile={profile} />
-          ))}
-        </div>
+        {shown.length === 0 ? (
+          <p className="py-16 text-center text-sm text-zinc-500">{t("No designs match those filters.")}</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {shown.map((design) => (
+              <DesignCard key={design.key} design={design} profile={profile} />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

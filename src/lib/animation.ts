@@ -81,6 +81,7 @@ const CONTINUOUS = new Set([
   "sway",
   "wobble",
   "orbit",
+  "breathe",
 ]);
 
 export function isContinuous(preset: Animation["preset"]): boolean {
@@ -183,6 +184,9 @@ export function sample(anim: Animation, t: number): AnimationSample {
         const r = 9 * k;
         return { ...IDENTITY, dx: Math.cos(phase * tau) * r, dy: Math.sin(phase * tau) * r };
       }
+      case "breathe":
+        // A slow fade in and out — calmer than flicker, no motion.
+        return { ...IDENTITY, opacity: 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(phase * tau)) };
     }
   }
 
@@ -237,9 +241,17 @@ function atProgress(anim: Animation, raw: number): AnimationSample {
       return { ...IDENTITY, scaleX: s, scaleY: s, opacity: Math.min(1, raw * 3) };
     }
     case "drop": {
-      // Falls in from above and bounces to rest.
+      // Falls from higher up and squashes on each impact — heavier and
+      // squishier than `bounce`, which is a clean vertical settle.
       const b = EASING_FNS.bounceOut(raw);
-      return { ...IDENTITY, dy: -180 * k * (1 - b), opacity: Math.min(1, raw * 3) };
+      const impact = Math.max(0, Math.sin(b * Math.PI * 4));
+      return {
+        ...IDENTITY,
+        dy: -260 * k * (1 - b),
+        scaleX: 1 + impact * 0.14 * k,
+        scaleY: 1 - impact * 0.14 * k,
+        opacity: Math.min(1, raw * 4),
+      };
     }
     case "swing": {
       // Swings in on a hinge and settles with an elastic wobble.
@@ -256,6 +268,28 @@ function atProgress(anim: Animation, raw: number): AnimationSample {
         dx: (noise(s) - 0.5) * 26 * k * jitter,
         dy: (noise(s + 7) - 0.5) * 12 * k * jitter,
         opacity: noise(s + 3) > 0.28 ? 1 : 0.3,
+      };
+    }
+    case "tada": {
+      // A celebratory bump: scales up with a few rotational wiggles, then
+      // settles back to rest.
+      const s = 1 + Math.sin(Math.min(1, raw) * Math.PI) * 0.16 * k;
+      const wiggle = Math.sin(raw * Math.PI * 6) * (1 - raw) * 9 * k;
+      return { ...IDENTITY, scaleX: s, scaleY: s, rotation: wiggle, opacity: Math.min(1, raw * 4) };
+    }
+    case "rubberBand": {
+      // Stretches wide then tall then settles — an elastic snap, no rotation.
+      const decay = 1 - raw;
+      const a = Math.sin(raw * Math.PI * 2) * 0.26 * k * decay;
+      return { ...IDENTITY, scaleX: 1 + a, scaleY: 1 - a, opacity: Math.min(1, raw * 4) };
+    }
+    case "roll": {
+      // Rolls in from the left: travels sideways while turning upright.
+      return {
+        ...IDENTITY,
+        dx: -240 * k * (1 - p),
+        rotation: -360 * (1 - p),
+        opacity: Math.min(1, raw * 2),
       };
     }
     default:
