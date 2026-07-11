@@ -2701,6 +2701,170 @@ const PLASMA: FamilyStyle = {
   contentOffsetY: -30,
 };
 
+/** Aurora: the flowing-wave style, softer — ethereal northern-lights curtains
+    of glowing colour over a starfield. Same engine as Plasma, calmer mood. */
+const AURORA: FamilyStyle = {
+  id: "aurora",
+  name: "Aurora",
+  tags: ["Sci-Fi", "Fantasy", "Cozy"],
+  display: "Poppins",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 16,
+  frameRadius: 18,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 18 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 165 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 84, size: 2.2, speed: 0.12, color: "@text", opacity: 0.75 }),
+    shape("Aurora — accent", { x: -180, y: 60, width: 2280, height: 460 }, {
+      shape: "wave",
+      fill: "@accent/26",
+      opacity: 0.6,
+      effects: { glow: { enabled: true, color: "@glow", strength: 66 } },
+    }),
+    shape("Aurora — primary", { x: -180, y: 150, width: 2280, height: 540 }, {
+      shape: "wave",
+      fill: "@primary/40",
+      opacity: 0.8,
+      effects: { glow: { enabled: true, color: "@glow", strength: 82 } },
+    }),
+    shape("Aurora — secondary", { x: -180, y: 300, width: 2280, height: 480 }, {
+      shape: "wave",
+      fill: "@secondary/36",
+      opacity: 0.72,
+      effects: { glow: { enabled: true, color: "@glow", strength: 74 } },
+    }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.32, color: "@accent", opacity: 0.32 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 40,
+};
+
+/** Nebula: the flowing-wave style, cosmic — glowing gas clouds, a dense
+    starfield, shooting stars and a small planet, with one energy sweep. */
+const NEBULA: FamilyStyle = {
+  id: "nebula",
+  name: "Nebula",
+  tags: ["Sci-Fi", "Neon", "Dark"],
+  display: "Exo 2",
+  displayWeight: 800,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 8,
+  frameRadius: 10,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 10 },
+    glow: { enabled: true, color: "@glow", strength: 26 },
+  },
+  headlineEffects: {
+    gradient: { enabled: true, from: "#e6e6ff", via: "#ffffff", to: "#8a8ab0", angle: 90 },
+    glow: { enabled: true, color: "@glow", strength: 26 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 150 } },
+    }),
+    shape("Gas — primary", { x: -120, y: 200, width: 1120, height: 800 }, {
+      shape: "ellipse",
+      fill: "@primary/18",
+      effects: { glow: { enabled: true, color: "@glow", strength: 120 } },
+    }),
+    shape("Gas — secondary", { x: 980, y: 120, width: 1040, height: 720 }, {
+      shape: "ellipse",
+      fill: "@secondary/18",
+      effects: { glow: { enabled: true, color: "@glow", strength: 108 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 130, size: 2, speed: 0.1, color: "@text", opacity: 0.85 }),
+    particles("Decor — Shooting", { kind: "shootingStars", count: 4, size: 6, speed: 1, color: "@text" }),
+    shape("Flow", { x: -160, y: 230, width: 2240, height: 340 }, {
+      shape: "wave",
+      fill: "@glow",
+      opacity: 0.5,
+      effects: { glow: { enabled: true, color: "@glow", strength: 74 } },
+    }),
+    shape("Planet", { x: 1500, y: 120, width: 190, height: 190 }, {
+      shape: "moon",
+      moonPhase: 1,
+      craters: false,
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 40 } },
+      animation: anim("float", { duration: 8000, intensity: 0.4 }),
+    }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 10, size: 6, speed: 0.3, color: "@accent", opacity: 0.34 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Silk: the flowing-wave style, elegant — flowing satin ribbons with a
+    colour-graded sheen and scattered sparkles, over a soft dark ground. */
+const SILK: FamilyStyle = {
+  id: "silk",
+  name: "Silk",
+  tags: ["Cozy", "Fantasy", "Minimal"],
+  display: "Playfair Display",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 20,
+  frameRadius: 22,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 22 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 155 } },
+    }),
+    shape("Silk — one", { x: -200, y: 280, width: 2320, height: 440 }, {
+      shape: "wave",
+      opacity: 0.9,
+      effects: {
+        gradientStroke: { enabled: true, from: "@primary", to: "@accent", angle: 90, width: 30 },
+        glow: { enabled: true, color: "@glow", strength: 22 },
+      },
+    }),
+    shape("Silk — two", { x: -200, y: 520, width: 2320, height: 380 }, {
+      shape: "wave",
+      opacity: 0.85,
+      effects: {
+        gradientStroke: { enabled: true, from: "@secondary", to: "@accent", angle: 90, width: 30 },
+        glow: { enabled: true, color: "@glow", strength: 18 },
+      },
+    }),
+    particles("Decor — Sparkle", { kind: "stars", count: 44, size: 2.4, speed: 0.15, color: "@accent", opacity: 0.7 }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 7, speed: 0.3, color: "@accent", opacity: 0.3 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: -40,
+};
+
 /** Mecha (spec theme B): industrial military-tech — carbon-fibre bands, toxic
     green accent lines with intense glow, 45° chamfered frames and panels, and a
     compact tall display. Green in a green palette; colour follows the palette. */
@@ -2855,6 +3019,9 @@ const NEW_FAMILIES: FamilyStyle[] = [
   HEX_STORM,
   MOONLIT_GROVE,
   PLASMA,
+  AURORA,
+  NEBULA,
+  SILK,
   MECHA,
   CYBER_PILL,
 ];
