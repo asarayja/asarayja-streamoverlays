@@ -1850,9 +1850,26 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       ...o,
     });
 
+  // Pride flag families carry their flag onto every screen — a striped flag bar
+  // (buildVariant substitutes palette.flag) — so alerts and goals read as the
+  // flag pack too, not just the scenes.
+  const isFlagPack = f.collection === "pride";
+  const flagBar = (box: Box): LayerSpec[] =>
+    isFlagPack
+      ? [
+          flag("Pride flag", box, {
+            cornerRadius: 6,
+            effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+            animation: anim("shimmer", { duration: 3600 }),
+          }),
+        ]
+      : [];
+
   const alertScreen = (id: string, name: string, title: string, subtitle: string, hero: boolean) =>
     base(id, name, "Alerts", [
       ...(f.overlayDecor?.() ?? []),
+      ...flagBar({ x: 560, y: 366, width: 800, height: 18 }),
+      ...flagBar({ x: 560, y: 656, width: 800, height: 18 }),
       alert("Alert", { x: 560, y: 400, width: 800, height: 240 }, title, subtitle, {
         fontFamily: f.display,
         cornerRadius: f.radius,
@@ -1924,6 +1941,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
   // decor: a goals overlay sits over live gameplay, so it stays clean. Each
   // goal is its own layer, free to rearrange into a row or a stack.
   const goalsScreen = base("goals", "Goals", "Goals", [
+    ...flagBar({ x: 150, y: 300, width: 1170, height: 20 }),
     goal("Follower goal", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
       goalStyle: "ring",
       fontFamily: f.display,
@@ -3494,55 +3512,51 @@ const SPLASH: FamilyStyle = {
   contentOffsetY: 0,
 };
 
-/** Graffiti: street art. Real spray-can throw-ups — stippled colour fields with
-    hard marker outlines, overspray halos and wet drips — on a procedural lit
-    concrete wall, with a poster-block headline. Matte throughout; only the tag
-    bar carries a small glow. Colour follows the palette. */
+/** Graffiti: street art. The headline is the piece — a marker-hand spray tag in
+    white with a thick dark outline and a hot accent 3D drop, sat in an overspray
+    cloud with paint dripping off it, over a lit concrete wall with a couple of
+    spray marks. The lettering, not blobs, is what makes it read as graffiti. */
 const GRAFFITI: FamilyStyle = {
   id: "graffiti",
   name: "Graffiti",
   tags: ["Cyberpunk", "RGB", "Dark"],
-  display: "Anton",
+  display: "Permanent Marker",
+  displayFill: "@text",
   displayWeight: 400,
-  displayTracking: 2,
+  displayTracking: 1,
   displayTransform: "uppercase",
   body: "Kanit",
   radius: 4,
   frameRadius: 4,
   corners: false,
-  strokeWidth: 4,
+  strokeWidth: 5,
   frameEffects: {
-    border: { enabled: true, color: "@accent", width: 4, radius: 4 },
-    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 8, offsetY: 10, opacity: 0.85 },
+    border: { enabled: true, color: "@shadow", width: 5, radius: 4 },
+    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 6, offsetY: 8, opacity: 0.85 },
   },
-  // Hard, matte: a stencil-cut outline and a zero-blur paste-up offset shadow.
+  // The graffiti tell: a thick dark spray outline around the letters and a hard,
+  // zero-blur accent 3D drop behind them.
   headlineEffects: {
-    border: { enabled: true, color: "@background", width: 4 },
-    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 8, offsetY: 10, opacity: 0.85 },
+    border: { enabled: true, color: "@shadow", width: 7 },
+    shadow: { enabled: true, color: "@accent", blur: 0, offsetX: 7, offsetY: 9, opacity: 0.9 },
   },
   plateShape: "rect",
   scene: () => [
-    // Lit, mottled, cracked, speckled concrete — the surface the paint sits on.
+    // Lit, mottled, cracked, speckled concrete — the wall the piece is on.
     shape("Wall", FULL, { background: true, shape: "concreteWall", fill: "@surface" }),
-    // Four spray-can throw-ups loaded into the corners, centre kept open.
-    shape("Splat TL", { x: -120, y: -120, width: 820, height: 760 }, { shape: "spraySplat", fill: "@primary" }),
-    shape("Splat BR", { x: 1200, y: 440, width: 840, height: 760 }, { shape: "spraySplat", fill: "@secondary" }),
-    shape("Splat TR", { x: 1380, y: -160, width: 620, height: 560 }, { shape: "spraySplat", fill: "@accent" }),
-    shape("Splat BL", { x: -100, y: 600, width: 600, height: 560 }, { shape: "spraySplat", fill: "@accentSecondary" }),
-    // The one lit accent: a tag bar with a fat dark keyline, running paint below.
-    shape("Tag bar", { x: 150, y: 150, width: 520, height: 96 }, {
-      shape: "rect",
-      fill: "@accent",
-      effects: {
-        border: { enabled: true, color: "@shadow", width: 6 },
-        glow: { enabled: true, color: "@glow", strength: 16 },
-      },
-    }),
-    shape("Tag drip", { x: 150, y: 222, width: 520, height: 200 }, { shape: "drip", fill: "@accent", cornerRadius: 0 }),
-    // Paint haze confined to the margins so it never fogs the centre.
-    particles("Fine mist L", { kind: "dots", count: 40, size: 3, speed: 0.3, color: "@text", opacity: 0.12, box: MARGIN_LEFT }),
-    particles("Fine mist R", { kind: "dots", count: 40, size: 3, speed: 0.3, color: "@text", opacity: 0.12, box: MARGIN_RIGHT }),
-    particles("Decor — Flecks", { kind: "confetti", count: 18, size: 5, speed: 0.5, color: "@accent", opacity: 0.4 }),
+    // Two spray-can marks in opposite corners — fewer, so the tag dominates.
+    shape("Splat TL", { x: -180, y: -180, width: 720, height: 640 }, { shape: "spraySplat", fill: "@primary" }),
+    shape("Splat BR", { x: 1380, y: 620, width: 720, height: 640 }, { shape: "spraySplat", fill: "@secondary" }),
+    // A soft accent overspray cloud the tag sits in.
+    shape("Overspray", { x: 320, y: 300, width: 1280, height: 440 }, { shape: "paintSpray", fill: "@accent", opacity: 0.5 }),
+    // Wet paint dripping off the tag.
+    shape("Drip 1", { x: 620, y: 520, width: 82, height: 250 }, { shape: "drip", fill: "@accent", cornerRadius: 0 }),
+    shape("Drip 2", { x: 900, y: 545, width: 104, height: 300 }, { shape: "drip", fill: "@primary", cornerRadius: 0 }),
+    shape("Drip 3", { x: 1180, y: 522, width: 82, height: 230 }, { shape: "drip", fill: "@accent", cornerRadius: 0 }),
+    // Flung specks and faint margin mist.
+    particles("Fine mist L", { kind: "dots", count: 28, size: 3, speed: 0.3, color: "@text", opacity: 0.1, box: MARGIN_LEFT }),
+    particles("Fine mist R", { kind: "dots", count: 28, size: 3, speed: 0.3, color: "@text", opacity: 0.1, box: MARGIN_RIGHT }),
+    particles("Decor — Flecks", { kind: "confetti", count: 20, size: 5, speed: 0.5, color: "@accent", opacity: 0.5 }),
   ],
   overlayDecor: () => [],
   contentOffsetY: 0,
