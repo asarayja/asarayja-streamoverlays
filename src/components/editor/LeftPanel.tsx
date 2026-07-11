@@ -688,6 +688,7 @@ function LayersTab() {
             <li
               key={layer.id}
               draggable
+              onClick={() => select([layer.id])}
               onDragStart={(e) => {
                 setDragId(layer.id);
                 e.dataTransfer.effectAllowed = "move";

@@ -171,6 +171,19 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         setBucketTool(true);
         setDrawTool(false);
         setPanTool(false);
+      } else if (e.key.startsWith("Arrow")) {
+        // Nudge the selected layer(s) with the arrow keys — move a layer that
+        // sits behind others without having to reach it on the canvas.
+        const st = useEditorStore.getState();
+        if (!st.selectedIds.length || !st.project) return;
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 1;
+        const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+        const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+        for (const id of st.selectedIds) {
+          const l = st.project.layers.find((x) => x.id === id);
+          if (l && !l.locked) st.updateLayer(id, { x: l.x + dx, y: l.y + dy }, false);
+        }
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {

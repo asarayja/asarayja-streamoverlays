@@ -21,6 +21,43 @@ interface Guide {
   position: number;
 }
 
+const SPLIT_SHAPES = ["arcsplit", "wavesplit", "diagonalsplit", "zigzagsplit"];
+
+/** Trace a split shape's silhouette in local coords — used as a bucket boundary. */
+function splitPath(c: CanvasRenderingContext2D, shape: string, w: number, h: number, cr: number) {
+  c.beginPath();
+  if (shape === "arcsplit") {
+    c.moveTo(0, cr);
+    c.quadraticCurveTo(w / 2, -cr, w, cr);
+    c.lineTo(w, h);
+    c.lineTo(0, h);
+    c.closePath();
+  } else if (shape === "wavesplit") {
+    const amp = cr || 1;
+    const steps = 64;
+    c.moveTo(0, amp);
+    for (let i = 1; i <= steps; i++) c.lineTo((w * i) / steps, amp + Math.sin((i / steps) * Math.PI * 2 * 3) * amp);
+    c.lineTo(w, h);
+    c.lineTo(0, h);
+    c.closePath();
+  } else if (shape === "diagonalsplit") {
+    const mid = h / 2;
+    c.moveTo(0, mid - cr);
+    c.lineTo(w, mid + cr);
+    c.lineTo(w, h);
+    c.lineTo(0, h);
+    c.closePath();
+  } else if (shape === "zigzagsplit") {
+    const amp = cr || 1;
+    const teeth = 10;
+    c.moveTo(0, amp);
+    for (let i = 1; i <= teeth; i++) c.lineTo((w * i) / teeth, i % 2 === 0 ? 2 * amp : 0);
+    c.lineTo(w, h);
+    c.lineTo(0, h);
+    c.closePath();
+  }
+}
+
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const h = hex.replace("#", "");
   const s = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
@@ -237,22 +274,38 @@ export function EditorCanvas({
     off.height = H;
     const bctx = off.getContext("2d", { willReadFrequently: true });
     if (!bctx) return;
+    bctx.scale(SC, SC); // draw everything in full 1920×1080 coords
     bctx.strokeStyle = "#000";
+    bctx.fillStyle = "#000";
     bctx.lineCap = "round";
     bctx.lineJoin = "round";
     for (const l of project.layers) {
-      if (l.type !== "shape" || l.shape !== "freehand" || !l.points || !l.visible) continue;
-      if ((l.drawStyle ?? "line") === "fill") continue;
-      bctx.lineWidth = Math.max(2, (l.strokeWidth ?? 8) * SC);
-      bctx.beginPath();
-      const pts = l.points;
-      for (let i = 0; i < pts.length; i += 2) {
-        const x = (l.x + pts[i]) * SC;
-        const y = (l.y + pts[i + 1]) * SC;
-        if (i === 0) bctx.moveTo(x, y);
-        else bctx.lineTo(x, y);
+      if (l.type !== "shape" || !l.visible) continue;
+      // Freehand strokes are boundaries.
+      if (l.shape === "freehand" && l.points && (l.drawStyle ?? "line") !== "fill") {
+        bctx.lineWidth = Math.max(6, l.strokeWidth ?? 8);
+        bctx.beginPath();
+        const pts = l.points;
+        for (let i = 0; i < pts.length; i += 2) {
+          const x = l.x + pts[i];
+          const y = l.y + pts[i + 1];
+          if (i === 0) bctx.moveTo(x, y);
+          else bctx.lineTo(x, y);
+        }
+        bctx.stroke();
+        continue;
       }
-      bctx.stroke();
+      // Split shapes (arc/wave/diagonal/zigzag) are boundaries — fill their
+      // silhouette so the flood stops at their curve, honouring the rotation.
+      if (SPLIT_SHAPES.includes(l.shape)) {
+        bctx.save();
+        bctx.translate(l.x + l.width / 2, l.y + l.height / 2);
+        bctx.rotate(((l.rotation ?? 0) * Math.PI) / 180);
+        bctx.translate(-l.width / 2, -l.height / 2);
+        splitPath(bctx, l.shape, l.width, l.height, l.cornerRadius ?? 0);
+        bctx.fill();
+        bctx.restore();
+      }
     }
     const data = bctx.getImageData(0, 0, W, H).data;
     const wall = (idx: number) => data[idx * 4 + 3] > 40;
