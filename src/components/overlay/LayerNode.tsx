@@ -280,7 +280,11 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
           <Rect width={w} height={h} cornerRadius={layer.cornerRadius} {...paint} />
           <KonvaShape
             listening={false}
-            sceneFunc={(c) => drawGloss(c, w, h, Math.min(layer.cornerRadius, w / 2, h / 2), gloss.strength)}
+            sceneFunc={(c) => {
+              const r = Math.min(layer.cornerRadius, w / 2, h / 2);
+              if (gloss.style === "streak") drawReflection(c, w, h, r, gloss.strength);
+              else drawGloss(c, w, h, r, gloss.strength);
+            }}
           />
         </Group>
       );
@@ -764,6 +768,46 @@ function drawGloss(c: Konva.Context, w: number, h: number, r: number, strength: 
   lip.addColorStop(1, `rgba(0,0,0,${0.35 * strength})`);
   c.setAttr("fillStyle", lip);
   c.fillRect(0, h * 0.6, w, h * 0.4);
+  c.restore();
+}
+
+/**
+ * Glass reflection: a faint top sheen plus two diagonal light glints sweeping
+ * across the pane, the way a window reflects a light source. Clipped to the
+ * rounded rect so it stays inside the glass.
+ */
+function drawReflection(c: Konva.Context, w: number, h: number, r: number, strength: number) {
+  c.save();
+  c.beginPath();
+  c.moveTo(r, 0);
+  c.arcTo(w, 0, w, h, r);
+  c.arcTo(w, h, 0, h, r);
+  c.arcTo(0, h, 0, 0, r);
+  c.arcTo(0, 0, w, 0, r);
+  c.closePath();
+  c.clip();
+
+  const sheen = c.createLinearGradient(0, 0, 0, h * 0.5);
+  sheen.addColorStop(0, `rgba(255,255,255,${0.16 * strength})`);
+  sheen.addColorStop(1, "rgba(255,255,255,0)");
+  c.setAttr("fillStyle", sheen);
+  c.fillRect(0, 0, w, h * 0.5);
+
+  // Two diagonal glints (a wide one and a thin trailing one).
+  const glint = (centreX: number, band: number, alpha: number) => {
+    c.save();
+    c.translate(centreX, h / 2);
+    c.rotate(-0.42);
+    const g = c.createLinearGradient(-band, 0, band, 0);
+    g.addColorStop(0, "rgba(255,255,255,0)");
+    g.addColorStop(0.5, `rgba(255,255,255,${alpha * strength})`);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    c.setAttr("fillStyle", g);
+    c.fillRect(-band, -h * 1.5, band * 2, h * 3);
+    c.restore();
+  };
+  glint(w * 0.34, w * 0.05, 0.55);
+  glint(w * 0.46, w * 0.018, 0.4);
   c.restore();
 }
 

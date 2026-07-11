@@ -1696,6 +1696,9 @@ interface FamilyStyle {
   /** Frosted-glass panels: translucent fill, light hairline border and a gloss
       sweep, so the colourful backdrop shows through the plates and boxes. */
   glass?: boolean;
+  /** Glass highlight: "frost" (default) a soft top sheen, "reflection" diagonal
+      light glints across the pane. */
+  glassStyle?: "frost" | "reflection";
   /** Panels use windows instead of plates. */
   windowChrome?: boolean;
   /** Chat panel silhouette. */
@@ -1825,7 +1828,9 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       cornerRadius: f.radius,
       effects: {
         border: { enabled: true, color: f.glass ? "@text/35" : "@border", width: 1, radius: f.radius },
-        ...(f.glass ? { gloss: { enabled: true, strength: 0.55 } } : {}),
+        ...(f.glass
+          ? { gloss: { enabled: true, strength: 0.55, style: f.glassStyle === "reflection" ? "streak" : "sheen" } }
+          : {}),
         ...o.effects,
       },
       ...o,
@@ -2905,6 +2910,82 @@ const FROST: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** Prism: glassmorphism with a reflection finish — diagonal light glints sweep
+    the panels over vivid multi-colour orbs. Bolder than Frost. */
+const PRISM: FamilyStyle = {
+  id: "prism",
+  name: "Prism",
+  tags: ["Neon", "Sci-Fi", "Minimal"],
+  display: "Montserrat",
+  displayWeight: 800,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 20,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 2,
+  glass: true,
+  glassStyle: "reflection",
+  frameEffects: {
+    border: { enabled: true, color: "@text/50", width: 2, radius: 20 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 130 } },
+    }),
+    particles("Decor — Orbs A", { kind: "blobs", count: 4, size: 165, speed: 0.3, color: "@primary", opacity: 0.58 }),
+    particles("Decor — Orbs B", { kind: "blobs", count: 4, size: 142, speed: 0.34, color: "@secondary", opacity: 0.52 }),
+    particles("Decor — Orbs C", { kind: "blobs", count: 3, size: 122, speed: 0.32, color: "@accent", opacity: 0.46 }),
+    particles("Decor — Sparkle", { kind: "stars", count: 26, size: 2, speed: 0.1, color: "@text", opacity: 0.55 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Crystal: glassmorphism with a reflection finish — cooler and icier, fewer
+    soft orbs and a scatter of bright glints, in a lighter display. */
+const CRYSTAL: FamilyStyle = {
+  id: "crystal",
+  name: "Crystal",
+  tags: ["Nordic", "Minimal", "Cozy"],
+  display: "Poppins",
+  displayWeight: 600,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 20,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 2,
+  glass: true,
+  glassStyle: "reflection",
+  frameEffects: {
+    border: { enabled: true, color: "@text/45", width: 2, radius: 20 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 150 } },
+    }),
+    particles("Decor — Orbs A", { kind: "blobs", count: 3, size: 185, speed: 0.24, color: "@primary", opacity: 0.42 }),
+    particles("Decor — Orbs B", { kind: "blobs", count: 3, size: 150, speed: 0.28, color: "@accent", opacity: 0.36 }),
+    particles("Decor — Glints", { kind: "stars", count: 44, size: 2.2, speed: 0.12, color: "@text", opacity: 0.7 }),
+    particles("Decor — Big glints", { kind: "stars", count: 14, size: 6, speed: 0.1, color: "@accent", opacity: 0.7 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 /** Mecha (spec theme B): industrial military-tech — carbon-fibre bands, toxic
     green accent lines with intense glow, 45° chamfered frames and panels, and a
     compact tall display. Green in a green palette; colour follows the palette. */
@@ -3063,6 +3144,8 @@ const NEW_FAMILIES: FamilyStyle[] = [
   NEBULA,
   SILK,
   FROST,
+  PRISM,
+  CRYSTAL,
   MECHA,
   CYBER_PILL,
 ];

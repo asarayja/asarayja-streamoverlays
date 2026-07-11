@@ -251,6 +251,8 @@ export interface Gloss {
   enabled: boolean;
   /** 0..1 — opacity of the highlight. */
   strength: number;
+  /** "sheen" (default): a moulded top sweep. "streak": diagonal glass glints. */
+  style?: "sheen" | "streak";
 }
 
 export interface Effects {
