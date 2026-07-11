@@ -706,10 +706,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
     family: "Neon Grid",
     layers: [
       ...neonScene(),
-      img("Logo", { x: 860, y: 170, width: 200, height: 200 }, "{{LOGO}}", {
-        logo: true,
-        animation: anim("zoom", { duration: 900, easing: "backOut" }),
-      }),
       text("Headline", { x: 210, y: 430, width: 1500, height: 130 }, "THANKS FOR WATCHING", {
         fontFamily: "Orbitron",
         fontSize: 88,
@@ -1469,10 +1465,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         effects: { gradient: { enabled: true, from: "@background", to: "@accent/20", angle: 45 } },
       }),
       particles("Stars", { kind: "stars", count: 80, size: 4, speed: 0.5 }),
-      img("Logo", { x: 860, y: 160, width: 200, height: 200 }, "{{LOGO}}", {
-        logo: true,
-        animation: anim("zoom", { duration: 900, easing: "backOut" }),
-      }),
       text("Headline", { x: 210, y: 410, width: 1500, height: 140 }, "THANKS FOR WATCHING", {
         fontFamily: "Bebas Neue",
         fontSize: 116,
@@ -2108,12 +2100,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
   return [
     scene("starting", "Starting Soon", "Starting Soon", "STARTING SOON"),
     scene("brb", "Be Right Back", "BRB", "BE RIGHT BACK"),
-    scene("ending", "Stream Ending", "Stream Ending", "THANKS FOR WATCHING", [
-      img("Logo", { x: 860, y: 200 + dy, width: 200, height: 200 }, "{{LOGO}}", {
-        logo: true,
-        animation: anim("zoom", { duration: 900, easing: "backOut" }),
-      }),
-    ]),
+    // No logo by default — add your picture from the Add panel if you want one.
+    scene("ending", "Stream Ending", "Stream Ending", "THANKS FOR WATCHING"),
     scene("pause", "Pause", "Pause", "STREAM ON PAUSE"),
     scene("offline", "Offline", "Offline", "OFFLINE"),
 
@@ -4890,10 +4878,6 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     layers: [
       ...prideScene(),
       particles("Decor — Confetti", { kind: "confetti", count: 50, size: 6, speed: 1, color: "@accent" }),
-      img("Logo", { x: 860, y: 170, width: 200, height: 200 }, "{{LOGO}}", {
-        logo: true,
-        animation: anim("zoom", { duration: 900, easing: "backOut" }),
-      }),
       text("Headline", { x: 210, y: 430, width: 1500, height: 130 }, "THANKS FOR WATCHING", {
         fontFamily: "Poppins",
         fontSize: 92,
