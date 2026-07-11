@@ -84,6 +84,11 @@ const MULTI_LETTER_PALETTES: Array<{ label: string; colors: string[] }> = [
   { label: "Fire", colors: ["#FFF200", "#FFB300", "#FF6A00", "#FF2600", "#C1121F"] },
   { label: "Ocean", colors: ["#013A63", "#2A6F97", "#61A5C2", "#A9D6E5"] },
   { label: "Candy", colors: ["#FF6FB5", "#FF9AD5", "#C77DFF", "#9D4EDD", "#5A189A"] },
+  { label: "Sunset", colors: ["#F9C74F", "#F8961E", "#F3722C", "#F94144", "#9D4EDD"] },
+  { label: "Forest", colors: ["#1B4332", "#2D6A4F", "#40916C", "#74C69D", "#B7E4C7"] },
+  { label: "Vaporwave", colors: ["#FF71CE", "#B967FF", "#01CDFE", "#05FFA1", "#FFFB96"] },
+  { label: "Gold", colors: ["#7A5210", "#B9812A", "#F3CE6A", "#FFF6CF", "#B9812A"] },
+  { label: "Grayscale", colors: ["#FFFFFF", "#C7CDD6", "#8A9099", "#4A4E55", "#1A1A22"] },
 ];
 const MULTI_LETTER_COLORS = MULTI_LETTER_PALETTES[0].colors;
 

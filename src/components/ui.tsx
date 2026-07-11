@@ -1,7 +1,8 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
 import type { ReactNode } from "react";
+import { ColorPicker } from "@/components/ColorPicker";
 
 export function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
@@ -213,26 +214,30 @@ export function ColorInput({
   /** The colour actually painted, once the theme reference is resolved. */
   resolved: string;
 }) {
-  const isHex = /^#[0-9a-f]{6}$/i.test(value);
+  const [open, setOpen] = useState(false);
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative size-8 shrink-0 overflow-hidden rounded-lg border border-white/15">
-        <div className="absolute inset-0" style={{ background: resolved }} />
-        <input
-          type="color"
-          value={isHex ? value : "#8b5cf6"}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={(e) => onCommit?.(e.target.value)}
-          className="absolute inset-0 cursor-pointer opacity-0"
-          aria-label="Pick colour"
-        />
-      </div>
+    <div className="relative flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="size-8 shrink-0 overflow-hidden rounded-lg border border-white/15"
+        style={{ background: resolved }}
+        aria-label="Pick colour"
+      />
       <TextInput
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={(e) => onCommit?.(e.target.value)}
         className="font-mono text-xs"
       />
+      {open && (
+        <ColorPicker
+          resolved={resolved}
+          onChange={onChange}
+          onCommit={onCommit}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </div>
   );
 }
