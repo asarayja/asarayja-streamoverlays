@@ -2783,23 +2783,16 @@ const NEBULA: FamilyStyle = {
       fill: "@background",
       effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 150 } },
     }),
-    shape("Gas — primary", { x: -120, y: 200, width: 1120, height: 800 }, {
-      shape: "ellipse",
-      fill: "@primary/18",
-      effects: { glow: { enabled: true, color: "@glow", strength: 120 } },
-    }),
-    shape("Gas — secondary", { x: 980, y: 120, width: 1040, height: 720 }, {
-      shape: "ellipse",
-      fill: "@secondary/18",
-      effects: { glow: { enabled: true, color: "@glow", strength: 108 } },
-    }),
-    particles("Decor — Stars", { kind: "stars", count: 130, size: 2, speed: 0.1, color: "@text", opacity: 0.85 }),
+    // Nebula gas: soft organic orbs, low and diffuse — no hard-edged discs.
+    particles("Decor — Nebula A", { kind: "blobs", count: 4, size: 150, speed: 0.22, color: "@primary", opacity: 0.42 }),
+    particles("Decor — Nebula B", { kind: "blobs", count: 3, size: 128, speed: 0.26, color: "@secondary", opacity: 0.36 }),
+    particles("Decor — Stars", { kind: "stars", count: 140, size: 2, speed: 0.1, color: "@text", opacity: 0.85 }),
     particles("Decor — Shooting", { kind: "shootingStars", count: 4, size: 6, speed: 1, color: "@text" }),
-    shape("Flow", { x: -160, y: 230, width: 2240, height: 340 }, {
+    shape("Flow", { x: -160, y: 250, width: 2240, height: 300 }, {
       shape: "wave",
       fill: "@glow",
-      opacity: 0.5,
-      effects: { glow: { enabled: true, color: "@glow", strength: 74 } },
+      opacity: 0.4,
+      effects: { glow: { enabled: true, color: "@glow", strength: 70 } },
     }),
     shape("Planet", { x: 1500, y: 120, width: 190, height: 190 }, {
       shape: "moon",
