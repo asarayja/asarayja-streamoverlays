@@ -562,6 +562,144 @@ const DEFS: PaletteDef[] = [
     },
   },
 
+  // Soft sky blue on deep navy — light blue as the lead, matched by paler blues.
+  {
+    id: "sky",
+    name: "Sky",
+    collection: "core",
+    tags: ["Blue", "Cozy", "Nordic"],
+    theme: {
+      primary: "#6fb7f0",
+      secondary: "#9ad0f5",
+      accent: "#cfe8ff",
+      background: "#08111f",
+      text: "#eef6ff",
+      border: "#3a556f",
+      glow: "#8fc7f7",
+      shadow: "#05080d",
+    },
+  },
+  // Baby pink, analogous rose and pale petal — a soft, matched pink family.
+  {
+    id: "blush",
+    name: "Blush",
+    collection: "core",
+    tags: ["Pink", "Cozy", "Anime"],
+    theme: {
+      primary: "#f2a3c0",
+      secondary: "#f7bfd4",
+      accent: "#ffe0ec",
+      background: "#170b11",
+      text: "#fdeef4",
+      border: "#6a4756",
+      glow: "#f6b6cf",
+      shadow: "#0c0508",
+    },
+  },
+  // Fresh mint with lighter mint and pale seafoam — cool and cohesive.
+  {
+    id: "mint",
+    name: "Mint",
+    collection: "core",
+    tags: ["Green", "Cozy", "Anime"],
+    theme: {
+      primary: "#7fe0c2",
+      secondary: "#a6ecd6",
+      accent: "#d1f5e8",
+      background: "#06130f",
+      text: "#ecfdf6",
+      border: "#34604f",
+      glow: "#93e8cd",
+      shadow: "#05090a",
+    },
+  },
+  // Gentle lavender graded to pale lilac — a calm, matched purple set.
+  {
+    id: "lilac",
+    name: "Lilac",
+    collection: "core",
+    tags: ["Purple", "Cozy", "Anime"],
+    theme: {
+      primary: "#b3a2e6",
+      secondary: "#c9bbf0",
+      accent: "#e6dbf8",
+      background: "#100b1b",
+      text: "#f3eefb",
+      border: "#574b70",
+      glow: "#c3b2f0",
+      shadow: "#07050b",
+    },
+  },
+  // Warm peach and apricot fading to cream — a soft, harmonious warm palette.
+  {
+    id: "peach",
+    name: "Peach",
+    collection: "core",
+    tags: ["Orange", "Cozy", "Anime"],
+    theme: {
+      primary: "#f4a985",
+      secondary: "#f8c4a3",
+      accent: "#ffdcc4",
+      background: "#170c07",
+      text: "#fdefe6",
+      border: "#6a4c3a",
+      glow: "#f6b895",
+      shadow: "#0c0603",
+    },
+  },
+  // Soft aqua/turquoise with lighter tints — a matched teal family.
+  {
+    id: "aqua",
+    name: "Aqua",
+    collection: "core",
+    tags: ["Blue", "Green", "Cozy"],
+    theme: {
+      primary: "#6ad6d2",
+      secondary: "#94e4df",
+      accent: "#c2f1ee",
+      background: "#061313",
+      text: "#e8fdfb",
+      border: "#33605d",
+      glow: "#86e0dc",
+      shadow: "#04090a",
+    },
+  },
+  // Buttery yellow through soft lemon to cream — warm and coordinated.
+  {
+    id: "butter",
+    name: "Butter",
+    collection: "core",
+    tags: ["Orange", "Cozy", "Fantasy"],
+    theme: {
+      primary: "#f0d47a",
+      secondary: "#f5e4a2",
+      accent: "#fbf1cf",
+      background: "#141005",
+      text: "#fdf9ea",
+      border: "#6a5c33",
+      glow: "#f4dd90",
+      shadow: "#0a0803",
+    },
+  },
+  // Soft coral and salmon with a pale rose — a matched warm-pink palette.
+  {
+    id: "coral",
+    name: "Coral",
+    collection: "core",
+    tags: ["Pink", "Orange", "Cozy"],
+    theme: {
+      primary: "#f58a86",
+      secondary: "#f7a9a6",
+      accent: "#ffd0ce",
+      background: "#180a0a",
+      text: "#fdecec",
+      border: "#6a4040",
+      glow: "#f6a09c",
+      shadow: "#0c0505",
+    },
+  },
+
+
   /* -------------------------------- Pride -------------------------------- */
   // The pride launch packs. Flag colours are harmonised per the design rules:
   // softened saturation, neutral backgrounds, text/accent pairs that pass the
