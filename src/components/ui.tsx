@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ColorPicker } from "@/components/ColorPicker";
 
@@ -215,9 +215,11 @@ export function ColorInput({
   resolved: string;
 }) {
   const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
   return (
-    <div className="relative flex items-center gap-2">
+    <div className="flex items-center gap-2">
       <button
+        ref={btnRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="size-8 shrink-0 overflow-hidden rounded-lg border border-white/15"
@@ -232,6 +234,7 @@ export function ColorInput({
       />
       {open && (
         <ColorPicker
+          anchorRef={btnRef}
           resolved={resolved}
           onChange={onChange}
           onCommit={onCommit}

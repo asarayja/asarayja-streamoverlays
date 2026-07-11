@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { hexToRgb, hsvToHex, rgbToHex, rgbToHsv, type HSV } from "@/lib/color";
 
 /** Handy single-colour swatches: neutrals, brand, and the pride-flag hues. */
@@ -23,32 +24,56 @@ export function ColorPicker({
   onCommit,
   resolved,
   onClose,
+  anchorRef,
 }: {
   onChange: (value: string) => void;
   onCommit?: (value: string) => void;
   /** The colour actually painted right now (a resolved hex). */
   resolved: string;
   onClose: () => void;
+  /** The trigger the popover floats next to. */
+  anchorRef: RefObject<HTMLElement | null>;
 }) {
   const start = hexToRgb(resolved) ?? { r: 139, g: 92, b: 246 };
   const [hsv, setHsv] = useState<HSV>(() => rgbToHsv(start));
   const [hexText, setHexText] = useState(rgbToHex(start.r, start.g, start.b));
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const svRef = useRef<HTMLDivElement>(null);
   const hueRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const latest = useRef(hexText);
 
+  // Float next to the trigger with fixed positioning, flipping above it when
+  // there isn't room below. Rendered in a portal so the scrolling panel can't
+  // clip it or grow its scroll height.
+  useLayoutEffect(() => {
+    const r = anchorRef.current?.getBoundingClientRect();
+    if (!r) return;
+    const W = 224;
+    const H = 340;
+    let left = Math.min(Math.max(8, r.right - W), window.innerWidth - W - 8);
+    let top = r.bottom + 6;
+    if (top + H > window.innerHeight - 8) top = Math.max(8, r.top - H - 6);
+    setPos({ top, left });
+  }, [anchorRef]);
+
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) onClose();
+      const t = e.target as Node;
+      if (rootRef.current?.contains(t) || anchorRef.current?.contains(t)) return;
+      onClose();
     };
-    // Defer so the opening click doesn't immediately close it.
+    // Any scroll or resize closes it — no stale, mis-placed popover.
     const id = setTimeout(() => document.addEventListener("mousedown", onDown), 0);
+    window.addEventListener("scroll", onClose, true);
+    window.addEventListener("resize", onClose);
     return () => {
       clearTimeout(id);
       document.removeEventListener("mousedown", onDown);
+      window.removeEventListener("scroll", onClose, true);
+      window.removeEventListener("resize", onClose);
     };
-  }, [onClose]);
+  }, [onClose, anchorRef]);
 
   const apply = (nh: HSV, commit = false) => {
     const hex = hsvToHex(nh);
@@ -109,10 +134,13 @@ export function ColorPicker({
   const hueHex = hsvToHex({ h: hsv.h, s: 1, v: 1 });
   const num = "w-full rounded border border-white/10 bg-black/40 px-1.5 py-1 text-center font-mono text-[11px] text-zinc-100 focus:border-brand-500/60 focus:outline-none";
 
-  return (
+  if (!pos) return null;
+
+  return createPortal(
     <div
       ref={rootRef}
-      className="absolute right-0 z-50 mt-1 w-56 rounded-xl border border-white/10 bg-ink-900 p-3 shadow-2xl"
+      style={{ position: "fixed", top: pos.top, left: pos.left }}
+      className="z-[200] w-56 rounded-xl border border-white/10 bg-ink-900 p-3 shadow-2xl"
     >
       {/* Saturation / value square */}
       <div
@@ -173,6 +201,7 @@ export function ColorPicker({
           />
         ))}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
