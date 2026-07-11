@@ -7,7 +7,7 @@ import { LayerNode } from "@/components/overlay/LayerNode";
 import { useFontsReady } from "@/components/overlay/OverlayStage";
 import { resolveColor } from "@/lib/theme";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, DEFAULT_ANIMATION, DEFAULT_EFFECTS } from "@/lib/types";
-import type { ChannelProfile, LayerPatch, ShapeLayer } from "@/lib/types";
+import type { ChannelProfile, ImageLayer, LayerPatch, ShapeLayer } from "@/lib/types";
 import { uid } from "@/lib/id";
 import { getStroke } from "perfect-freehand";
 import { useElementSize } from "@/lib/useElementSize";
@@ -21,14 +21,22 @@ interface Guide {
   position: number;
 }
 
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const h = hex.replace("#", "");
+  const s = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  return { r: parseInt(s.slice(0, 2), 16) || 0, g: parseInt(s.slice(2, 4), 16) || 0, b: parseInt(s.slice(4, 6), 16) || 0 };
+}
+
 export function EditorCanvas({
   profile,
   panTool,
   drawTool = false,
+  bucketTool = false,
 }: {
   profile: ChannelProfile;
   panTool: boolean;
   drawTool?: boolean;
+  bucketTool?: boolean;
 }) {
   const [containerRef, size] = useElementSize<HTMLDivElement>();
   const stageRef = useRef<Konva.Stage>(null);
@@ -50,6 +58,7 @@ export function EditorCanvas({
   const toggleSelect = useEditorStore((s) => s.toggleSelect);
   const updateLayer = useEditorStore((s) => s.updateLayer);
   const insertDrawing = useEditorStore((s) => s.insertDrawing);
+  const insertFillLayer = useEditorStore((s) => s.insertFillLayer);
   const eraseStrokes = useEditorStore((s) => s.eraseStrokes);
   const beginGesture = useEditorStore((s) => s.beginGesture);
   const setZoom = useEditorStore((s) => s.setZoom);
@@ -208,6 +217,102 @@ export function EditorCanvas({
     insertDrawing(layer);
   }, [stroke, drawWidth, drawBrush, drawColor, insertDrawing, eraseStrokes]);
 
+  // Bucket fill: flood the clicked region, bounded by the freehand strokes, and
+  // drop it in as an image layer below the lines — fill in the sides you drew.
+  const bucketFill = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage || !project) return;
+    const ptr = stage.getPointerPosition();
+    if (!ptr) return;
+    const o = toOverlay(ptr);
+    const SC = 0.5; // half-res for speed/memory; the image scales back up
+    const W = Math.round(CANVAS_WIDTH * SC);
+    const H = Math.round(CANVAS_HEIGHT * SC);
+    const sx = Math.round(o.x * SC);
+    const sy = Math.round(o.y * SC);
+    if (sx < 0 || sx >= W || sy < 0 || sy >= H) return;
+
+    const off = document.createElement("canvas");
+    off.width = W;
+    off.height = H;
+    const bctx = off.getContext("2d", { willReadFrequently: true });
+    if (!bctx) return;
+    bctx.strokeStyle = "#000";
+    bctx.lineCap = "round";
+    bctx.lineJoin = "round";
+    for (const l of project.layers) {
+      if (l.type !== "shape" || l.shape !== "freehand" || !l.points || !l.visible) continue;
+      if ((l.drawStyle ?? "line") === "fill") continue;
+      bctx.lineWidth = Math.max(2, (l.strokeWidth ?? 8) * SC);
+      bctx.beginPath();
+      const pts = l.points;
+      for (let i = 0; i < pts.length; i += 2) {
+        const x = (l.x + pts[i]) * SC;
+        const y = (l.y + pts[i + 1]) * SC;
+        if (i === 0) bctx.moveTo(x, y);
+        else bctx.lineTo(x, y);
+      }
+      bctx.stroke();
+    }
+    const data = bctx.getImageData(0, 0, W, H).data;
+    const wall = (idx: number) => data[idx * 4 + 3] > 40;
+    if (wall(sy * W + sx)) return;
+
+    const visited = new Uint8Array(W * H);
+    const stack = [sy * W + sx];
+    const region: number[] = [];
+    while (stack.length) {
+      const idx = stack.pop()!;
+      if (visited[idx]) continue;
+      visited[idx] = 1;
+      if (wall(idx)) continue;
+      region.push(idx);
+      const x = idx % W;
+      const y = (idx - x) / W;
+      if (x > 0) stack.push(idx - 1);
+      if (x < W - 1) stack.push(idx + 1);
+      if (y > 0) stack.push(idx - W);
+      if (y < H - 1) stack.push(idx + W);
+    }
+    if (region.length < 16) return;
+
+    const res = document.createElement("canvas");
+    res.width = W;
+    res.height = H;
+    const rctx = res.getContext("2d");
+    if (!rctx) return;
+    const out = rctx.createImageData(W, H);
+    const rgb = hexToRgb(resolveColor(drawColor, project.theme));
+    for (const idx of region) {
+      const o4 = idx * 4;
+      out.data[o4] = rgb.r;
+      out.data[o4 + 1] = rgb.g;
+      out.data[o4 + 2] = rgb.b;
+      out.data[o4 + 3] = 255;
+    }
+    rctx.putImageData(out, 0, 0);
+
+    const layer: ImageLayer = {
+      id: uid(),
+      name: "Fill",
+      type: "image",
+      x: 0,
+      y: 0,
+      width: CANVAS_WIDTH,
+      height: CANVAS_HEIGHT,
+      rotation: 0,
+      opacity: 1,
+      visible: true,
+      locked: false,
+      src: res.toDataURL("image/png"),
+      fit: "fill",
+      cornerRadius: 0,
+      effects: structuredClone(DEFAULT_EFFECTS),
+      animation: { ...DEFAULT_ANIMATION },
+    };
+    insertFillLayer(layer);
+  }, [project, toOverlay, drawColor, insertFillLayer]);
+
   // Fit once, as soon as the container has been measured.
   const fitted = useRef(false);
   useEffect(() => {
@@ -349,12 +454,16 @@ export function EditorCanvas({
           ref={stageRef}
           width={size.width}
           height={size.height}
-          draggable={panTool && !drawTool}
+          draggable={panTool && !drawTool && !bucketTool}
           x={panTool ? panX : 0}
           y={panTool ? panY : 0}
           onDragEnd={(e) => panTool && setPan(e.target.x(), e.target.y())}
           onWheel={handleWheel}
           onMouseDown={(e) => {
+            if (bucketTool) {
+              bucketFill();
+              return;
+            }
             if (drawTool) {
               startDraw();
               return;
@@ -364,7 +473,7 @@ export function EditorCanvas({
           onMouseMove={drawTool ? moveDraw : undefined}
           onMouseUp={drawTool ? endDraw : undefined}
           onMouseLeave={drawTool ? endDraw : undefined}
-          style={drawTool ? { cursor: "crosshair" } : undefined}
+          style={drawTool || bucketTool ? { cursor: "crosshair" } : undefined}
           key={fontsReady ? "fonts" : "fallback"}
         >
           <KonvaLayer>
@@ -398,7 +507,7 @@ export function EditorCanvas({
                     key={layer.id}
                     layer={layer}
                     ctx={ctx}
-                    draggable={!panTool && !drawTool}
+                    draggable={!panTool && !drawTool && !bucketTool}
                     onSelect={(id, additive) => toggleSelect(id, additive)}
                     onDragStart={beginGesture}
                     onDragMove={handleDragMove}

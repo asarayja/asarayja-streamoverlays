@@ -13,6 +13,7 @@ import {
   Magnet,
   Maximize,
   MousePointer2,
+  PaintBucket,
   Palette,
   Pencil,
   Radio,
@@ -91,6 +92,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
 
   const [panTool, setPanTool] = useState(false);
   const [drawTool, setDrawTool] = useState(false);
+  const [bucketTool, setBucketTool] = useState(false);
   // "Send to site" is a hidden maintainer tool, off by default. Reveal it from
   // the browser console (see the local dev note, not committed to git).
   const [devMode, setDevMode] = useState(false);
@@ -156,11 +158,18 @@ export default function EditorShell({ projectId }: { projectId: string }) {
       } else if (e.key.toLowerCase() === "v") {
         setPanTool(false);
         setDrawTool(false);
+        setBucketTool(false);
       } else if (e.key.toLowerCase() === "h") {
         setPanTool(true);
         setDrawTool(false);
+        setBucketTool(false);
       } else if (e.key.toLowerCase() === "b") {
         setDrawTool(true);
+        setPanTool(false);
+        setBucketTool(false);
+      } else if (e.key.toLowerCase() === "g") {
+        setBucketTool(true);
+        setDrawTool(false);
         setPanTool(false);
       }
     };
@@ -235,8 +244,9 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           onClick={() => {
             setPanTool(false);
             setDrawTool(false);
+            setBucketTool(false);
           }}
-          active={!panTool && !drawTool}
+          active={!panTool && !drawTool && !bucketTool}
           title="Select (V)"
         >
           <MousePointer2 className="size-4" />
@@ -245,6 +255,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           onClick={() => {
             setPanTool(true);
             setDrawTool(false);
+            setBucketTool(false);
           }}
           active={panTool}
           title="Pan (H or hold Space)"
@@ -255,13 +266,25 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           onClick={() => {
             setDrawTool(true);
             setPanTool(false);
+            setBucketTool(false);
           }}
           active={drawTool}
           title="Draw (B) — freehand pencil"
         >
           <Pencil className="size-4" />
         </ToolButton>
-        {drawTool && <DrawSettings />}
+        <ToolButton
+          onClick={() => {
+            setBucketTool(true);
+            setDrawTool(false);
+            setPanTool(false);
+          }}
+          active={bucketTool}
+          title="Fill (G) — click a region you drew to fill it with the chosen colour"
+        >
+          <PaintBucket className="size-4" />
+        </ToolButton>
+        {(drawTool || bucketTool) && <DrawSettings />}
         <ToolButton
           onClick={rotateSelected}
           disabled={selectedIds.length === 0}
@@ -347,7 +370,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         <LeftPanel />
         <main className="flex min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1">
-            <EditorCanvas profile={profile} panTool={panTool} drawTool={drawTool} />
+            <EditorCanvas profile={profile} panTool={panTool} drawTool={drawTool} bucketTool={bucketTool} />
           </div>
           <Timeline />
         </main>

@@ -910,6 +910,73 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "flagrays") {
+    // Flag colours as wedges radiating from the centre — a sunburst.
+    const cols =
+      layer.facetColors && layer.facetColors.length
+        ? layer.facetColors
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+    const n = cols.length;
+    const rays = n * 2;
+    return (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) => {
+          const cx = w / 2, cy = h / 2;
+          const R = Math.hypot(w, h);
+          for (let i = 0; i < rays; i++) {
+            c.setAttr("fillStyle", cols[i % n]);
+            c.beginPath();
+            c.moveTo(cx, cy);
+            c.arc(cx, cy, R, (i / rays) * Math.PI * 2, ((i + 1) / rays) * Math.PI * 2);
+            c.closePath();
+            c.fill();
+          }
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "flagzig") {
+    // Flag stripes bent into parallel zigzags.
+    const cols =
+      layer.facetColors && layer.facetColors.length
+        ? layer.facetColors
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+    const n = cols.length;
+    const amp = layer.cornerRadius ?? 40;
+    const teeth = 8;
+    const off = (x: number) => {
+      const t = ((x / w) * teeth) % 1;
+      return (t < 0.5 ? t * 2 : 2 - t * 2) * 2 * amp - amp;
+    };
+    return (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) => {
+          const steps = teeth * 2;
+          for (let i = 0; i < n; i++) {
+            const y0 = (i / n) * h;
+            const y1 = ((i + 1) / n) * h;
+            c.setAttr("fillStyle", cols[i]);
+            c.beginPath();
+            c.moveTo(0, y0 + off(0));
+            for (let sIdx = 1; sIdx <= steps; sIdx++) {
+              const x = (w * sIdx) / steps;
+              c.lineTo(x, y0 + off(x));
+            }
+            for (let sIdx = steps; sIdx >= 0; sIdx--) {
+              const x = (w * sIdx) / steps;
+              c.lineTo(x, y1 + off(x));
+            }
+            c.closePath();
+            c.fill();
+          }
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "chamfer") {
     return <Line closed points={chamferPoints(w, h)} {...paint} />;
   }

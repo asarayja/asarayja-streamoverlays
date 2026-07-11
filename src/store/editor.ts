@@ -120,6 +120,9 @@ interface EditorState {
   /** Insert a drawing just below the first camera layer so the webcam hole cuts
       through it (draw around, never over, the camera). Appends if no camera. */
   insertDrawing: (layer: Layer) => void;
+  /** Insert a bucket-fill just below the first freehand stroke so the drawn
+      lines stay on top of the fill. Appends if there are no strokes. */
+  insertFillLayer: (layer: Layer) => void;
   removeSelected: () => void;
   duplicateSelected: () => void;
   reorder: (id: string, toIndex: number) => void;
@@ -469,6 +472,20 @@ export const useEditorStore = create<EditorState>()((set, get) => {
         if (camIdx === -1) return [...layers, layer];
         const next = layers.slice();
         next.splice(camIdx, 0, layer);
+        return next;
+      });
+      set({ selectedIds: [layer.id] });
+    },
+
+    insertFillLayer: (layer) => {
+      pushHistory();
+      mapLayers((layers) => {
+        const idx = layers.findIndex(
+          (l) => l.type === "shape" && l.shape === "freehand" && (l.drawStyle ?? "line") !== "fill",
+        );
+        if (idx === -1) return [...layers, layer];
+        const next = layers.slice();
+        next.splice(idx, 0, layer);
         return next;
       });
       set({ selectedIds: [layer.id] });

@@ -389,6 +389,10 @@ export type ShapeKind =
   | "flagwave"
   /** Flag stripes as concentric rings — a round pride burst. */
   | "flaground"
+  /** Flag colours as wedges radiating from the centre — a sunburst/rays. */
+  | "flagrays"
+  /** Flag stripes bent into parallel zigzags. */
+  | "flagzig"
   /** Brutalist print scaffold: heavy rules, crop marks, a registration
       crosshair and a tick ruler. */
   | "printRules"

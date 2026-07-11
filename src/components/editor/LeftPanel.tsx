@@ -468,9 +468,12 @@ function hslHex(h: number, s: number, l: number): string {
 
 const BAND_SHAPES = [
   { id: "straight", label: "Straight" },
+  { id: "diagonal", label: "Diagonal" },
   { id: "curved", label: "Curved" },
   { id: "waves", label: "Waves" },
+  { id: "zigzag", label: "Zigzag" },
   { id: "round", label: "Round" },
+  { id: "rays", label: "Rays" },
 ] as const;
 
 /** Make N stripes in any colours + shape in one click. */
@@ -491,23 +494,39 @@ function NBandGenerator() {
         stripes.push(theme ? resolveColor(toks[i % toks.length], theme) : "#ffffff");
       }
     }
-    if (shape === "straight") {
+    if (shape === "straight" || shape === "diagonal") {
       addLayer("flag", {
         stripes,
         stackDirection: "vertical",
-        x: 0,
-        y: 0,
-        width: 1920,
-        height: 1080,
+        // Diagonal = the striped flag turned 45°, oversized so it still covers.
+        x: shape === "diagonal" ? -340 : 0,
+        y: shape === "diagonal" ? -760 : 0,
+        width: shape === "diagonal" ? 2600 : 1920,
+        height: shape === "diagonal" ? 2600 : 1080,
+        rotation: shape === "diagonal" ? 45 : 0,
+        cornerRadius: 0,
+      } as Partial<Layer>);
+    } else if (shape === "round" || shape === "rays") {
+      addLayer("shape", {
+        shape: shape === "round" ? "flaground" : "flagrays",
+        facetColors: stripes,
+        x: 560,
+        y: 60,
+        width: 960,
+        height: 960,
         cornerRadius: 0,
       } as Partial<Layer>);
     } else {
-      const map = { curved: "flagarc", waves: "flagwave", round: "flaground" } as const;
-      const patch =
-        shape === "round"
-          ? { shape: map[shape], facetColors: stripes, x: 560, y: 60, width: 960, height: 960, cornerRadius: 0 }
-          : { shape: map[shape], facetColors: stripes, x: 0, y: 220, width: 1920, height: 640, cornerRadius: shape === "waves" ? 80 : 120 };
-      addLayer("shape", patch as Partial<Layer>);
+      const map = { curved: "flagarc", waves: "flagwave", zigzag: "flagzig" } as const;
+      addLayer("shape", {
+        shape: map[shape as "curved" | "waves" | "zigzag"],
+        facetColors: stripes,
+        x: 0,
+        y: 220,
+        width: 1920,
+        height: 640,
+        cornerRadius: shape === "curved" ? 120 : 80,
+      } as Partial<Layer>);
     }
   };
 
