@@ -1,7 +1,20 @@
 "use client";
 
-import { MousePointerSquareDashed } from "lucide-react";
 import {
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignEndVertical,
+  AlignHorizontalDistributeCenter,
+  AlignStartHorizontal,
+  AlignStartVertical,
+  AlignVerticalDistributeCenter,
+  Group as GroupIcon,
+  MousePointerSquareDashed,
+  Ungroup,
+} from "lucide-react";
+import {
+  Button,
   ColorInput,
   Field,
   Section,
@@ -62,6 +75,7 @@ export function RightPanel() {
   if (!layer) {
     return (
       <aside className="flex w-[320px] shrink-0 flex-col border-l border-white/[0.06] bg-ink-900">
+        {selectedIds.length > 1 && <ArrangeControls />}
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
           <MousePointerSquareDashed className="size-8 text-zinc-700" />
           <p className="text-sm font-medium text-zinc-400">
@@ -69,7 +83,7 @@ export function RightPanel() {
           </p>
           <p className="text-xs leading-relaxed text-zinc-600">
             {selectedIds.length > 1
-              ? t("Select a single layer to edit its properties.")
+              ? t("Align, distribute or group the selected layers above.")
               : t("Click a layer on the canvas or in the Layers panel.")}
           </p>
         </div>
@@ -1200,6 +1214,47 @@ function NumberField({
 }
 
 /** The catalogue, drawn at a glance. Picking an icon by name alone is guesswork. */
+/** Align, distribute and group controls, shown while several layers are selected. */
+function ArrangeControls() {
+  const t = useT();
+  const alignSelected = useEditorStore((s) => s.alignSelected);
+  const distributeSelected = useEditorStore((s) => s.distributeSelected);
+  const groupSelected = useEditorStore((s) => s.groupSelected);
+  const ungroupSelected = useEditorStore((s) => s.ungroupSelected);
+  const selectedIds = useEditorStore((s) => s.selectedIds);
+  const layers = useEditorStore((s) => s.project?.layers);
+  const grouped = layers?.some((l) => selectedIds.includes(l.id) && l.groupId) ?? false;
+
+  const btn =
+    "grid aspect-square place-items-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white";
+
+  return (
+    <div className="border-b border-white/[0.06] p-4">
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Arrange")}</p>
+      <div className="grid grid-cols-6 gap-1.5">
+        <button className={btn} title={t("Align left")} onClick={() => alignSelected("left")}><AlignStartVertical className="size-4" /></button>
+        <button className={btn} title={t("Align centre")} onClick={() => alignSelected("centerX")}><AlignCenterVertical className="size-4" /></button>
+        <button className={btn} title={t("Align right")} onClick={() => alignSelected("right")}><AlignEndVertical className="size-4" /></button>
+        <button className={btn} title={t("Align top")} onClick={() => alignSelected("top")}><AlignStartHorizontal className="size-4" /></button>
+        <button className={btn} title={t("Align middle")} onClick={() => alignSelected("centerY")}><AlignCenterHorizontal className="size-4" /></button>
+        <button className={btn} title={t("Align bottom")} onClick={() => alignSelected("bottom")}><AlignEndHorizontal className="size-4" /></button>
+      </div>
+      <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+        <button className={cx(btn, "aspect-auto py-2")} title={t("Distribute horizontally")} onClick={() => distributeSelected("h")}>
+          <AlignHorizontalDistributeCenter className="size-4" />
+        </button>
+        <button className={cx(btn, "aspect-auto py-2")} title={t("Distribute vertically")} onClick={() => distributeSelected("v")}>
+          <AlignVerticalDistributeCenter className="size-4" />
+        </button>
+      </div>
+      <Button className="mt-2 w-full" onClick={grouped ? ungroupSelected : groupSelected}>
+        {grouped ? <Ungroup className="size-4" /> : <GroupIcon className="size-4" />}
+        {grouped ? t("Ungroup") : t("Group")}
+      </Button>
+    </div>
+  );
+}
+
 function IconPreview({ symbol, colour }: { symbol: string; colour: string }) {
   return (
     <div className="grid grid-cols-8 gap-1 rounded-lg border border-white/[0.06] bg-black/20 p-2">

@@ -54,6 +54,17 @@ export function isCameraLayer(l: Layer): boolean {
   return l.type === "camera" || (l.type === "window" && l.content === "camera");
 }
 
+/** Expand a selection to include every layer sharing a group with a selected one. */
+function withGroups(ids: string[], layers: Layer[]): string[] {
+  const groups = new Set(
+    layers.filter((l) => ids.includes(l.id) && l.groupId).map((l) => l.groupId),
+  );
+  if (groups.size === 0) return ids;
+  const set = new Set(ids);
+  for (const l of layers) if (l.groupId && groups.has(l.groupId)) set.add(l.id);
+  return [...set];
+}
+
 /** How a brush turns a raw width into stroke width, opacity, dash and glow. */
 export function brushStyle(
   brush: BrushKind,
@@ -135,6 +146,16 @@ interface EditorState {
   /** Paste the clipboard layers with a small offset, and select them
       (Ctrl/Cmd+V). Works across screens in a pack. */
   pasteClipboard: () => void;
+  /** Move every selected (unlocked) layer by a delta — group/multi drag + nudge. */
+  moveSelected: (dx: number, dy: number, commit?: boolean) => void;
+  /** Align the selected layers to a shared edge or centre. */
+  alignSelected: (edge: "left" | "centerX" | "right" | "top" | "centerY" | "bottom") => void;
+  /** Space the selected layers evenly along an axis (needs 3+). */
+  distributeSelected: (axis: "h" | "v") => void;
+  /** Link the selected layers into a group — they select and move together. */
+  groupSelected: () => void;
+  /** Break the group on the selected layers. */
+  ungroupSelected: () => void;
   reorder: (id: string, toIndex: number) => void;
   /** Replace the whole paint order in one undoable step — drag & drop commits here. */
   setLayersOrder: (orderedIds: string[]) => void;
@@ -438,13 +459,16 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     markSaved: () => set({ dirty: false }),
     renameProject: (name) => patchProject((project) => ({ ...project, name })),
 
-    select: (ids) => set({ selectedIds: ids }),
+    select: (ids) =>
+      set((s) => ({ selectedIds: withGroups(ids, s.project?.layers ?? []) })),
     toggleSelect: (id, additive) =>
       set((s) => {
-        if (!additive) return { selectedIds: [id] };
-        return s.selectedIds.includes(id)
-          ? { selectedIds: s.selectedIds.filter((x) => x !== id) }
-          : { selectedIds: [...s.selectedIds, id] };
+        const layers = s.project?.layers ?? [];
+        if (!additive) return { selectedIds: withGroups([id], layers) };
+        const next = s.selectedIds.includes(id)
+          ? s.selectedIds.filter((x) => x !== id)
+          : [...s.selectedIds, id];
+        return { selectedIds: withGroups(next, layers) };
       }),
 
     beginGesture: pushHistory,
@@ -553,6 +577,84 @@ export const useEditorStore = create<EditorState>()((set, get) => {
         selectedIds: copies.map((c) => c.id),
         clipboard: structuredClone(copies),
       });
+    },
+
+    moveSelected: (dx, dy, commit = true) => {
+      const { selectedIds, project } = get();
+      if (!project || selectedIds.length === 0 || (dx === 0 && dy === 0)) return;
+      if (commit) pushHistory();
+      const ids = new Set(selectedIds);
+      mapLayers((layers) =>
+        layers.map((l) => (ids.has(l.id) && !l.locked ? { ...l, x: l.x + dx, y: l.y + dy } : l)),
+      );
+    },
+
+    alignSelected: (edge) => {
+      const { selectedIds, project } = get();
+      if (!project) return;
+      const sel = project.layers.filter((l) => selectedIds.includes(l.id) && !l.locked);
+      if (sel.length < 2) return;
+      pushHistory();
+      const minX = Math.min(...sel.map((l) => l.x));
+      const maxX = Math.max(...sel.map((l) => l.x + l.width));
+      const minY = Math.min(...sel.map((l) => l.y));
+      const maxY = Math.max(...sel.map((l) => l.y + l.height));
+      const cx = (minX + maxX) / 2;
+      const cy = (minY + maxY) / 2;
+      const ids = new Set(sel.map((l) => l.id));
+      mapLayers((layers) =>
+        layers.map((l) => {
+          if (!ids.has(l.id)) return l;
+          switch (edge) {
+            case "left": return { ...l, x: minX };
+            case "centerX": return { ...l, x: cx - l.width / 2 };
+            case "right": return { ...l, x: maxX - l.width };
+            case "top": return { ...l, y: minY };
+            case "centerY": return { ...l, y: cy - l.height / 2 };
+            case "bottom": return { ...l, y: maxY - l.height };
+          }
+        }),
+      );
+    },
+
+    distributeSelected: (axis) => {
+      const { selectedIds, project } = get();
+      if (!project) return;
+      const sel = project.layers.filter((l) => selectedIds.includes(l.id) && !l.locked);
+      if (sel.length < 3) return;
+      pushHistory();
+      const key = axis === "h" ? "x" : "y";
+      const ext = axis === "h" ? "width" : "height";
+      const sorted = [...sel].sort((a, b) => a[key] - b[key]);
+      const first = sorted[0];
+      const last = sorted[sorted.length - 1];
+      const inner = sorted.slice(1, -1).reduce((n, l) => n + l[ext], 0);
+      const gap = (last[key] - (first[key] + first[ext]) - inner) / (sorted.length - 1);
+      const pos: Record<string, number> = {};
+      let cursor = first[key] + first[ext];
+      for (let i = 1; i < sorted.length - 1; i++) {
+        cursor += gap;
+        pos[sorted[i].id] = cursor;
+        cursor += sorted[i][ext];
+      }
+      mapLayers((layers) => layers.map((l) => (l.id in pos ? { ...l, [key]: pos[l.id] } : l)));
+    },
+
+    groupSelected: () => {
+      const { selectedIds, project } = get();
+      if (!project || selectedIds.length < 2) return;
+      pushHistory();
+      const gid = uid();
+      const ids = new Set(selectedIds);
+      mapLayers((layers) => layers.map((l) => (ids.has(l.id) ? { ...l, groupId: gid } : l)));
+    },
+
+    ungroupSelected: () => {
+      const { selectedIds, project } = get();
+      if (!project || selectedIds.length === 0) return;
+      pushHistory();
+      const ids = new Set(selectedIds);
+      mapLayers((layers) => layers.map((l) => (ids.has(l.id) ? { ...l, groupId: undefined } : l)));
     },
 
     reorder: (id, toIndex) => {

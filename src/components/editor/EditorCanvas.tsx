@@ -108,6 +108,7 @@ export function EditorCanvas({
   const select = useEditorStore((s) => s.select);
   const toggleSelect = useEditorStore((s) => s.toggleSelect);
   const updateLayer = useEditorStore((s) => s.updateLayer);
+  const moveSelected = useEditorStore((s) => s.moveSelected);
   const insertDrawing = useEditorStore((s) => s.insertDrawing);
   const insertFillLayer = useEditorStore((s) => s.insertFillLayer);
   const eraseStrokes = useEditorStore((s) => s.eraseStrokes);
@@ -444,8 +445,18 @@ export function EditorCanvas({
       const layer = project?.layers.find((l) => l.id === id);
       if (!layer) return;
 
+      // Dragging one of several selected layers (e.g. a group) moves them all by
+      // the same delta; a lone layer just moves itself.
+      const apply = (fx: number, fy: number) => {
+        if (selectedIds.length > 1 && selectedIds.includes(id)) {
+          moveSelected(fx - layer.x, fy - layer.y, false);
+        } else {
+          updateLayer(id, { x: fx, y: fy }, false);
+        }
+      };
+
       if (!snap) {
-        updateLayer(id, { x: rawX, y: rawY }, false);
+        apply(rawX, rawY);
         return;
       }
 
@@ -473,9 +484,9 @@ export function EditorCanvas({
       const y = fit(rawY, targets.y, "y");
 
       setGuides(showGuides ? found : []);
-      updateLayer(id, { x, y }, false);
+      apply(x, y);
     },
-    [project?.layers, snap, snapTargets, zoom, updateLayer, showGuides],
+    [project?.layers, snap, snapTargets, zoom, updateLayer, showGuides, selectedIds, moveSelected],
   );
 
   const handleTransformEnd = useCallback(
