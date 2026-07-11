@@ -1997,6 +1997,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     // Intermission: camera and chat side by side over the family ground.
     base("intermission", "Intermission", "Intermission", [
       ...f.scene(),
+      ...flagBar({ x: 120, y: 168, width: 1680, height: 12 }),
       text("Label", { x: 120, y: 110, width: 700, height: 50 }, "INTERMISSION", {
         fontFamily: f.display,
         fontSize: 34,
@@ -2012,6 +2013,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
 
     base("gameplay", "Gameplay", "Gameplay", [
       ...(f.overlayDecor?.() ?? []),
+      ...flagBar({ x: 40, y: 96, width: 1840, height: 9 }),
       plate("Top bar", { x: 40, y: 28, width: 1840, height: 66 }, {
         animation: anim("slide", { direction: "up", duration: 700 }),
       }),
@@ -2042,6 +2044,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
 
     base("chatting", "Just Chatting", "Just Chatting", [
       ...f.scene(),
+      ...flagBar({ x: 90, y: 118, width: 1020, height: 12 }),
       camera("Webcam", { x: 90, y: 140, width: 1020, height: 574 }),
       plate("Name plate", { x: 90, y: 760, width: 640, height: 84 }),
       text("Display name", { x: 130, y: 780, width: 560, height: 48 }, "{{DISPLAY_NAME}}", {
@@ -2069,6 +2072,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     base("webcam", "Webcam Frame", "Webcam Frames", [
       ...(f.overlayDecor?.() ?? []),
       camera("Camera", { x: 320, y: 120, width: 1280, height: 720 }),
+      ...flagBar({ x: 660, y: 862, width: 600, height: 12 }),
       plate("Name plate", { x: 660, y: 880, width: 600, height: 72 }),
       text("Display name", { x: 660, y: 898, width: 600, height: 42 }, "{{DISPLAY_NAME}}", {
         fontFamily: f.display,
@@ -2082,6 +2086,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
 
     base("chatbox", "Chat Box", "Chat Boxes", [
       ...(f.overlayDecor?.() ?? []),
+      ...flagBar({ x: 1400, y: 96, width: 460, height: 14 }),
       chat("Chat", { x: 1400, y: 120, width: 460, height: 840 }, 10),
     ]),
 
@@ -2091,6 +2096,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     goalsScreen,
 
     base("socialbar", "Social Bar", "Social Bars", [
+      ...flagBar({ x: 460, y: 924, width: 1000, height: 14 }),
       social("Socials", { x: 460, y: 962, width: 1000, height: 60 }, {
         platforms: ["twitch", "youtube", "discord", "instagram", "x"],
         pill: true,
@@ -2104,6 +2110,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
 
     // Event badges: the "recent sub / top donator" stack from the references.
     base("events", "Event Badges", "Social Bars", [
+      ...flagBar({ x: 60, y: 250, width: 420, height: 14 }),
       ...["Recent sub", "Top donator", "Recent donator", "Recent follower"].map((label, i) =>
         chip(label, { x: 60, y: 300 + i * 76, width: 420, height: 52 }, label, "pixel_wren", {
           fontFamily: f.body,
@@ -2133,6 +2140,17 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           },
         }),
       ),
+      // A pride flag stripe across the top of each panel, per flag.
+      ...(isFlagPack
+        ? PANELS.flatMap((label, i) =>
+            flagBar({
+              x: 160 + (i % 3) * 560,
+              y: 260 + Math.floor(i / 3) * 300 - 2,
+              width: 480,
+              height: 14,
+            }),
+          )
+        : []),
       ...PANELS.map((label, i) =>
         text(`Panel label ${i + 1}`, {
           x: 160 + (i % 3) * 560,
@@ -3520,8 +3538,8 @@ const GRAFFITI: FamilyStyle = {
   id: "graffiti",
   name: "Graffiti",
   tags: ["Cyberpunk", "RGB", "Dark"],
-  display: "Permanent Marker",
-  displayFill: "@text",
+  display: "Bungee",
+  displayFill: "@accent",
   displayWeight: 400,
   displayTracking: 1,
   displayTransform: "uppercase",
@@ -3534,16 +3552,17 @@ const GRAFFITI: FamilyStyle = {
     border: { enabled: true, color: "@shadow", width: 5, radius: 4 },
     shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 6, offsetY: 8, opacity: 0.85 },
   },
-  // The graffiti tell: a thick dark spray outline around the letters and a hard,
-  // zero-blur accent 3D drop behind them.
+  // A throw-up: bright bubble letters with a thick black keyline and a hard,
+  // zero-blur black 3D block behind them — reads on the grey concrete.
   headlineEffects: {
-    border: { enabled: true, color: "@shadow", width: 7 },
-    shadow: { enabled: true, color: "@accent", blur: 0, offsetX: 7, offsetY: 9, opacity: 0.9 },
+    border: { enabled: true, color: "@shadow", width: 8 },
+    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 8, offsetY: 11, opacity: 1 },
   },
   plateShape: "rect",
   scene: () => [
-    // Lit, mottled, cracked, speckled concrete — the wall the piece is on.
-    shape("Wall", FULL, { background: true, shape: "concreteWall", fill: "@surface" }),
+    // A lit grey concrete wall (neutral, not palette-dark) so the black keyline
+    // and 3D of the piece read — the surface graffiti actually lives on.
+    shape("Wall", FULL, { background: true, shape: "concreteWall", fill: "@text-58" }),
     // Two spray-can marks in opposite corners — fewer, so the tag dominates.
     shape("Splat TL", { x: -180, y: -180, width: 720, height: 640 }, { shape: "spraySplat", fill: "@primary" }),
     shape("Splat BR", { x: 1380, y: 620, width: 720, height: 640 }, { shape: "spraySplat", fill: "@secondary" }),
