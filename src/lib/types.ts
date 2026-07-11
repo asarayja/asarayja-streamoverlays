@@ -825,4 +825,13 @@ export interface Project {
   updatedAt: number;
   favorite: boolean;
   folder: string | null;
+  /** Groups linked sibling screens into one pack; null = standalone / legacy. */
+  packId: string | null;
+  /** Denormalised pack label, identical on every sibling. */
+  packName: string | null;
+  /** Reading order within the pack. */
+  packOrder: number;
+  /** Screen role (Starting Soon / BRB / …), captured so the switcher and My
+      Designs can label screens even when templateId no longer resolves. */
+  category: TemplateCategory | null;
 }
