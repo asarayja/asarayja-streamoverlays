@@ -62,8 +62,21 @@ import { useT } from "@/lib/i18n";
 /** Presets that drive the glow effect — picking one enables glow. */
 const GLOW_ANIM_PRESETS = new Set<AnimationPreset>(["glow", "shimmer", "blink", "neon"]);
 
-/** A vivid cycle for the "multi-colour letters" toggle. */
-const MULTI_LETTER_COLORS = ["#FF3B30", "#FF9500", "#FFCC00", "#34C759", "#00A2FF", "#AF52DE"];
+/** Colour sets for the "multi-colour letters" toggle — each letter cycles the
+    palette. The first is the default when the toggle is switched on. */
+const MULTI_LETTER_PALETTES: Array<{ label: string; colors: string[] }> = [
+  { label: "Rainbow", colors: ["#FF3B30", "#FF9500", "#FFCC00", "#34C759", "#00A2FF", "#AF52DE"] },
+  { label: "Pride", colors: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#004DFF", "#750787"] },
+  { label: "Trans", colors: ["#5BCEFA", "#F5A9B8", "#FFFFFF", "#F5A9B8", "#5BCEFA"] },
+  { label: "Warm", colors: ["#FF4E50", "#FC913A", "#F9D423", "#FF6A00"] },
+  { label: "Cool", colors: ["#00C6FB", "#005BEA", "#43E97B", "#38F9D7"] },
+  { label: "Pastel", colors: ["#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF", "#D5BAFF"] },
+  { label: "Neon", colors: ["#FF00A0", "#00FFF0", "#FFF700", "#00FF66", "#B400FF"] },
+  { label: "Fire", colors: ["#FFF200", "#FFB300", "#FF6A00", "#FF2600", "#C1121F"] },
+  { label: "Ocean", colors: ["#013A63", "#2A6F97", "#61A5C2", "#A9D6E5"] },
+  { label: "Candy", colors: ["#FF6FB5", "#FF9AD5", "#C77DFF", "#9D4EDD", "#5A189A"] },
+];
+const MULTI_LETTER_COLORS = MULTI_LETTER_PALETTES[0].colors;
 
 export function RightPanel() {
   const t = useT();
@@ -530,6 +543,31 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             checked={!!(text.fillStripes && text.fillStripes.length)}
             onChange={(on) => commit({ fillStripes: on ? MULTI_LETTER_COLORS : undefined })}
           />
+          {text.fillStripes && text.fillStripes.length > 0 && (
+            <div className="grid grid-cols-2 gap-1.5">
+              {MULTI_LETTER_PALETTES.map((pal) => {
+                const active = JSON.stringify(text.fillStripes) === JSON.stringify(pal.colors);
+                return (
+                  <button
+                    key={pal.label}
+                    title={t(pal.label)}
+                    onClick={() => commit({ fillStripes: pal.colors })}
+                    className={cx(
+                      "flex items-center gap-1.5 rounded-lg border px-2 py-1.5 transition-colors",
+                      active ? "border-brand-400/60 bg-brand-500/10" : "border-white/[0.06] bg-white/[0.02] hover:border-white/15",
+                    )}
+                  >
+                    <span className="flex shrink-0 overflow-hidden rounded">
+                      {pal.colors.map((c, i) => (
+                        <span key={i} style={{ background: c }} className="h-3.5 w-2" />
+                      ))}
+                    </span>
+                    <span className="truncate text-[10px] text-zinc-400">{t(pal.label)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {(() => {
             const cur: Text3D = text.effects.text3d ?? { enabled: false, depth: 16, angle: 45, color: "@accent" };
