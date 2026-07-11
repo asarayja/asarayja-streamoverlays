@@ -1700,7 +1700,7 @@ interface FamilyStyle {
   /** Ambient decor layered over overlays (gameplay, webcam, chat). */
   overlayDecor?: () => LayerSpec[];
   /** Alert and panel silhouette. */
-  plateShape: "rect" | "plaque" | "chamfer";
+  plateShape: "rect" | "plaque" | "chamfer" | "scroll";
   /** Frosted-glass panels: translucent fill, light hairline border and a gloss
       sweep, so the colourful backdrop shows through the plates and boxes. */
   glass?: boolean;
@@ -2676,7 +2676,9 @@ const MOONLIT_GROVE: FamilyStyle = {
     glow: { enabled: true, color: "@glow", strength: 16 },
   },
   headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
-  plateShape: "rect",
+  // Arched bracket plaques for alerts, panels and name plates — the romantic
+  // reference look, softer than a plain rectangle.
+  plateShape: "plaque",
   scene: () => [
     shape("Backdrop", FULL, {
       background: true,
@@ -2709,14 +2711,154 @@ const MOONLIT_GROVE: FamilyStyle = {
       effects: { glow: { enabled: true, color: "@glow", strength: 46 } },
     }),
     particles("Decor — Petals", { kind: "petals", count: 24, size: 7, speed: 1.0, color: "@primary", opacity: 0.7 }),
+    // Glowing butterflies drifting through the grove — the signature ornament of
+    // the violet-night reference packs.
+    particles("Decor — Butterflies", {
+      kind: "moths",
+      count: 7,
+      size: 9,
+      speed: 0.6,
+      color: "@accent",
+      opacity: 0.85,
+      effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+    }),
+    // Soft roses nestled in the blossom corners.
+    icon("Decor — Rose left", { x: 250, y: 792, width: 96, height: 96 }, "rose", {
+      fill: "@primary/75",
+      effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+      animation: anim("float", { duration: 6800, intensity: 0.3 }),
+    }),
+    icon("Decor — Rose right", { x: 1584, y: 812, width: 104, height: 104 }, "rose", {
+      fill: "@secondary/75",
+      effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+      animation: anim("float", { duration: 7400, intensity: 0.3 }),
+    }),
     particles("Decor — Clouds", { kind: "clouds", count: 4, size: 100, speed: 0.26, color: "@secondary", opacity: 0.32 }),
     particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.4, color: "@accent", opacity: 0.4 }),
   ],
   overlayDecor: () => [
     particles("Decor — Petals left", { kind: "petals", count: 5, size: 6, speed: 1.0, color: "@primary", opacity: 0.6, box: MARGIN_LEFT }),
     particles("Decor — Petals right", { kind: "petals", count: 5, size: 6, speed: 1.0, color: "@primary", opacity: 0.6, box: MARGIN_RIGHT }),
+    // A butterfly or two hovering by the webcam and chat, kept to the margins.
+    particles("Decor — Butterflies left", {
+      kind: "moths",
+      count: 2,
+      size: 8,
+      speed: 0.55,
+      color: "@accent",
+      opacity: 0.7,
+      box: MARGIN_LEFT,
+      effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+    }),
+    particles("Decor — Butterflies right", {
+      kind: "moths",
+      count: 2,
+      size: 8,
+      speed: 0.55,
+      color: "@accent",
+      opacity: 0.7,
+      box: MARGIN_RIGHT,
+      effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+    }),
   ],
   contentOffsetY: -70,
+};
+
+/** Witching Hour (spec theme G): a Victorian-witch parlour — damask wallpaper,
+    a ritual moon and a great faint pentacle, purple altar smoke, cauldron and
+    candles, and parchment-scroll plates. Gothic like Hallowed Night, but ornate
+    and occult rather than a graveyard. */
+const WITCHING_HOUR: FamilyStyle = {
+  id: "witch",
+  name: "Witching Hour",
+  collection: "gothic",
+  tags: ["Fantasy", "Horror", "Purple"],
+  display: "Grenze Gotisch",
+  displayWeight: 700,
+  displayTracking: 3,
+  displayTransform: "none",
+  body: "Cinzel",
+  radius: 12,
+  frameRadius: 14,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 14 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  // The signature: every plate and panel is a rolled parchment scroll.
+  plateShape: "scroll",
+  chatShape: "rect",
+  contentOffsetY: -30,
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@secondary/24", angle: 195 } },
+    }),
+    // Damask wallpaper: the Victorian parlour behind everything.
+    shape("Decor — Damask", FULL, { shape: "damask", fill: "@primary/14" }),
+    particles("Decor — Stars", { kind: "stars", count: 38, size: 2.4, speed: 0.12, color: "@accent", opacity: 0.6 }),
+    // A pale ritual moon, top-right.
+    shape("Decor — Moon", { x: 1500, y: 96, width: 190, height: 190 }, {
+      shape: "moon",
+      moonPhase: 1,
+      craters: false,
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 42 } },
+      animation: anim("float", { duration: 8000, intensity: 0.4 }),
+    }),
+    // A great faint pentacle turning slowly over the sky.
+    icon("Decor — Pentacle", { x: 700, y: 30, width: 520, height: 520 }, "pentagram", {
+      fill: "@accent/12",
+      animation: anim("rotate", { duration: 60000 }),
+    }),
+    particles("Decor — Smoke", { kind: "fog", count: 8, size: 5, speed: 0.45, color: "@secondary" }),
+    // The witch's altar, tucked into the lower corners.
+    icon("Decor — Cauldron", { x: 96, y: 820, width: 150, height: 150 }, "cauldron", {
+      fill: "@accent/75",
+      effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+      animation: anim("float", { duration: 6400, intensity: 0.3 }),
+    }),
+    icon("Decor — Raven", { x: 150, y: 150, width: 120, height: 120 }, "raven", {
+      fill: "@accent/70",
+      animation: anim("float", { duration: 7200, intensity: 0.4 }),
+    }),
+    icon("Decor — Crystal", { x: 1690, y: 840, width: 110, height: 110 }, "crystal", {
+      fill: "@accent/70",
+      effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+      animation: anim("pulse", { duration: 4200 }),
+    }),
+    icon("Decor — Candle left", { x: 300, y: 858, width: 70, height: 70 }, "candle", {
+      fill: "@accent/70",
+      effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+      animation: anim("flicker", { duration: 2200 }),
+    }),
+    icon("Decor — Candle right", { x: 1560, y: 856, width: 70, height: 70 }, "candle", {
+      fill: "@accent/70",
+      effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+      animation: anim("flicker", { duration: 2600 }),
+    }),
+    icon("Decor — Rose", { x: 1744, y: 150, width: 96, height: 96 }, "rose", {
+      fill: "@primary/70",
+      animation: anim("float", { duration: 6800, intensity: 0.3 }),
+    }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.4, color: "@accent", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [
+    shape("Decor — Damask", FULL, { shape: "damask", fill: "@primary/10" }),
+    icon("Decor — Candle left", { x: 60, y: 150, width: 56, height: 56 }, "candle", {
+      fill: "@accent/60",
+      effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+      animation: anim("flicker", { duration: 2400 }),
+    }),
+    icon("Decor — Candle right", { x: 1804, y: 150, width: 56, height: 56 }, "candle", {
+      fill: "@accent/60",
+      effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+      animation: anim("flicker", { duration: 2000 }),
+    }),
+  ],
 };
 
 /** Red Plasma (spec theme A): flowing energy — glowing plasma waves crossing
@@ -3704,6 +3846,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   LIQUID_NEON,
   HEX_STORM,
   MOONLIT_GROVE,
+  WITCHING_HOUR,
   PLASMA,
   AURORA,
   NEBULA,

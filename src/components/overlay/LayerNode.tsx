@@ -1034,6 +1034,46 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     return <KonvaShape {...paint} sceneFunc={(c, shape) => { plaquePath(c, w, h); c.fillStrokeShape(shape); }} />;
   }
 
+  if (layer.shape === "damask") {
+    const stroke = fill ?? resolveColor(layer.fill, ctx.theme);
+    return (
+      <KonvaShape
+        listening={false}
+        stroke={stroke}
+        strokeWidth={Math.max(1, layer.strokeWidth ?? 1.4)}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        sceneFunc={(c, shape) => {
+          c.save();
+          c.beginPath();
+          c.rect(0, 0, w, h);
+          c.clip();
+          damaskPath(c, w, h);
+          c.strokeShape(shape);
+          c.restore();
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "scroll") {
+    const rod = resolveColor("@accent", ctx.theme);
+    const rollW = Math.min(w * 0.045, 20);
+    const inset = rollW * 1.6;
+    const bodyR = Math.min(layer.cornerRadius || 6, h * 0.45);
+    return (
+      <Group listening={false} {...shadowProps(layer.effects, ctx.theme, glowBoost)}>
+        {/* The parchment sheet, tucked under the rods at each end. */}
+        <Rect x={inset} y={h * 0.05} width={Math.max(0, w - inset * 2)} height={h * 0.9} cornerRadius={bodyR} {...paint} />
+        {/* Two rolled rods — vertical cylinders read as a scroll. */}
+        <Rect x={0} y={0} width={rollW * 2} height={h} cornerRadius={rollW} fill={rod} />
+        <Rect x={w - rollW * 2} y={0} width={rollW * 2} height={h} cornerRadius={rollW} fill={rod} />
+        {/* A soft sheen down each rod so it reads as round, not flat. */}
+        <Rect x={rollW * 0.6} y={h * 0.12} width={Math.max(1.5, rollW * 0.4)} height={h * 0.76} cornerRadius={rollW * 0.2} fill={withAlpha(lighten(rod, 40), 0.5)} />
+        <Rect x={w - rollW * 1.4} y={h * 0.12} width={Math.max(1.5, rollW * 0.4)} height={h * 0.76} cornerRadius={rollW * 0.2} fill={withAlpha(lighten(rod, 40), 0.5)} />
+      </Group>
+    );
+  }
+
   return <Line closed points={polygonPoints(layer.shape, w, h)} {...paint} />;
 }
 
@@ -2055,6 +2095,48 @@ function plaquePath(c: CanvasRenderingContext2D | Konva.Context, w: number, h: n
   c.quadraticCurveTo(notch * 0.35, 0, notch, 0);
   c.closePath();
   void r;
+}
+
+/**
+ * A damask lattice: a mirrored ogee (pointed-oval) motif with a quatrefoil
+ * heart and a small crown flourish, tiled on a half-drop grid — the repeat that
+ * reads as Victorian wallpaper. Purely a function of position, so it survives
+ * palette swaps and animates identically in OBS.
+ */
+function damaskPath(c: Konva.Context, w: number, h: number) {
+  const cell = Math.max(130, Math.min(w, h) * 0.17);
+  const motif = (cx: number, cy: number, s: number) => {
+    const a = s * 0.42;
+    const b = s * 0.66;
+    // Pointed oval, two mirrored beziers meeting at top and bottom.
+    c.moveTo(cx, cy - b);
+    c.bezierCurveTo(cx + a, cy - b * 0.42, cx + a, cy + b * 0.42, cx, cy + b);
+    c.bezierCurveTo(cx - a, cy + b * 0.42, cx - a, cy - b * 0.42, cx, cy - b);
+    // Quatrefoil in the heart.
+    const q = s * 0.13;
+    for (let k = 0; k < 4; k++) {
+      const ang = k * (Math.PI / 2) + Math.PI / 4;
+      const px = cx + Math.cos(ang) * q * 1.3;
+      const py = cy + Math.sin(ang) * q * 1.3;
+      c.moveTo(px + q, py);
+      c.arc(px, py, q, 0, Math.PI * 2, false);
+    }
+    // Crown flourishes topping and tailing the oval.
+    c.moveTo(cx - s * 0.12, cy - b);
+    c.quadraticCurveTo(cx, cy - b - s * 0.16, cx + s * 0.12, cy - b);
+    c.moveTo(cx - s * 0.12, cy + b);
+    c.quadraticCurveTo(cx, cy + b + s * 0.16, cx + s * 0.12, cy + b);
+  };
+
+  c.beginPath();
+  let row = 0;
+  for (let cy = 0; cy <= h + cell; cy += cell) {
+    const offset = (row % 2) * (cell / 2);
+    for (let cx = -cell; cx <= w + cell; cx += cell) {
+      motif(cx + offset, cy, cell * 0.92);
+    }
+    row++;
+  }
 }
 
 /** Fallback when a flag layer somehow has no stripes: the classic six. */

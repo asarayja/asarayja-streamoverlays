@@ -409,7 +409,13 @@ export type ShapeKind =
   | "silkRibbon"
   /** A heavy neon bloom veil: big soft radial glows pooled top and bottom
       (uses `facetColors`). */
-  | "bloomVeil";
+  | "bloomVeil"
+  /** A tiling damask ornament — mirrored ogee lattice with quatrefoil centres,
+      the Victorian-witch wallpaper. Stroked in the layer's fill colour. */
+  | "damask"
+  /** A parchment scroll plate: a rounded sheet flanked by two rolled rods, the
+      witch-grimoire panel/alert silhouette. */
+  | "scroll";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";
