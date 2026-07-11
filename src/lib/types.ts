@@ -380,6 +380,11 @@ export type ShapeKind =
   | "wavesplit"
   /** A colour block below a straight slanted edge — a diagonal divider. */
   | "diagonalsplit"
+  /** A colour block below a zigzag edge — a jagged divider. */
+  | "zigzagsplit"
+  /** Flag stripes bent into parallel arcs — a curved pride band. Colours from
+      `facetColors`, arc bend from `cornerRadius`. */
+  | "flagarc"
   /** Brutalist print scaffold: heavy rules, crop marks, a registration
       crosshair and a tick ruler. */
   | "printRules"

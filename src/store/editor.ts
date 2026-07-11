@@ -22,6 +22,7 @@ export type BrushKind =
   | "dotted"
   | "ink"
   | "calligraphy"
+  | "fill"
   | "spray"
   | "crayon"
   | "rainbow"
@@ -34,6 +35,7 @@ export const BRUSH_KINDS: { id: BrushKind; label: string }[] = [
   { id: "marker", label: "Marker" },
   { id: "ink", label: "Ink" },
   { id: "calligraphy", label: "Calligraphy" },
+  { id: "fill", label: "Fill" },
   { id: "ribbon", label: "Ribbon" },
   { id: "highlighter", label: "Highlight" },
   { id: "neon", label: "Neon" },

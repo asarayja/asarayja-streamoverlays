@@ -107,7 +107,15 @@ export function EditorCanvas({
     const effects = structuredClone(DEFAULT_EFFECTS);
     let pad = drawWidth;
 
-    if (drawBrush === "ink" || drawBrush === "calligraphy" || drawBrush === "ribbon") {
+    if (drawBrush === "fill") {
+      // Close the hand-drawn boundary down to the canvas floor → a filled region
+      // below the curve. Over another colour it's a hand-drawn colour split.
+      const lastX = pts[pts.length - 2];
+      const firstX = pts[0];
+      renderPts = [...pts, lastX, CANVAS_HEIGHT, firstX, CANVAS_HEIGHT];
+      drawStyle = "fill";
+      pad = 2;
+    } else if (drawBrush === "ink" || drawBrush === "calligraphy" || drawBrush === "ribbon") {
       // Variable-width filled strokes via perfect-freehand.
       const opts =
         drawBrush === "calligraphy"
@@ -414,6 +422,19 @@ export function EditorCanvas({
                       lineCap="round"
                       lineJoin="round"
                       opacity={0.3}
+                      listening={false}
+                    />
+                  );
+                }
+                if (drawBrush === "fill") {
+                  const lastX = stroke[stroke.length - 2];
+                  const firstX = stroke[0];
+                  return (
+                    <Line
+                      points={[...stroke, lastX, CANVAS_HEIGHT, firstX, CANVAS_HEIGHT]}
+                      closed
+                      fill={col}
+                      opacity={0.75}
                       listening={false}
                     />
                   );

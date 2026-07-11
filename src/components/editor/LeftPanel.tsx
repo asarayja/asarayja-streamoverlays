@@ -318,11 +318,34 @@ function TemplatesTab() {
  * Decor shapes worth reaching for directly. They are all `shape` layers, but
  * "add a shape then change its Kind to moon" is not a thing anyone discovers.
  */
-const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch }> = [
+const PRIDE_FLAGS: Array<{ label: string; stripes: string[] }> = [
+  { label: "Rainbow", stripes: ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"] },
+  { label: "Trans", stripes: ["#5BCEFA", "#F5A9B8", "#FFFFFF", "#F5A9B8", "#5BCEFA"] },
+  { label: "Bisexual", stripes: ["#D60270", "#D60270", "#9B4F96", "#0038A8", "#0038A8"] },
+  { label: "Pansexual", stripes: ["#FF218C", "#FFD800", "#21B1FF"] },
+  { label: "Lesbian", stripes: ["#D52D00", "#EF7627", "#FFFFFF", "#D162A4", "#A30262"] },
+  { label: "Nonbinary", stripes: ["#FCF434", "#FFFFFF", "#9C59D1", "#2C2C2C"] },
+];
+
+const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType }> = [
   { label: "Colour fill", patch: { shape: "rect", x: 0, y: 0, width: 1920, height: 1080, fill: "@secondary" } },
   { label: "Curved split", patch: { shape: "arcsplit", x: 0, y: 420, width: 1920, height: 660, fill: "@primary", cornerRadius: 180 } },
   { label: "Wave split", patch: { shape: "wavesplit", x: 0, y: 430, width: 1920, height: 650, fill: "@primary", cornerRadius: 70 } },
   { label: "Diagonal split", patch: { shape: "diagonalsplit", x: 0, y: 0, width: 1920, height: 1080, fill: "@primary", cornerRadius: 240 } },
+  { label: "Zigzag split", patch: { shape: "zigzagsplit", x: 0, y: 430, width: 1920, height: 650, fill: "@primary", cornerRadius: 60 } },
+  { label: "Circle", patch: { shape: "ellipse", x: 660, y: 300, width: 600, height: 600, fill: "@primary" } },
+  {
+    label: "Spotlight",
+    patch: {
+      shape: "ellipse",
+      x: 560,
+      y: 240,
+      width: 800,
+      height: 800,
+      fill: "@primary",
+      effects: { ...DEFAULT_EFFECTS, glow: { enabled: true, color: "@glow", strength: 80 } },
+    },
+  },
   {
     label: "Split — gradient",
     patch: {
@@ -371,6 +394,35 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch }> = [
   { label: "Paint splat", patch: { shape: "paintSplat", width: 520, height: 480, fill: "@primary" } },
   { label: "Spray splat", patch: { shape: "spraySplat", width: 560, height: 520, fill: "@primary" } },
   { label: "Concrete wall", patch: { shape: "concreteWall", width: 1920, height: 1080, fill: "@surface" } },
+  // Pride patterns you can size to any part of the screen and rotate to any
+  // direction: straight stripes (a flag layer) or bent into a curved band.
+  ...PRIDE_FLAGS.flatMap(({ label, stripes }) => [
+    {
+      label: `Pride — ${label}`,
+      type: "flag" as LayerType,
+      patch: {
+        stripes,
+        stackDirection: "vertical",
+        x: 0,
+        y: 0,
+        width: 1920,
+        height: 1080,
+        cornerRadius: 0,
+      } as LayerPatch,
+    },
+    {
+      label: `Pride — ${label} (curved)`,
+      patch: {
+        shape: "flagarc",
+        facetColors: stripes,
+        x: 0,
+        y: 220,
+        width: 1920,
+        height: 640,
+        cornerRadius: 120,
+      } as LayerPatch,
+    },
+  ]),
 ];
 
 function AddTab() {
@@ -402,10 +454,10 @@ function AddTab() {
           moon has a phase and craters you can edit.
         </p>
         <div className="grid grid-cols-2 gap-2">
-          {DECOR_PRESETS.map(({ label, patch }) => (
+          {DECOR_PRESETS.map(({ label, patch, type }) => (
             <button
               key={label}
-              onClick={() => addLayer("shape", patch as Partial<Layer>)}
+              onClick={() => addLayer(type ?? "shape", patch as Partial<Layer>)}
               className="rounded-xl border border-white/[0.06] bg-white/[0.02] py-2.5 text-[11px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
             >
               {label}

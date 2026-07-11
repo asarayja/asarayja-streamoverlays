@@ -575,9 +575,11 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
         el
       );
 
-    // Ink / calligraphy: `points` is a closed outline polygon — render it filled.
+    // Ink / calligraphy / fill: `points` is a closed polygon — render it filled.
+    // `paint` carries fill + gradient + border + glow, so a hand-drawn fill can
+    // take a gradient or plasma glow like the split shapes.
     if (layer.drawStyle === "fill") {
-      return wrap(<Line points={pts} closed fill={col} {...shadowProps(layer.effects, ctx.theme, glowBoost)} />);
+      return wrap(<Line points={pts} closed {...paint} />);
     }
 
     // Airbrush: scatter soft deterministic dots along the drawn path.
@@ -783,6 +785,65 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
           c.lineTo(0, h);
           c.closePath();
           c.fillStrokeShape(s);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "zigzagsplit") {
+    // Fills below a zigzag edge across the box — a jagged divider.
+    const amp = (layer.cornerRadius ?? 40) || 1;
+    const teeth = 10;
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, s) => {
+          c.beginPath();
+          c.moveTo(0, amp);
+          for (let i = 1; i <= teeth; i++) {
+            c.lineTo((w * i) / teeth, i % 2 === 0 ? 2 * amp : 0);
+          }
+          c.lineTo(w, h);
+          c.lineTo(0, h);
+          c.closePath();
+          c.fillStrokeShape(s);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "flagarc") {
+    // Flag stripes bent into parallel arcs — a curved pride band, any direction
+    // via the layer's rotation.
+    const cols =
+      layer.facetColors && layer.facetColors.length
+        ? layer.facetColors
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+    const n = cols.length;
+    const bend = layer.cornerRadius ?? 0;
+    return (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) => {
+          const steps = 40;
+          const arc = (x: number) => bend * (1 - Math.pow((2 * x) / w - 1, 2));
+          for (let i = 0; i < n; i++) {
+            const y0 = (i / n) * h;
+            const y1 = ((i + 1) / n) * h;
+            c.setAttr("fillStyle", cols[i]);
+            c.beginPath();
+            c.moveTo(0, y0 + arc(0));
+            for (let sIdx = 1; sIdx <= steps; sIdx++) {
+              const x = (w * sIdx) / steps;
+              c.lineTo(x, y0 + arc(x));
+            }
+            for (let sIdx = steps; sIdx >= 0; sIdx--) {
+              const x = (w * sIdx) / steps;
+              c.lineTo(x, y1 + arc(x));
+            }
+            c.closePath();
+            c.fill();
+          }
         }}
       />
     );
