@@ -215,6 +215,12 @@ function TemplatesTab() {
  * "add a shape then change its Kind to moon" is not a thing anyone discovers.
  */
 const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch }> = [
+  { label: "Rectangle", patch: { shape: "rect", width: 320, height: 180, cornerRadius: 12, fill: "@primary" } },
+  { label: "Ellipse", patch: { shape: "ellipse", width: 240, height: 240, fill: "@primary" } },
+  { label: "Triangle", patch: { shape: "triangle", width: 220, height: 200, fill: "@accent" } },
+  { label: "Hexagon", patch: { shape: "hexagon", width: 220, height: 220, fill: "@accent" } },
+  { label: "Shard", patch: { shape: "shard", width: 240, height: 240, fill: "@accent" } },
+  { label: "Line", patch: { shape: "line", width: 480, height: 6, fill: "@accent" } },
   { label: "Moon", patch: { shape: "moon", width: 220, height: 220, moonPhase: 1, craters: true, fill: "@accent" } },
   { label: "Crescent", patch: { shape: "crescent", width: 180, height: 180, fill: "@accent" } },
   { label: "Spiderweb", patch: { shape: "web", width: 300, height: 260, fill: "@accent/55", cornerRadius: 1.6 } },
@@ -223,6 +229,14 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch }> = [
   { label: "Graveyard", patch: { shape: "graveyard", width: 1920, height: 360, fill: "@background" } },
   { label: "Drip panel", patch: { shape: "drip", width: 520, height: 240, cornerRadius: 14, fill: "@primary" } },
   { label: "Plaque", patch: { shape: "plaque", width: 480, height: 160, fill: "@surface/92" } },
+  { label: "Energy wave", patch: { shape: "wave", width: 900, height: 260, fill: "@accent" } },
+  { label: "Hex mesh", patch: { shape: "hexmesh", width: 420, height: 360, fill: "@accent/40" } },
+  { label: "Scanlines", patch: { shape: "scanlines", width: 420, height: 300, fill: "@accent/30" } },
+  { label: "Carbon", patch: { shape: "carbon", width: 420, height: 300, fill: "@surface" } },
+  { label: "Chamfer panel", patch: { shape: "chamfer", width: 360, height: 200, fill: "@surface/90" } },
+  { label: "Paint splat", patch: { shape: "paintSplat", width: 520, height: 480, fill: "@primary" } },
+  { label: "Spray splat", patch: { shape: "spraySplat", width: 560, height: 520, fill: "@primary" } },
+  { label: "Concrete wall", patch: { shape: "concreteWall", width: 1920, height: 1080, fill: "@surface" } },
 ];
 
 function AddTab() {
