@@ -124,3 +124,35 @@ input[type="range"] {
     animation: none;
   }
 }
+
+/* Liquid-glass surface for app chrome (modals, cards): a frosted translucent
+   pane with a saturated backdrop, a bright top rim and a soft drop shadow. */
+.liquid-glass {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(255, 255, 255, 0.05)
+  ),
+  rgba(16, 16, 24, 0.72);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 16px 48px -12px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
+}
+/* A bright specular glint sweeping the top-left corner. */
+.liquid-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 12% 0%,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0) 55%
+  );
+}

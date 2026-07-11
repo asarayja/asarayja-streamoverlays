@@ -71,7 +71,7 @@ export function Onboarding() {
 
   return (
     <div className="fixed inset-0 z-[100] grid place-items-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="animate-rise w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-ink-900 shadow-2xl">
+      <div className="liquid-glass animate-rise w-full max-w-md overflow-hidden rounded-2xl shadow-2xl">
         <div className="relative border-b border-white/[0.06] px-6 py-5">
           <button
             onClick={close}

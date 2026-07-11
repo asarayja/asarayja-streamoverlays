@@ -269,8 +269,9 @@ export interface Gloss {
   enabled: boolean;
   /** 0..1 — opacity of the highlight. */
   strength: number;
-  /** "sheen" (default): a moulded top sweep. "streak": diagonal glass glints. */
-  style?: "sheen" | "streak";
+  /** "sheen" (default): a moulded top sweep. "streak": diagonal glass glints.
+      "liquid": a drifting lens caustic with a specular rim and chromatic edge. */
+  style?: "sheen" | "streak" | "liquid";
 }
 
 export interface Effects {

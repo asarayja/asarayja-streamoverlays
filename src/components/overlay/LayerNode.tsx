@@ -319,7 +319,8 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
             listening={false}
             sceneFunc={(c) => {
               const r = Math.min(layer.cornerRadius, w / 2, h / 2);
-              if (gloss.style === "streak") drawReflection(c, w, h, r, gloss.strength);
+              if (gloss.style === "liquid") drawLiquid(c, w, h, r, gloss.strength, ctx.time);
+              else if (gloss.style === "streak") drawReflection(c, w, h, r, gloss.strength);
               else drawGloss(c, w, h, r, gloss.strength);
             }}
           />
@@ -1491,6 +1492,85 @@ function drawReflection(c: Konva.Context, w: number, h: number, r: number, stren
   streak(w * 0.3, w * 0.19, 0.26); // wide soft reflection body
   streak(w * 0.47, w * 0.022, 0.7); // crisp glint on its leading edge
   streak(w * 0.53, w * 0.012, 0.45); // faint trailing glint
+  c.restore();
+}
+
+/**
+ * Liquid glass: the Apple-style pane. A frosted base, a big soft lens caustic
+ * that drifts across the surface (the "liquid" part), a bright specular rim on
+ * the top-left inner edge, and a faint cyan/magenta chromatic fringe where the
+ * edge refracts. A pure function of `time`, so it loops seamlessly and exports
+ * frame-for-frame. Clipped to the rounded rect.
+ */
+function drawLiquid(c: Konva.Context, w: number, h: number, r: number, strength: number, time: number) {
+  const t = time / 1000;
+  const rr = (ctx: Konva.Context) => {
+    ctx.beginPath();
+    ctx.moveTo(r, 0);
+    ctx.arcTo(w, 0, w, h, r);
+    ctx.arcTo(w, h, 0, h, r);
+    ctx.arcTo(0, h, 0, 0, r);
+    ctx.arcTo(0, 0, w, 0, r);
+    ctx.closePath();
+  };
+
+  c.save();
+  rr(c);
+  c.clip();
+
+  // Frosted top sheen and a soft shadow lip at the foot.
+  const top = c.createLinearGradient(0, 0, 0, h * 0.6);
+  top.addColorStop(0, `rgba(255,255,255,${0.26 * strength})`);
+  top.addColorStop(1, "rgba(255,255,255,0)");
+  c.setAttr("fillStyle", top);
+  c.fillRect(0, 0, w, h * 0.6);
+  const lip = c.createLinearGradient(0, h * 0.62, 0, h);
+  lip.addColorStop(0, "rgba(0,0,0,0)");
+  lip.addColorStop(1, `rgba(0,0,0,${0.2 * strength})`);
+  c.setAttr("fillStyle", lip);
+  c.fillRect(0, h * 0.62, w, h * 0.38);
+
+  // The drifting lens caustic — a big soft bright pool on a slow Lissajous path.
+  const rad = Math.max(w, h) * 0.6;
+  const blob = (cx: number, cy: number, radius: number, alpha: number) => {
+    const g = c.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    g.addColorStop(0, `rgba(255,255,255,${alpha * strength})`);
+    g.addColorStop(0.55, `rgba(255,255,255,${alpha * 0.3 * strength})`);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    c.setAttr("fillStyle", g);
+    c.beginPath();
+    c.arc(cx, cy, radius, 0, Math.PI * 2);
+    c.fill();
+  };
+  blob(w * 0.5 + Math.sin(t * 0.6) * w * 0.28, h * 0.42 + Math.sin(t * 0.9 + 1.3) * h * 0.3, rad, 0.32);
+  blob(w * 0.5 + Math.cos(t * 0.8 + 2) * w * 0.3, h * 0.55 + Math.cos(t * 0.5) * h * 0.26, rad * 0.42, 0.22);
+  c.restore();
+
+  // Specular rim + chromatic fringe on the inner edge. Clipped, so only the
+  // inside half of each stroke shows — a crisp lit lip on the glass.
+  c.save();
+  rr(c);
+  c.clip();
+  c.setAttr("lineJoin", "round");
+  // cyan and magenta offsets — the refraction rainbow at the edge.
+  c.setAttr("lineWidth", 2.5);
+  c.setAttr("strokeStyle", `rgba(120,220,255,${0.35 * strength})`);
+  c.save();
+  c.translate(-1.4, -1.4);
+  rr(c);
+  c.stroke();
+  c.restore();
+  c.setAttr("strokeStyle", `rgba(255,120,220,${0.3 * strength})`);
+  c.save();
+  c.translate(1.4, 1.4);
+  rr(c);
+  c.stroke();
+  c.restore();
+  // bright white specular rim on top.
+  c.setAttr("lineWidth", 2);
+  c.setAttr("strokeStyle", `rgba(255,255,255,${0.6 * strength})`);
+  rr(c);
+  c.stroke();
   c.restore();
 }
 

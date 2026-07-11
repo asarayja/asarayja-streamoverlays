@@ -252,19 +252,34 @@ export function RightPanel() {
           label={t("Gloss")}
           checked={layer.effects.gloss?.enabled ?? false}
           onChange={(enabled) =>
-            patchEffects({ gloss: { strength: layer.effects.gloss?.strength ?? 0.8, enabled } })
+            patchEffects({ gloss: { ...layer.effects.gloss, strength: layer.effects.gloss?.strength ?? 0.8, enabled } })
           }
         />
         {layer.effects.gloss?.enabled && (
-          <Slider
-            label={t("Gloss strength")}
-            min={0.1}
-            max={1}
-            step={0.05}
-            value={layer.effects.gloss.strength}
-            onBegin={beginGesture}
-            onChange={(strength) => patchEffects({ gloss: { enabled: true, strength } }, false)}
-          />
+          <>
+            <Field label={t("Finish")}>
+              <Segmented
+                value={layer.effects.gloss.style ?? "sheen"}
+                onChange={(style) =>
+                  patchEffects({ gloss: { ...layer.effects.gloss, enabled: true, strength: layer.effects.gloss?.strength ?? 0.8, style } })
+                }
+                options={[
+                  { value: "sheen", label: t("Frost") },
+                  { value: "streak", label: t("Glints") },
+                  { value: "liquid", label: t("Liquid") },
+                ]}
+              />
+            </Field>
+            <Slider
+              label={t("Gloss strength")}
+              min={0.1}
+              max={1}
+              step={0.05}
+              value={layer.effects.gloss.strength}
+              onBegin={beginGesture}
+              onChange={(strength) => patchEffects({ gloss: { ...layer.effects.gloss, enabled: true, strength } }, false)}
+            />
+          </>
         )}
 
         <Toggle

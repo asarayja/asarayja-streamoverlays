@@ -243,7 +243,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-ink-950">
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-white/[0.06] bg-ink-900 px-4">
+      <header className="liquid-glass flex h-14 shrink-0 items-center gap-3 px-4">
         <Link
           href="/projects"
           className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"

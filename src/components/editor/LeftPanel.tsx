@@ -453,6 +453,21 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
     },
   },
   { label: "Harlequin", patch: { shape: "harlequin", width: 1920, height: 1080, fill: "@primary/14" } },
+  {
+    label: "Liquid glass panel",
+    patch: {
+      shape: "rect",
+      width: 520,
+      height: 300,
+      cornerRadius: 28,
+      fill: "@text/10",
+      effects: {
+        ...DEFAULT_EFFECTS,
+        border: { enabled: true, color: "@text/35", width: 2, radius: 28 },
+        gloss: { enabled: true, strength: 0.6, style: "liquid" },
+      },
+    },
+  },
   { label: "Line", patch: { shape: "line", width: 480, height: 6, fill: "@accent" } },
   { label: "Moon", patch: { shape: "moon", width: 220, height: 220, moonPhase: 1, craters: true, fill: "@accent" } },
   { label: "Crescent", patch: { shape: "crescent", width: 180, height: 180, fill: "@accent" } },
@@ -845,12 +860,7 @@ function LayersTab() {
           return (
             <li
               key={layer.id}
-              draggable
               onClick={() => select([layer.id])}
-              onDragStart={(e) => {
-                setDragId(layer.id);
-                e.dataTransfer.effectAllowed = "move";
-              }}
               onDragOver={(e) => {
                 if (!dragId || dragId === layer.id) return;
                 e.preventDefault();
@@ -861,19 +871,32 @@ function LayersTab() {
                 e.preventDefault();
                 completeDrag();
               }}
-              onDragEnd={() => {
-                setDragId(null);
-                setDropTarget(null);
-              }}
               className={cx(
-                "group flex cursor-grab items-center gap-2 rounded-lg px-2 py-1.5 transition-colors active:cursor-grabbing",
+                "group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 transition-colors",
                 selected ? "bg-brand-500/15 ring-1 ring-brand-400/40" : "hover:bg-white/[0.04]",
                 dragId === layer.id && "opacity-40",
                 isDropTarget && !dropTarget!.below && "shadow-[0_-2px_0_0_theme(colors.brand.400)]",
                 isDropTarget && dropTarget!.below && "shadow-[0_2px_0_0_theme(colors.brand.400)]",
               )}
             >
-              <GripVertical className="size-3 shrink-0 text-zinc-700 group-hover:text-zinc-500" />
+              {/* Only the grip is a drag source, so a click on the row selects
+                  cleanly instead of accidentally starting a reorder. */}
+              <span
+                draggable
+                onDragStart={(e) => {
+                  setDragId(layer.id);
+                  e.dataTransfer.effectAllowed = "move";
+                }}
+                onDragEnd={() => {
+                  setDragId(null);
+                  setDropTarget(null);
+                }}
+                onClick={(e) => e.stopPropagation()}
+                title={t("Drag to reorder")}
+                className="shrink-0 cursor-grab active:cursor-grabbing"
+              >
+                <GripVertical className="size-3 text-zinc-700 group-hover:text-zinc-500" />
+              </span>
               <Icon className={cx("size-3.5 shrink-0", selected ? "text-brand-400" : "text-zinc-600")} />
 
               {editingId === layer.id ? (

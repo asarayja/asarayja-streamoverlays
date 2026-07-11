@@ -335,7 +335,7 @@ export function ExportDialog({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-6 backdrop-blur-sm">
-      <div className="panel-solid max-h-full w-full max-w-2xl overflow-y-auto rounded-2xl">
+      <div className="liquid-glass max-h-full w-full max-w-2xl overflow-y-auto rounded-2xl">
         <header className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
           <div>
             <h2 className="text-base font-semibold text-white">{t("Export")}</h2>

@@ -80,6 +80,20 @@ export function EditorCanvas({
   const transformerRef = useRef<Konva.Transformer>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const fontsReady = useFontsReady();
+  // While Ctrl/Cmd is held during a resize, lock to a single axis so only one
+  // side moves — the rest stays put.
+  const axisLockRef = useRef(false);
+  useEffect(() => {
+    const set = (e: KeyboardEvent) => {
+      axisLockRef.current = e.ctrlKey || e.metaKey;
+    };
+    window.addEventListener("keydown", set);
+    window.addEventListener("keyup", set);
+    return () => {
+      window.removeEventListener("keydown", set);
+      window.removeEventListener("keyup", set);
+    };
+  }, []);
 
   const project = useEditorStore((s) => s.project);
   const selectedIds = useEditorStore((s) => s.selectedIds);
@@ -669,6 +683,7 @@ export function EditorCanvas({
               ref={transformerRef}
               rotateEnabled
               keepRatio={false}
+              centeredScaling={false}
               ignoreStroke
               borderStroke="#8b5cf6"
               borderStrokeWidth={1.5}
@@ -677,9 +692,23 @@ export function EditorCanvas({
               anchorSize={9}
               anchorCornerRadius={3}
               rotateAnchorOffset={26}
-              boundBoxFunc={(oldBox, newBox) =>
-                newBox.width < 8 || newBox.height < 8 ? oldBox : newBox
-              }
+              boundBoxFunc={(oldBox, newBox) => {
+                if (newBox.width < 8 || newBox.height < 8) return oldBox;
+                // Ctrl/Cmd held: lock to the axis that moved most, so a drag
+                // resizes one side and leaves the other exactly where it was.
+                if (axisLockRef.current) {
+                  const dw = Math.abs(newBox.width - oldBox.width);
+                  const dh = Math.abs(newBox.height - oldBox.height);
+                  if (dw >= dh) {
+                    newBox.height = oldBox.height;
+                    newBox.y = oldBox.y;
+                  } else {
+                    newBox.width = oldBox.width;
+                    newBox.x = oldBox.x;
+                  }
+                }
+                return newBox;
+              }}
             />
           </KonvaLayer>
         </Stage>

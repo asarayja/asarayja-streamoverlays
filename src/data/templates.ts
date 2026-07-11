@@ -1705,8 +1705,9 @@ interface FamilyStyle {
       sweep, so the colourful backdrop shows through the plates and boxes. */
   glass?: boolean;
   /** Glass highlight: "frost" (default) a soft top sheen, "reflection" diagonal
-      light glints across the pane. */
-  glassStyle?: "frost" | "reflection";
+      light glints across the pane, "liquid" a drifting lens caustic with a
+      specular rim and chromatic edge — the Apple liquid-glass look. */
+  glassStyle?: "frost" | "reflection" | "liquid";
   /** How a pride flag is laid on the glass sheet: "sides" a few thicker
       horizontal lines beside the copy (default), or "stripes" a full field of
       diagonal pinstripes. */
@@ -1844,7 +1845,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       effects: {
         border: { enabled: true, color: f.glass ? "@text/35" : "@border", width: 1, radius: f.radius },
         ...(f.glass
-          ? { gloss: { enabled: true, strength: 0.55, style: f.glassStyle === "reflection" ? "streak" : "sheen" } }
+          ? { gloss: { enabled: true, strength: 0.55, style: f.glassStyle === "liquid" ? "liquid" : f.glassStyle === "reflection" ? "streak" : "sheen" } }
           : {}),
         ...o.effects,
       },
@@ -1912,7 +1913,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
                 enabled: true,
                 strength: f.glassStyle === "reflection" ? 1 : 0.72,
                 // Glossy (shiny) glass for reflection families; matte frosted for frost.
-                style: f.glassStyle === "reflection" ? "streak" : "sheen",
+                style: f.glassStyle === "liquid" ? "liquid" : f.glassStyle === "reflection" ? "streak" : "sheen",
               },
             },
           }),
@@ -2133,11 +2134,20 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           height: 160,
         }, {
           shape: f.plateShape,
-          fill: "@surface/92",
+          fill: f.glass ? "@text/10" : "@surface/92",
           cornerRadius: f.radius,
           effects: {
-            border: { enabled: true, color: "@border", width: 1, radius: f.radius },
+            border: { enabled: true, color: f.glass ? "@text/35" : "@border", width: 1, radius: f.radius },
             glow: { enabled: true, color: "@glow", strength: 14 },
+            ...(f.glass
+              ? {
+                  gloss: {
+                    enabled: true,
+                    strength: 0.55,
+                    style: f.glassStyle === "liquid" ? "liquid" : f.glassStyle === "reflection" ? "streak" : "sheen",
+                  },
+                }
+              : {}),
           },
         }),
       ),
@@ -3245,6 +3255,46 @@ const FROST: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** Liquid Glass: the Apple-style pane. Panels carry a drifting lens caustic
+    with a specular rim and a faint chromatic edge, floating over vivid orbs. */
+const LIQUID_GLASS: FamilyStyle = {
+  id: "liquidglass",
+  name: "Liquid Glass",
+  tags: ["Minimal", "Sci-Fi", "Purple"],
+  display: "Poppins",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 28,
+  frameRadius: 28,
+  corners: false,
+  strokeWidth: 2,
+  glass: true,
+  glassStyle: "liquid",
+  socialPill: "@text/16",
+  frameEffects: {
+    border: { enabled: true, color: "@text/40", width: 2, radius: 28 },
+    glow: { enabled: true, color: "@glow", strength: 18 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/38", angle: 150 } },
+    }),
+    // Vivid orbs for the liquid glass to catch and refract.
+    particles("Decor — Orbs A", { kind: "blobs", count: 5, size: 200, speed: 0.26, color: "@primary", opacity: 0.6 }),
+    particles("Decor — Orbs B", { kind: "blobs", count: 4, size: 172, speed: 0.3, color: "@accent", opacity: 0.55 }),
+    particles("Decor — Orbs C", { kind: "blobs", count: 3, size: 150, speed: 0.34, color: "@secondary", opacity: 0.5 }),
+    particles("Decor — Sparkle", { kind: "stars", count: 22, size: 2, speed: 0.1, color: "@text", opacity: 0.5 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 /** Prism: glassmorphism with a reflection finish — diagonal light glints sweep
     the panels over vivid multi-colour orbs. Bolder than Frost. */
 const PRISM: FamilyStyle = {
@@ -3971,6 +4021,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   NEBULA,
   SILK,
   FROST,
+  LIQUID_GLASS,
   PRISM,
   CRYSTAL,
   MECHA,
