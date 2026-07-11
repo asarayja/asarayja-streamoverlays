@@ -4036,9 +4036,13 @@ const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familySc
 // Concrete flies the red proof-sheet palette, the Aurora Silk pair the violet one.
 const RISO_PALETTES = ABSTRACT_PALETTES.filter((p) => p.id.includes("riso"));
 const AURORA_PALETTES = ABSTRACT_PALETTES.filter((p) => p.id.includes("aurora"));
+// Aurora Silk is drawn entirely from theme tokens, so it works in any palette —
+// expand it across the full core set (plus its own signature aurora palette) so
+// it comes in every colour like the other families, not just one.
+const AURORA_SILK_PALETTES = [...CORE_PALETTES, ...AURORA_PALETTES];
 const ABSTRACT_TEMPLATES: Template[] = [
   ...expand(familyScreens(RISO_CONCRETE), RISO_PALETTES),
-  ...expand([...familyScreens(AURORA_SILK), ...familyScreens(AURORA_SILK_NEON)], AURORA_PALETTES),
+  ...expand([...familyScreens(AURORA_SILK), ...familyScreens(AURORA_SILK_NEON)], AURORA_SILK_PALETTES),
 ];
 
 // The pride glass families — glossy Prism Flag and matte Frost Flag — expanded
