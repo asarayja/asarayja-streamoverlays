@@ -14,6 +14,7 @@ import {
   type StyleTag,
 } from "@/lib/types";
 import { ABSTRACT_PALETTES, CORE_PALETTES, DEFAULT_PALETTE_ID, GOTHIC_PALETTES, PRIDE_PALETTES, PRISM_PALETTES, paletteTags } from "./palettes";
+import { CUSTOM_TEMPLATES } from "./custom-designs";
 import type { Palette } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
@@ -4779,6 +4780,7 @@ export const TEMPLATES: Template[] = [
   ...expand(PRIDE_TEMPLATES, PRIDE_PALETTES),
   ...expand(PRISM_PRIDE_TEMPLATES, PRISM_PALETTES),
   ...ABSTRACT_TEMPLATES,
+  ...CUSTOM_TEMPLATES,
 ];
 
 const TEMPLATE_BY_ID = new Map(TEMPLATES.map((t) => [t.id, t]));

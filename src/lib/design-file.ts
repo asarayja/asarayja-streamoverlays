@@ -1,4 +1,5 @@
-import type { Layer, Project, TemplateCategory, Theme } from "@/lib/types";
+import { completeTheme } from "@/lib/theme";
+import type { Layer, Palette, Project, StyleTag, Template, TemplateCategory, Theme } from "@/lib/types";
 
 /**
  * A self-contained, code-ready export of a whole design pack. Everything needed
@@ -43,4 +44,38 @@ export function packToDesignFile(screens: Project[]): DesignFile {
       packOrder: p.packOrder,
     })),
   };
+}
+
+/**
+ * Bake a design file into a built-in-style pack: a synthetic palette carrying
+ * its theme (id `custom-<key>`, kept out of the core expansion) plus one
+ * Template per screen sharing that palette + a family of the design's name — so
+ * the gallery, packScreens, createPack and the Screens switcher treat it exactly
+ * like a shipped design. This is the path for turning an exported design into a
+ * permanent site design: drop its JSON into src/data/custom-designs.ts.
+ */
+export function designFileToPack(file: DesignFile, key: string): { palette: Palette; templates: Template[] } {
+  const paletteId = `custom-${key}`;
+  const palette: Palette = {
+    id: paletteId,
+    name: file.name,
+    collection: "core",
+    subStyle: "Custom",
+    tags: ["Custom"],
+    theme: completeTheme(file.theme),
+  };
+  const templates: Template[] = [...file.screens]
+    .sort((a, b) => a.packOrder - b.packOrder)
+    .map((s, i) => ({
+      id: `custom-${key}-s${i}--${paletteId}`,
+      name: s.name,
+      category: s.category ?? "Complete Stream Package",
+      tags: [] as StyleTag[],
+      collection: "core",
+      family: file.name,
+      subStyle: "Custom",
+      paletteId,
+      layers: s.layers,
+    }));
+  return { palette, templates };
 }

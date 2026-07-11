@@ -1,5 +1,6 @@
 import type { CoreTheme, Palette, StyleTag, Theme } from "@/lib/types";
 import { completeTheme } from "@/lib/theme";
+import { CUSTOM_PALETTES } from "@/data/custom-designs";
 
 /**
  * Shipping palettes. Authors tune the eight core tokens (plus any overrides);
@@ -1456,11 +1457,12 @@ const DEFS: PaletteDef[] = [
   },
 ];
 
-/** Public palettes: core tokens authored above, the rest derived. */
-export const PALETTES: Palette[] = DEFS.map((def) => ({
-  ...def,
-  theme: completeTheme(def.theme),
-}));
+/** Public palettes: core tokens authored above, the rest derived, plus the
+    synthetic palettes of any baked-in custom designs. */
+export const PALETTES: Palette[] = [
+  ...DEFS.map((def) => ({ ...def, theme: completeTheme(def.theme) })),
+  ...CUSTOM_PALETTES,
+];
 
 export const DEFAULT_PALETTE_ID = "purple-neon";
 
@@ -1477,7 +1479,7 @@ export function paletteTags(id: string): StyleTag[] {
 // Abstract identity palettes ride the core collection but only expand across the
 // abstract families, so keep them out of the general core expansion.
 export const CORE_PALETTES = PALETTES.filter(
-  (p) => p.collection === "core" && !p.id.startsWith("abstract-"),
+  (p) => p.collection === "core" && !p.id.startsWith("abstract-") && !p.id.startsWith("custom-"),
 );
 export const ABSTRACT_PALETTES = PALETTES.filter((p) => p.id.startsWith("abstract-"));
 export const GOTHIC_PALETTES = PALETTES.filter((p) => p.collection === "gothic");
