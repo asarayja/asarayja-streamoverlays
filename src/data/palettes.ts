@@ -1408,6 +1408,52 @@ const DEFS: PaletteDef[] = [
       shadow: "#000000",
     },
   },
+
+  /* ----- Abstract packs: near-black identity palettes for the Riso Concrete ----- */
+  /* and Aurora Silk families. Ids are `abstract-` so they expand only across    */
+  /* those families, not every core design.                                      */
+  {
+    id: "abstract-riso-red",
+    name: "Riso Red",
+    collection: "core",
+    subStyle: "Abstract",
+    tags: ["Minimal", "Red", "Dark"],
+    theme: {
+      primary: "#e8e3d8",
+      secondary: "#5a2a86",
+      accent: "#d81f2b",
+      accentSecondary: "#7a3caa",
+      background: "#0b0910",
+      surface: "#161219",
+      surfaceSecondary: "#201b24",
+      text: "#f2ede3",
+      textSecondary: "#9a9188",
+      border: "#453f50",
+      glow: "#d81f2b",
+      shadow: "#000000",
+    },
+  },
+  {
+    id: "abstract-aurora",
+    name: "Aurora Violet",
+    collection: "core",
+    subStyle: "Abstract",
+    tags: ["Minimal", "Purple", "Dark"],
+    theme: {
+      primary: "#6b2ce0",
+      secondary: "#b03cf0",
+      accent: "#ff2a3c",
+      accentSecondary: "#8a0f1e",
+      background: "#0b0910",
+      surface: "#16101c",
+      surfaceSecondary: "#1c1622",
+      text: "#f5f1f6",
+      textSecondary: "#b8b0c0",
+      border: "#443c50",
+      glow: "#ff3350",
+      shadow: "#000000",
+    },
+  },
 ];
 
 /** Public palettes: core tokens authored above, the rest derived. */
@@ -1428,7 +1474,12 @@ export function paletteTags(id: string): StyleTag[] {
   return getPalette(id).tags as StyleTag[];
 }
 
-export const CORE_PALETTES = PALETTES.filter((p) => p.collection === "core");
+// Abstract identity palettes ride the core collection but only expand across the
+// abstract families, so keep them out of the general core expansion.
+export const CORE_PALETTES = PALETTES.filter(
+  (p) => p.collection === "core" && !p.id.startsWith("abstract-"),
+);
+export const ABSTRACT_PALETTES = PALETTES.filter((p) => p.id.startsWith("abstract-"));
 export const GOTHIC_PALETTES = PALETTES.filter((p) => p.collection === "gothic");
 // Pride splits into the classic pride packs and the glass Prism Flag packs: the
 // `prism-` palettes only make sense under the Prism Flag family (they disperse

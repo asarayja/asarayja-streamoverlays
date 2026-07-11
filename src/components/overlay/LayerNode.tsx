@@ -576,6 +576,50 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "printRules") {
+    return <KonvaShape listening={false} sceneFunc={(c) => printRulesPaint(c, w, h, ctx.time, resolveColor(layer.fill, ctx.theme))} />;
+  }
+
+  if (layer.shape === "misprintBlock") {
+    const seed = (layer.x + layer.y) * 0.013;
+    return (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) =>
+          misprintPaint(c, w, h, ctx.time, resolveColor(layer.fill, ctx.theme), resolveColor("@accentSecondary", ctx.theme), resolveColor("@text", ctx.theme), seed)
+        }
+      />
+    );
+  }
+
+  if (layer.shape === "halftoneField") {
+    return <KonvaShape listening={false} sceneFunc={(c) => halftonePaint(c, w, h, ctx.time, resolveColor(layer.fill, ctx.theme))} />;
+  }
+
+  if (layer.shape === "auroraField") {
+    const toks = layer.facetColors ?? ["@primary", "@secondary", "@accent"];
+    const cols = toks.map((t) => resolveColor(t, ctx.theme));
+    const seed = (layer.x + layer.y) * 0.013;
+    const bloom = 1 + (layer.cornerRadius ?? 0) / 100;
+    return <KonvaShape listening={false} sceneFunc={(c) => drawAurora(c, w, h, ctx.time, cols, seed, bloom)} />;
+  }
+
+  if (layer.shape === "silkRibbon") {
+    const accent = resolveColor((layer.fill ?? "@accent").split("/")[0], ctx.theme);
+    const glow = layer.effects.glow?.strength ?? 22;
+    const seed = (layer.x + layer.y) * 0.013;
+    const bloom = 1 + (layer.cornerRadius ?? 0) / 100;
+    return <KonvaShape listening={false} sceneFunc={(c) => drawSilk(c, w, h, ctx.time, accent, glow, seed, bloom)} />;
+  }
+
+  if (layer.shape === "bloomVeil") {
+    const toks = layer.facetColors ?? ["@accent", "@secondary"];
+    const hot = resolveColor(toks[0], ctx.theme);
+    const cool = resolveColor(toks[1] ?? toks[0], ctx.theme);
+    const seed = (layer.x + layer.y) * 0.013;
+    return <KonvaShape listening={false} sceneFunc={(c) => drawBloomVeil(c, w, h, ctx.time, hot, cool, seed)} />;
+  }
+
   if (layer.shape === "chamfer") {
     return <Line closed points={chamferPoints(w, h)} {...paint} />;
   }
@@ -1322,6 +1366,208 @@ function concreteWallPaint(c: Konva.Context, w: number, h: number, base: string)
   vg.addColorStop(1, hexAlpha(darken(base, 0.3), 0.35));
   c.setAttr("fillStyle", vg);
   c.fillRect(0, 0, w, h);
+  c.restore();
+}
+
+/** Brutalist print scaffold: heavy rules, crop marks, a breathing registration
+ *  crosshair and a shimmering tick ruler. Off-white ink, matte. */
+function printRulesPaint(c: Konva.Context, w: number, h: number, time: number, col: string) {
+  c.setAttr("lineCap", "butt");
+  c.setAttr("strokeStyle", col);
+  c.setAttr("shadowBlur", 0);
+  c.setAttr("globalAlpha", 1);
+
+  c.setAttr("lineWidth", 6);
+  const vx = w * 0.2;
+  c.beginPath(); c.moveTo(vx, h * 0.06); c.lineTo(vx, h * 0.94); c.stroke();
+  const by = h * 0.8;
+  c.beginPath(); c.moveTo(w * 0.06, by); c.lineTo(w * 0.94, by); c.stroke();
+
+  c.setAttr("lineWidth", 3);
+  const m = 64, L = 46;
+  for (const cx of [m, w - m]) {
+    for (const cy of [m, h - m]) {
+      const sx = cx < w / 2 ? 1 : -1;
+      const sy = cy < h / 2 ? 1 : -1;
+      c.beginPath();
+      c.moveTo(cx - sx * L, cy); c.lineTo(cx, cy);
+      c.moveTo(cx, cy - sy * L); c.lineTo(cx, cy);
+      c.stroke();
+    }
+  }
+
+  const px = w * 0.86, py = h * 0.16;
+  c.setAttr("lineWidth", 2);
+  c.beginPath(); c.arc(px, py, 22, 0, Math.PI * 2); c.stroke();
+  c.beginPath();
+  c.moveTo(px - 34, py); c.lineTo(px + 34, py);
+  c.moveTo(px, py - 34); c.lineTo(px, py + 34);
+  c.stroke();
+  const r2 = 10 + 2.5 * Math.sin(time / 900);
+  c.beginPath(); c.arc(px, py, r2, 0, Math.PI * 2); c.stroke();
+
+  const N = 40;
+  for (let i = 0; i <= N; i++) {
+    const x = w * 0.06 + w * 0.88 * (i / N);
+    const major = i % 5 === 0;
+    let len = major ? 16 : 8;
+    if (noise(i * 3.1) > 0.92) len = 26;
+    c.setAttr("globalAlpha", 0.55 + 0.45 * Math.sin(time / 1000 + i * 0.5));
+    c.setAttr("lineWidth", major ? 2 : 1.2);
+    c.beginPath(); c.moveTo(x, by); c.lineTo(x, by + len); c.stroke();
+  }
+  c.setAttr("globalAlpha", 1);
+}
+
+/** A mis-registered riso paint block: a crisp red block over a purple ghost,
+ *  with a frayed screenprint edge, a halftone foot-bleed and a register tab. */
+function misprintPaint(c: Konva.Context, w: number, h: number, time: number, red: string, purple: string, ink: string, seed: number) {
+  c.setAttr("shadowBlur", 0);
+  c.setAttr("globalAlpha", 1);
+  const dx = w * 0.016 + Math.sin(time / 2100) * 2;
+  const dy = h * 0.022 + Math.sin(time / 1700 + 1) * 2;
+
+  const steps = 24;
+  const blockPath = (ox: number, oy: number) => {
+    c.beginPath();
+    c.moveTo(ox, oy);
+    c.lineTo(ox + w, oy);
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const bump = (noise(seed + i * 1.7) - 0.5) * w * 0.02;
+      c.lineTo(ox + w + bump, oy + h * t);
+    }
+    c.lineTo(ox, oy + h);
+    c.closePath();
+  };
+
+  c.setAttr("fillStyle", hexAlpha(purple, 0.5));
+  blockPath(dx, dy); c.fill();
+  c.setAttr("fillStyle", red);
+  blockPath(0, 0); c.fill();
+
+  const s = 12;
+  c.setAttr("fillStyle", red);
+  for (let i = 0; i * s < w; i++) {
+    const cx = i * s + s / 2;
+    const g = noise(seed + i * 2.3);
+    const rr = s * 0.42 * (0.4 + 0.6 * g);
+    c.beginPath(); c.arc(cx, h + s * 0.6, rr, 0, Math.PI * 2); c.fill();
+  }
+
+  c.setAttr("fillStyle", ink);
+  c.fillRect(0, 0, 12, 12);
+}
+
+/** A graduated halftone dot screen: dense at bottom-right, fading to nothing. */
+function halftonePaint(c: Konva.Context, w: number, h: number, time: number, col: string) {
+  c.setAttr("fillStyle", col);
+  c.setAttr("shadowBlur", 0);
+  c.setAttr("globalAlpha", 1);
+  const s = 24;
+  const maxR = s * 0.48;
+  for (let j = 0; j * s < h; j++) {
+    for (let i = 0; i * s < w; i++) {
+      const cx = i * s + s / 2;
+      const cy = j * s + s / 2;
+      const g = ((cx / w) + (cy / h)) / 2;
+      let r = maxR * g * (0.85 + 0.3 * noise(i * 1.7 + j * 3.1));
+      r *= 1 + 0.08 * Math.sin(time / 1300 + (i + j) * 0.4);
+      if (r < 0.4) continue;
+      c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.fill();
+    }
+  }
+}
+
+/** A soft aurora: overlapping drifting translucent radial fields. `bloom`
+ *  scales the internal alpha (the glow family passes a higher bloom). */
+function drawAurora(c: Konva.Context, w: number, h: number, time: number, cols: string[], seed: number, bloom = 1) {
+  c.save();
+  c.beginPath(); c.rect(0, 0, w, h); c.clip();
+  const ph = time / 1000;
+  const L = 5;
+  for (let i = 0; i < L; i++) {
+    const s = seed + i * 1.7;
+    const bx = w * (0.12 + 0.76 * noise(s));
+    const by = h * (0.15 + 0.7 * noise(s + 3.1));
+    const dx = Math.sin(ph * (0.11 + 0.05 * noise(s + 1.3)) + i * 0.9) * w * 0.1;
+    const dy = Math.cos(ph * (0.09 + 0.04 * noise(s + 2.2)) + i * 1.4) * h * 0.09;
+    const cx = bx + dx, cy = by + dy;
+    let R = Math.min(w, h) * (0.34 + 0.26 * noise(s + 4.4));
+    R *= 1 + 0.06 * Math.sin(ph * 0.5 + i);
+    const col = cols[i % cols.length];
+    const a = Math.min(0.5, (0.11 + 0.06 * noise(s + 5.5)) * bloom);
+    const g = c.createRadialGradient(cx, cy, 0, cx, cy, R);
+    g.addColorStop(0, hexAlpha(col, a));
+    g.addColorStop(0.55, hexAlpha(col, a * 0.4));
+    g.addColorStop(1, hexAlpha(col, 0));
+    c.setAttr("fillStyle", g);
+    c.setAttr("globalAlpha", 1);
+    c.beginPath(); c.rect(0, 0, w, h); c.fill();
+  }
+  c.restore();
+}
+
+/** A glowing silk ribbon: an undulating constant-thickness band travelling
+ *  through a perpendicular sheen, with an accent glow. */
+function drawSilk(c: Konva.Context, w: number, h: number, time: number, accent: string, glow: number, seed: number, bloom = 1) {
+  c.save();
+  const ph = time / 1400;
+  const th = h * 0.16 * (1 + 0.1 * Math.sin(time / 1900 + seed));
+  const midY = (x: number) => {
+    const u = x / w;
+    return h * 0.5
+      + Math.sin(u * Math.PI * 1.6 + ph + seed * 6) * h * 0.24
+      + Math.sin(u * Math.PI * 3.1 - ph * 0.6) * h * 0.07;
+  };
+  const N = 28;
+  c.beginPath();
+  for (let k = 0; k <= N; k++) {
+    const x = (w * k) / N;
+    const y = midY(x) - th / 2;
+    if (k === 0) c.moveTo(x, y); else c.lineTo(x, y);
+  }
+  for (let k = N; k >= 0; k--) {
+    const x = (w * k) / N;
+    c.lineTo(x, midY(x) + th / 2);
+  }
+  c.closePath();
+  const mid = Math.min(1, 0.5 * bloom);
+  const g = c.createLinearGradient(0, h * 0.24, 0, h * 0.76);
+  g.addColorStop(0, hexAlpha(accent, 0));
+  g.addColorStop(0.5, hexAlpha(accent, mid));
+  g.addColorStop(1, hexAlpha(accent, 0));
+  c.setAttr("fillStyle", g);
+  c.setAttr("shadowColor", accent);
+  c.setAttr("shadowBlur", glow);
+  c.setAttr("globalAlpha", 1);
+  c.fill();
+  c.restore();
+}
+
+/** A heavy neon bloom veil: three big soft radial glows pooled top and bottom,
+ *  leaving the centre darker. */
+function drawBloomVeil(c: Konva.Context, w: number, h: number, time: number, hot: string, cool: string, seed: number) {
+  c.save();
+  c.beginPath(); c.rect(0, 0, w, h); c.clip();
+  const ph = time / 1000;
+  const spots = [
+    { cx: w * 0.5, cy: h * 0.16, col: hot, R: h * 0.95, a: 0.16 },
+    { cx: w * 0.22, cy: h * 0.84, col: cool, R: h * 0.85, a: 0.13 },
+    { cx: w * 0.8, cy: h * 0.86, col: hot, R: h * 0.85, a: 0.13 },
+  ];
+  for (let i = 0; i < spots.length; i++) {
+    const sp = spots[i];
+    const puls = 1 + 0.1 * Math.sin(ph * 0.6 + i + seed * 6);
+    const R = sp.R * puls;
+    const g = c.createRadialGradient(sp.cx, sp.cy, 0, sp.cx, sp.cy, R);
+    g.addColorStop(0, hexAlpha(sp.col, sp.a));
+    g.addColorStop(0.6, hexAlpha(sp.col, sp.a * 0.35));
+    g.addColorStop(1, hexAlpha(sp.col, 0));
+    c.setAttr("fillStyle", g);
+    c.setAttr("globalAlpha", 1);
+    c.beginPath(); c.rect(0, 0, w, h); c.fill();
+  }
   c.restore();
 }
 

@@ -371,7 +371,24 @@ export type ShapeKind =
   | "concreteWall"
   /** A freehand stroke drawn with the pencil tool — a smoothed polyline through
       `points` (layer-local coords), stroked in the layer's fill colour. */
-  | "freehand";
+  | "freehand"
+  /** Brutalist print scaffold: heavy rules, crop marks, a registration
+      crosshair and a tick ruler. */
+  | "printRules"
+  /** A mis-registered riso paint block: a red block with a purple ghost, a
+      halftone foot-bleed and a frayed screenprint edge. */
+  | "misprintBlock"
+  /** A graduated halftone dot screen, dense to sparse across the box. */
+  | "halftoneField"
+  /** A soft aurora: overlapping drifting radial colour fields (uses
+      `facetColors`). `cornerRadius` scales the bloom. */
+  | "auroraField"
+  /** A glowing silk ribbon: an undulating constant-thickness band with a
+      travelling perpendicular sheen. */
+  | "silkRibbon"
+  /** A heavy neon bloom veil: big soft radial glows pooled top and bottom
+      (uses `facetColors`). */
+  | "bloomVeil";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";

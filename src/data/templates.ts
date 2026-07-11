@@ -13,7 +13,7 @@ import {
   type TemplateCategory,
   type StyleTag,
 } from "@/lib/types";
-import { CORE_PALETTES, DEFAULT_PALETTE_ID, GOTHIC_PALETTES, PRIDE_PALETTES, PRISM_PALETTES, paletteTags } from "./palettes";
+import { ABSTRACT_PALETTES, CORE_PALETTES, DEFAULT_PALETTE_ID, GOTHIC_PALETTES, PRIDE_PALETTES, PRISM_PALETTES, paletteTags } from "./palettes";
 import type { Palette } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
@@ -71,6 +71,7 @@ function shape(
     moonPhase?: number;
     craters?: boolean;
     facetMode?: "sides" | "stripes";
+    facetColors?: string[];
   } = {},
 ): LayerSpec {
   return {
@@ -83,6 +84,7 @@ function shape(
     moonPhase: o.moonPhase,
     craters: o.craters,
     facetMode: o.facetMode,
+    facetColors: o.facetColors,
   };
 }
 
@@ -1669,6 +1671,9 @@ interface FamilyStyle {
   collection?: Collection;
   /** Display face for headlines. */
   display: string;
+  /** Headline fill token. Defaults to "@text"; set to "@background" for a
+      hollow outlined headline (paired with a border in headlineEffects). */
+  displayFill?: string;
   displayWeight: number;
   displayTracking: number;
   displayTransform: "none" | "uppercase";
@@ -1742,7 +1747,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fontWeight: f.displayWeight,
       italic: f.displayItalic,
       align: "center",
-      fill: "@text",
+      fill: f.displayFill ?? "@text",
       letterSpacing: f.displayTracking,
       textTransform: f.displayTransform,
       effects: f.headlineEffects,
@@ -3540,6 +3545,166 @@ const GRAFFITI: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** Riso Concrete: brutalist print-shop. A flat near-black page ruled like a
+    proof sheet (heavy rules, crop marks, a breathing registration crosshair,
+    a tick ruler) holding ONE mis-registered red block with a purple ghost and
+    a halftone foot-bleed, under a giant hollow outlined headline. Matte, no
+    glow. Near-black + off-white + one red. Expands across the abstract palettes. */
+const RISO_CONCRETE: FamilyStyle = {
+  id: "riso",
+  name: "Riso Concrete",
+  collection: "core",
+  tags: ["Minimal", "Dark", "Red"],
+  display: "Anton",
+  displayFill: "@background",
+  displayWeight: 400,
+  displayTracking: 0,
+  displayTransform: "uppercase",
+  body: "Space Grotesk",
+  radius: 0,
+  frameRadius: 0,
+  corners: false,
+  strokeWidth: 3,
+  frameEffects: { border: { enabled: true, color: "@text", width: 3, radius: 0 } },
+  headlineEffects: { border: { enabled: true, color: "@text", width: 3 } },
+  plateShape: "rect",
+  contentOffsetY: -40,
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    shape("Texture — Halftone", { x: 1300, y: 560, width: 620, height: 520 }, { shape: "halftoneField", fill: "@text", opacity: 0.06 }),
+    shape("Scaffold — Rules", FULL, { shape: "printRules", fill: "@text", opacity: 0.5 }),
+    shape("Red Block", { x: 236, y: 150, width: 300, height: 188 }, { shape: "misprintBlock", fill: "@accent" }),
+    text("Index", { x: 150, y: 150, width: 40, height: 640 }, "NO.01 — LIVE FEED / {{CHANNEL_NAME}}", {
+      fontFamily: "Space Grotesk",
+      fontSize: 15,
+      fontWeight: 600,
+      letterSpacing: 5,
+      textTransform: "uppercase",
+      fill: "@textSecondary",
+      rotation: 90,
+    }),
+    particles("Grain — Dots", { kind: "dots", count: 9, size: 2, color: "@text", opacity: 0.22, box: MARGIN_LEFT }),
+  ],
+  overlayDecor: () => [],
+};
+
+/** Aurora Silk: soft premium abstraction. Two large drifting aurora colour
+    fields (violet/magenta) over a near-black ground, crossed by hot red silk
+    ribbons that glow, with margin bokeh. Quiet, elegant. Near-black + off-white
+    + rationed red. */
+const AURORA_SILK: FamilyStyle = {
+  id: "aurora-silk",
+  name: "Aurora Silk",
+  collection: "core",
+  tags: ["Minimal", "Purple", "Dark"],
+  display: "Space Grotesk",
+  displayWeight: 500,
+  displayTracking: 10,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 24,
+  frameRadius: 24,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@text/30", width: 1, radius: 24 },
+    glow: { enabled: true, color: "@glow", strength: 18 },
+  },
+  headlineEffects: {
+    glow: { enabled: true, color: "@glow", strength: 18 },
+    border: { enabled: true, color: "@text/30", width: 1 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/16", angle: 160 } },
+    }),
+    shape("Aurora Top", { x: 0, y: -200, width: 1920, height: 560 }, {
+      shape: "auroraField",
+      fill: "@primary",
+      facetColors: ["@primary", "@secondary", "@accent"],
+      opacity: 0.9,
+      animation: anim("float", { duration: 14000, intensity: 0.2 }),
+    }),
+    shape("Aurora Bottom", { x: 0, y: 620, width: 1920, height: 600 }, {
+      shape: "auroraField",
+      fill: "@secondary",
+      facetColors: ["@secondary", "@primary", "@accent"],
+      opacity: 0.85,
+    }),
+    shape("Silk Hi", { x: -40, y: 120, width: 2000, height: 300 }, {
+      shape: "silkRibbon",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+      opacity: 0.6,
+    }),
+    shape("Silk Lo", { x: -40, y: 720, width: 2000, height: 300 }, {
+      shape: "silkRibbon",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+      opacity: 0.5,
+    }),
+    particles("Bokeh L", { kind: "bokeh", count: 18, size: 5, speed: 0.15, color: "@accent", opacity: 0.35, box: MARGIN_LEFT }),
+    particles("Bokeh R", { kind: "bokeh", count: 18, size: 5, speed: 0.15, color: "@accent", opacity: 0.35, box: MARGIN_RIGHT }),
+    shape("Grain", FULL, { shape: "scanlines", fill: "@accent", opacity: 0.03 }),
+  ],
+  overlayDecor: () => [],
+};
+
+/** Aurora Silk — Neon: the glow variant. A heavy bloom veil, brighter aurora
+    (bloom 2.3) and hot wide-glow silk ribbons — the same look, turned up. */
+const AURORA_SILK_NEON: FamilyStyle = {
+  ...AURORA_SILK,
+  id: "aurora-neon",
+  name: "Aurora Silk Neon",
+  headlineEffects: {
+    glow: { enabled: true, color: "@glow", strength: 40 },
+    border: { enabled: true, color: "@text/40", width: 1.2 },
+  },
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 160 } },
+    }),
+    shape("Neon Veil", FULL, { shape: "bloomVeil", fill: "@accent", facetColors: ["@accent", "@secondary"], opacity: 0.9 }),
+    shape("Aurora Top", { x: 0, y: -200, width: 1920, height: 560 }, {
+      shape: "auroraField",
+      fill: "@primary",
+      facetColors: ["@primary", "@secondary", "@accent", "@accent"],
+      cornerRadius: 130,
+      opacity: 1,
+      animation: anim("float", { duration: 14000, intensity: 0.2 }),
+    }),
+    shape("Aurora Bottom", { x: 0, y: 620, width: 1920, height: 600 }, {
+      shape: "auroraField",
+      fill: "@secondary",
+      facetColors: ["@secondary", "@primary", "@accent", "@accent"],
+      cornerRadius: 130,
+      opacity: 0.95,
+    }),
+    shape("Silk Hi", { x: -40, y: 120, width: 2000, height: 300 }, {
+      shape: "silkRibbon",
+      fill: "@accent",
+      cornerRadius: 120,
+      effects: { glow: { enabled: true, color: "@glow", strength: 64 } },
+      opacity: 0.85,
+    }),
+    shape("Silk Lo", { x: -40, y: 720, width: 2000, height: 300 }, {
+      shape: "silkRibbon",
+      fill: "@accent",
+      cornerRadius: 120,
+      effects: { glow: { enabled: true, color: "@glow", strength: 55 } },
+      opacity: 0.8,
+    }),
+    particles("Embers L", { kind: "bokeh", count: 20, size: 6, speed: 0.18, color: "@accent", opacity: 0.5, box: MARGIN_LEFT }),
+    particles("Embers R", { kind: "bokeh", count: 20, size: 6, speed: 0.18, color: "@accent", opacity: 0.5, box: MARGIN_RIGHT }),
+    shape("Grain", FULL, { shape: "scanlines", fill: "@accent", opacity: 0.04 }),
+  ],
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   HALLOWED_NIGHT,
   ASTRAL_DECK,
@@ -3566,6 +3731,15 @@ const NEW_FAMILIES: FamilyStyle[] = [
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);
+
+// Abstract families expand across their own near-black identity palettes: Riso
+// Concrete flies the red proof-sheet palette, the Aurora Silk pair the violet one.
+const RISO_PALETTES = ABSTRACT_PALETTES.filter((p) => p.id.includes("riso"));
+const AURORA_PALETTES = ABSTRACT_PALETTES.filter((p) => p.id.includes("aurora"));
+const ABSTRACT_TEMPLATES: Template[] = [
+  ...expand(familyScreens(RISO_CONCRETE), RISO_PALETTES),
+  ...expand([...familyScreens(AURORA_SILK), ...familyScreens(AURORA_SILK_NEON)], AURORA_PALETTES),
+];
 
 // The pride glass families — glossy Prism Flag and matte Frost Flag — expanded
 // (below) across the prism palettes only, so every flag comes in both finishes.
@@ -4618,6 +4792,7 @@ export const TEMPLATES: Template[] = [
   ...expand(GOTHIC_TEMPLATES, GOTHIC_PALETTES),
   ...expand(PRIDE_TEMPLATES, PRIDE_PALETTES),
   ...expand(PRISM_PRIDE_TEMPLATES, PRISM_PALETTES),
+  ...ABSTRACT_TEMPLATES,
 ];
 
 const TEMPLATE_BY_ID = new Map(TEMPLATES.map((t) => [t.id, t]));
