@@ -3727,18 +3727,12 @@ const CYBER_PILL: FamilyStyle = {
         glow: { enabled: true, color: "@glow", strength: 22 },
       },
     }),
-    // Decorative pill buttons in a corner — the pack's signature capsule.
+    // The pack's signature capsule — just the round cap in the corner.
     shape("Pill — cap", { x: 96, y: 96, width: 46, height: 46 }, {
       shape: "rect",
       cornerRadius: 23,
       fill: "@accent",
       effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
-    }),
-    shape("Pill — bar", { x: 150, y: 104, width: 210, height: 30 }, {
-      shape: "rect",
-      cornerRadius: 15,
-      fill: "@surface/85",
-      effects: { border: { enabled: true, color: "@accent", width: 1.5, radius: 15 } },
     }),
     // Slim neon accent bars framing the headline.
     shape("Accent — top", { x: 710, y: 392, width: 500, height: 6 }, {
