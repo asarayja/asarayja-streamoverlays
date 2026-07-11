@@ -1057,6 +1057,50 @@ const TEXT3D_PRESETS: Array<{ label: string; patch: Partial<Layer> }> = [
       },
     } as Partial<Layer>,
   },
+  {
+    label: "Silver",
+    patch: {
+      text: "SILVER", fontFamily: "Anton", fontWeight: 800, italic: true, fontSize: 200, align: "center",
+      x: 360, y: 420, width: 1200, height: 240, fill: "@text",
+      effects: {
+        gradient: { enabled: true, from: "#FFFFFF", via: "#C9CFD8", to: "#868D99", angle: 90 },
+        text3d: { enabled: true, depth: 26, angle: 45, color: "#AAB0BA", colorTo: "#464B54" },
+      },
+    } as Partial<Layer>,
+  },
+  {
+    label: "Candy",
+    patch: {
+      text: "CANDY", fontFamily: "Baloo 2", fontWeight: 800, fontSize: 200, align: "center",
+      x: 360, y: 410, width: 1200, height: 260, fill: "#FF6FB5",
+      effects: {
+        shadow: { enabled: true, color: "@shadow", blur: 20, offsetX: 0, offsetY: 16, opacity: 0.35 },
+        text3d: { enabled: true, depth: 28, angle: 60, color: "#8A3FD0", colorTo: "#3E1B7A" },
+      },
+    } as Partial<Layer>,
+  },
+  {
+    label: "Fire",
+    patch: {
+      text: "FIRE", fontFamily: "Anton", fontWeight: 800, italic: true, fontSize: 200, align: "center",
+      x: 360, y: 420, width: 1200, height: 240, fill: "@text",
+      effects: {
+        gradient: { enabled: true, from: "#FFE24A", via: "#FF8A2A", to: "#F0431E", angle: 90 },
+        text3d: { enabled: true, depth: 26, angle: 45, color: "#A81E0E", colorTo: "#4E0A06" },
+      },
+    } as Partial<Layer>,
+  },
+  {
+    label: "Ice",
+    patch: {
+      text: "ICE", fontFamily: "Anton", fontWeight: 800, fontSize: 200, align: "center",
+      x: 360, y: 420, width: 1200, height: 240, fill: "@text",
+      effects: {
+        gradient: { enabled: true, from: "#FFFFFF", to: "#BFE9FF", angle: 90 },
+        text3d: { enabled: true, depth: 24, angle: 45, color: "#7FCFF2", colorTo: "#256E9E" },
+      },
+    } as Partial<Layer>,
+  },
 ];
 
 function TextTab() {
