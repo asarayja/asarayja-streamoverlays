@@ -881,16 +881,20 @@ function drawGlassSheet(
       const step = 26;
       const period = step * n;
       const drift = (((ph * 8) % period) + period) % period;
+      c.save();
       c.setAttr("lineCap", "butt");
       c.setAttr("lineWidth", glossy ? 7 : 9);
+      c.setAttr("shadowBlur", 12); // plasma-style neon glow in each line's colour
       for (let x = -h - period; x < w + step; x += step) {
         const idx = ((Math.floor((x + drift) / step) % n) + n) % n;
-        c.setAttr("strokeStyle", hexAlpha(facetColors[idx], (glossy ? 0.34 : 0.24) * strength));
+        c.setAttr("shadowColor", facetColors[idx]);
+        c.setAttr("strokeStyle", hexAlpha(facetColors[idx], (glossy ? 0.42 : 0.32) * strength));
         c.beginPath();
         c.moveTo(x, 0);
         c.lineTo(x + h, h);
         c.stroke();
       }
+      c.restore();
     } else {
       // A few thicker pride lines running at the same angle as the reflection,
       // grouped down one side (the left). They run the full height of the pane —
@@ -905,10 +909,12 @@ function drawGlassSheet(
       c.rotate(-0.5); // the reflection's angle
       c.setAttr("lineCap", "butt");
       c.setAttr("lineWidth", lineW);
+      c.setAttr("shadowBlur", 22); // plasma-style neon glow in each line's colour
       for (let i = 0; i < n; i++) {
         const idx = (((i + scroll) % n) + n) % n;
         const off = (i - (n - 1) / 2) * (lineW + gap); // perpendicular, centred
-        c.setAttr("strokeStyle", hexAlpha(facetColors[idx], (glossy ? 0.55 : 0.45) * strength));
+        c.setAttr("shadowColor", facetColors[idx]);
+        c.setAttr("strokeStyle", hexAlpha(facetColors[idx], (glossy ? 0.7 : 0.6) * strength));
         c.beginPath();
         c.moveTo(off, -len);
         c.lineTo(off, len);
