@@ -281,6 +281,159 @@ const DEFS: PaletteDef[] = [
     },
   },
 
+  /* --------------------- Vivid — punchy, saturated ----------------------- */
+  {
+    id: "toxic-lime",
+    name: "Toxic Lime",
+    collection: "core",
+    tags: ["Green", "Neon", "Dark", "RGB"],
+    theme: {
+      primary: "#7cff3c", secondary: "#00e5a0", accent: "#c6ff00",
+      background: "#0a0f0a", text: "#effde6", border: "#7cff3c", glow: "#a6ff4d", shadow: "#000000",
+      success: "#35d492", warning: "#ffe14d", error: "#ff5252",
+    },
+  },
+  {
+    id: "magenta-punch",
+    name: "Magenta Punch",
+    collection: "core",
+    tags: ["Pink", "Neon", "Dark", "Cyberpunk"],
+    theme: {
+      primary: "#ff2e97", secondary: "#b026ff", accent: "#ff6fd8",
+      background: "#10040e", text: "#ffe9f6", border: "#ff2e97", glow: "#ff5fb0", shadow: "#000000",
+    },
+  },
+  {
+    id: "electric-teal",
+    name: "Electric Teal",
+    collection: "core",
+    tags: ["Blue", "Neon", "Dark", "Sci-Fi"],
+    theme: {
+      primary: "#00e5d0", secondary: "#2ea8ff", accent: "#5cffe1",
+      background: "#03100f", text: "#e4fffb", border: "#00e5d0", glow: "#38ffe8", shadow: "#000000",
+    },
+  },
+  {
+    id: "ruby",
+    name: "Ruby",
+    collection: "core",
+    tags: ["Red", "Esports", "Dark"],
+    theme: {
+      primary: "#ff1e3c", secondary: "#ff7a00", accent: "#ff5470",
+      background: "#120306", text: "#ffe6ea", border: "#ff1e3c", glow: "#ff4d66", shadow: "#000000",
+    },
+  },
+  {
+    id: "amethyst",
+    name: "Amethyst",
+    collection: "core",
+    tags: ["Purple", "Fantasy", "Dark"],
+    theme: {
+      primary: "#9d4edd", secondary: "#c77dff", accent: "#e0aaff",
+      background: "#0b0616", text: "#f1e7ff", border: "#9d4edd", glow: "#b983ff", shadow: "#000000",
+    },
+  },
+  {
+    id: "tangerine",
+    name: "Tangerine",
+    collection: "core",
+    tags: ["Orange", "Neon", "Dark"],
+    theme: {
+      primary: "#ff8a00", secondary: "#ff3d00", accent: "#ffc300",
+      background: "#120a02", text: "#fff1de", border: "#ff8a00", glow: "#ffa733", shadow: "#000000",
+    },
+  },
+  {
+    id: "aqua-volt",
+    name: "Aqua Volt",
+    collection: "core",
+    tags: ["Green", "Blue", "Neon", "RGB"],
+    theme: {
+      primary: "#00ffc6", secondary: "#00b4ff", accent: "#b6ff00",
+      background: "#04100c", text: "#e6fff7", border: "#00ffc6", glow: "#4dffd8", shadow: "#000000",
+    },
+  },
+  {
+    id: "ultraviolet",
+    name: "Ultraviolet",
+    collection: "core",
+    tags: ["Purple", "Blue", "Neon", "Cyberpunk"],
+    theme: {
+      primary: "#6c2bff", secondary: "#00d4ff", accent: "#b026ff",
+      background: "#070518", text: "#ece9ff", border: "#6c2bff", glow: "#9a5cff", shadow: "#000000",
+    },
+  },
+  {
+    id: "coral-neon",
+    name: "Coral Neon",
+    collection: "core",
+    tags: ["Pink", "Orange", "Neon"],
+    theme: {
+      primary: "#ff5e5b", secondary: "#ff9f1c", accent: "#ff87ab",
+      background: "#120705", text: "#ffebe8", border: "#ff5e5b", glow: "#ff7d7a", shadow: "#000000",
+    },
+  },
+  {
+    id: "sapphire",
+    name: "Sapphire",
+    collection: "core",
+    tags: ["Blue", "Esports", "Dark"],
+    theme: {
+      primary: "#2979ff", secondary: "#00e5ff", accent: "#536dfe",
+      background: "#030818", text: "#e6eeff", border: "#2979ff", glow: "#5c93ff", shadow: "#000000",
+    },
+  },
+  {
+    id: "lime-soda",
+    name: "Lime Soda",
+    collection: "core",
+    tags: ["Green", "Neon", "RGB"],
+    theme: {
+      primary: "#b4ff00", secondary: "#00e5a0", accent: "#eeff00",
+      background: "#06100a", text: "#f2ffe0", border: "#b4ff00", glow: "#c9ff4d", shadow: "#000000",
+    },
+  },
+  {
+    id: "hot-pink",
+    name: "Hot Pink",
+    collection: "core",
+    tags: ["Pink", "Neon", "Anime"],
+    theme: {
+      primary: "#ff3ea5", secondary: "#ff77e9", accent: "#ffd1f0",
+      background: "#12040c", text: "#ffe9f5", border: "#ff3ea5", glow: "#ff66bd", shadow: "#000000",
+    },
+  },
+  {
+    id: "inferno",
+    name: "Inferno",
+    collection: "core",
+    tags: ["Orange", "Red", "Neon"],
+    theme: {
+      primary: "#ff3d00", secondary: "#ffc400", accent: "#ff7a00",
+      background: "#100402", text: "#ffeedb", border: "#ff3d00", glow: "#ff6a26", shadow: "#000000",
+    },
+  },
+  {
+    id: "emerald-neon",
+    name: "Emerald Neon",
+    collection: "core",
+    tags: ["Green", "Neon", "Esports"],
+    theme: {
+      primary: "#00e676", secondary: "#ffd54a", accent: "#1de9b6",
+      background: "#041008", text: "#e6ffef", border: "#00e676", glow: "#4dff9e", shadow: "#000000",
+    },
+  },
+  {
+    id: "cyber-pink",
+    name: "Cyber Pink",
+    collection: "core",
+    tags: ["Pink", "Blue", "Cyberpunk", "RGB"],
+    theme: {
+      primary: "#ff2e97", secondary: "#00e5ff", accent: "#b026ff",
+      background: "#0a0714", text: "#f0eaff", border: "#ff2e97", glow: "#ff5fb0", shadow: "#000000",
+    },
+  },
+
 
   /* ------------------------------- Gothic -------------------------------- */
   // The ten launch packs. Each is a complete Theme, so a gothic template can
