@@ -1005,6 +1005,60 @@ function ColorsTab() {
 
 /* ----------------------------------- Text --------------------------------- */
 
+/** One-click 3D text looks — the front face is a solid or gradient fill, the
+    sides run `color` → `colorTo`. Every one stays fully editable. */
+const TEXT3D_PRESETS: Array<{ label: string; patch: Partial<Layer> }> = [
+  {
+    label: "Block",
+    patch: {
+      text: "BOLD", fontFamily: "Anton", fontWeight: 800, fontSize: 200, align: "center",
+      x: 360, y: 420, width: 1200, height: 240, fill: "@text",
+      effects: { text3d: { enabled: true, depth: 26, angle: 45, color: "@accent" } },
+    } as Partial<Layer>,
+  },
+  {
+    label: "Gold",
+    patch: {
+      text: "GOLD", fontFamily: "Anton", fontWeight: 800, italic: true, fontSize: 200, align: "center",
+      x: 360, y: 420, width: 1200, height: 240, fill: "@text",
+      effects: {
+        gradient: { enabled: true, from: "#FFF6CF", via: "#F3CE6A", to: "#B9812A", angle: 90 },
+        text3d: { enabled: true, depth: 26, angle: 45, color: "#C8901E", colorTo: "#5E3E10" },
+      },
+    } as Partial<Layer>,
+  },
+  {
+    label: "Cartoon",
+    patch: {
+      text: "YES!", fontFamily: "Baloo 2", fontWeight: 800, fontSize: 210, align: "center",
+      x: 360, y: 400, width: 1200, height: 280, fill: "@text",
+      effects: {
+        shadow: { enabled: true, color: "@shadow", blur: 22, offsetX: 0, offsetY: 18, opacity: 0.4 },
+        text3d: { enabled: true, depth: 32, angle: 62, color: "#F5A623", colorTo: "#B96F0E" },
+      },
+    } as Partial<Layer>,
+  },
+  {
+    label: "Script",
+    patch: {
+      text: "Self", fontFamily: "Pacifico", fontWeight: 400, fontSize: 200, align: "center",
+      x: 360, y: 410, width: 1200, height: 260, fill: "@text",
+      effects: { text3d: { enabled: true, depth: 24, angle: 62, color: "#7EC8F0", colorTo: "#2E7FB8" } },
+    } as Partial<Layer>,
+  },
+  {
+    label: "Neon",
+    patch: {
+      text: "NEON", fontFamily: "Anton", fontWeight: 800, fontSize: 200, align: "center",
+      x: 360, y: 420, width: 1200, height: 240, fill: "@accent",
+      effects: {
+        glow: { enabled: true, color: "@glow", strength: 34 },
+        text3d: { enabled: true, depth: 22, angle: 45, color: "@accent-35" },
+      },
+    } as Partial<Layer>,
+  },
+];
+
 function TextTab() {
   const layer = useSelectedLayer();
   const addLayer = useEditorStore((s) => s.addLayer);
@@ -1035,30 +1089,23 @@ function TextTab() {
           {t("Add text layer")}
         </Button>
 
-        <Button
-          className="w-full"
-          onClick={() =>
-            addLayer("text", {
-              text: "BOLD",
-              fontFamily: "Anton",
-              fontWeight: 800,
-              fontSize: 200,
-              align: "center",
-              fill: "@text",
-              x: 360,
-              y: 420,
-              width: 1200,
-              height: 240,
-              effects: { text3d: { enabled: true, depth: 26, angle: 45, color: "@accent" } },
-            } as Partial<Layer>)
-          }
-        >
-          <Type className="size-4" />
-          {t("Add 3D text")}
-        </Button>
-        <p className="-mt-2 text-[11px] leading-relaxed text-zinc-600">
-          {t("Type any text — every side re-extrudes automatically. Tune depth, direction and side colour in the panel on the right.")}
-        </p>
+        <div>
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("3D text")}</p>
+          <p className="mb-2.5 text-[11px] leading-relaxed text-zinc-600">
+            {t("Type any text — every side re-extrudes automatically. Front and sides can each be a gradient; tune it all in the panel on the right.")}
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {TEXT3D_PRESETS.map(({ label, patch }) => (
+              <button
+                key={label}
+                onClick={() => addLayer("text", patch)}
+                className="rounded-xl border border-white/[0.06] bg-white/[0.02] py-2.5 text-[11px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
+              >
+                {t(label)}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {isText && (
           <Field label={t("Content")}>

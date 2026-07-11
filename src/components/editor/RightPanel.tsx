@@ -36,6 +36,7 @@ import type {
   ShapeKind,
   ShapeLayer,
   SocialLayer,
+  Text3D,
   TextLayer,
   Theme,
 } from "@/lib/types";
@@ -500,8 +501,8 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
           <Toggle label={t("Italic")} checked={text.italic} onChange={(italic) => commit({ italic })} />
 
           {(() => {
-            const cur = text.effects.text3d ?? { enabled: false, depth: 16, angle: 45, color: "@accent" };
-            const setTd = (patch: Partial<typeof cur>, discrete = true) =>
+            const cur: Text3D = text.effects.text3d ?? { enabled: false, depth: 16, angle: 45, color: "@accent" };
+            const setTd = (patch: Partial<Text3D>, discrete = true) =>
               (discrete ? commit : live)({ effects: { ...text.effects, text3d: { ...cur, ...patch } } });
             return (
               <>
@@ -532,6 +533,13 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
                       value={cur.color}
                       onChange={(color) => setTd({ color }, false)}
                       onCommit={(color) => setTd({ color })}
+                    />
+                    <ColorField
+                      label={t("Side back colour")}
+                      theme={theme}
+                      value={cur.colorTo ?? cur.color}
+                      onChange={(colorTo) => setTd({ colorTo }, false)}
+                      onCommit={(colorTo) => setTd({ colorTo })}
                     />
                   </>
                 )}

@@ -1574,6 +1574,22 @@ function drawLiquid(c: Konva.Context, w: number, h: number, r: number, strength:
   c.restore();
 }
 
+/** Linearly blend two `#rrggbb` colours; `t` = 0 → a, 1 → b. Non-hex inputs
+    (e.g. an already-alpha'd token) fall back to `a`. */
+function mixColors(a: string, b: string, t: number): string {
+  const pa = /^#?([0-9a-fA-F]{6})$/.exec(a.trim());
+  const pb = /^#?([0-9a-fA-F]{6})$/.exec(b.trim());
+  if (!pa || !pb) return a;
+  const na = parseInt(pa[1], 16);
+  const nb = parseInt(pb[1], 16);
+  const lerp = (shift: number) => {
+    const ca = (na >> shift) & 255;
+    const cb = (nb >> shift) & 255;
+    return Math.round(ca + (cb - ca) * t);
+  };
+  return `rgb(${lerp(16)},${lerp(8)},${lerp(0)})`;
+}
+
 /** A literal hex (#rrggbb) as an rgba() string at alpha `a`. */
 function hexAlpha(hex: string, a: number): string {
   const h = hex.replace("#", "");
@@ -2547,12 +2563,16 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
     const rad = (td.angle * Math.PI) / 180;
     const ux = Math.cos(rad);
     const uy = Math.sin(rad);
-    const side = resolveColor(td.color, ctx.theme);
+    const sideFront = resolveColor(td.color, ctx.theme);
+    // The back of the extrusion: an explicit second colour (a proper side
+    // gradient) or, by default, a modestly darker shade of the side colour.
+    const sideBack = td.colorTo ? resolveColor(td.colorTo, ctx.theme) : darken(sideFront, 0.4);
     return (
       <Group listening={false}>
         {Array.from({ length: steps }).map((_, i) => {
           const k = steps - i; // draw back (k = steps) to front (k = 1)
-          const col = darken(side, (k / steps) * 22);
+          const g = steps > 1 ? (k - 1) / (steps - 1) : 0; // 0 at front, 1 at back
+          const col = mixColors(sideFront, sideBack, g);
           return (
             <Text
               key={i}

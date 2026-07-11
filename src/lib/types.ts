@@ -282,8 +282,12 @@ export interface Text3D {
   depth: number;
   /** Direction of the extrusion in degrees — 45 is down-right. */
   angle: number;
-  /** The side/extrusion colour (the front face uses the layer's own fill). */
+  /** The side/extrusion colour at the front of the depth (the front face uses
+      the layer's own fill, which may itself be a gradient). */
   color: ColorValue;
+  /** Optional colour at the *back* of the extrusion — the sides then run as a
+      gradient from `color` to `colorTo`. Omitted, the sides just darken. */
+  colorTo?: ColorValue;
 }
 
 export interface Effects {
