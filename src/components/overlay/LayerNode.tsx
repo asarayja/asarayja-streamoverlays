@@ -787,27 +787,30 @@ function drawReflection(c: Konva.Context, w: number, h: number, r: number, stren
   c.closePath();
   c.clip();
 
-  const sheen = c.createLinearGradient(0, 0, 0, h * 0.5);
-  sheen.addColorStop(0, `rgba(255,255,255,${0.16 * strength})`);
+  const sheen = c.createLinearGradient(0, 0, 0, h * 0.45);
+  sheen.addColorStop(0, `rgba(255,255,255,${0.12 * strength})`);
   sheen.addColorStop(1, "rgba(255,255,255,0)");
   c.setAttr("fillStyle", sheen);
-  c.fillRect(0, 0, w, h * 0.5);
+  c.fillRect(0, 0, w, h * 0.45);
 
-  // Two diagonal glints (a wide one and a thin trailing one).
-  const glint = (centreX: number, band: number, alpha: number) => {
+  // A diagonal band crossing the pane. `band` is its half-width; `alpha` its
+  // peak brightness. A wide soft one is the reflection body; a thin bright one
+  // just ahead of it is the crisp glint along its edge.
+  const streak = (centreX: number, band: number, alpha: number) => {
     c.save();
     c.translate(centreX, h / 2);
-    c.rotate(-0.42);
+    c.rotate(-0.5);
     const g = c.createLinearGradient(-band, 0, band, 0);
     g.addColorStop(0, "rgba(255,255,255,0)");
     g.addColorStop(0.5, `rgba(255,255,255,${alpha * strength})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
     c.setAttr("fillStyle", g);
-    c.fillRect(-band, -h * 1.5, band * 2, h * 3);
+    c.fillRect(-band, -h * 1.8, band * 2, h * 3.6);
     c.restore();
   };
-  glint(w * 0.34, w * 0.05, 0.55);
-  glint(w * 0.46, w * 0.018, 0.4);
+  streak(w * 0.3, w * 0.19, 0.26); // wide soft reflection body
+  streak(w * 0.47, w * 0.022, 0.7); // crisp glint on its leading edge
+  streak(w * 0.53, w * 0.012, 0.45); // faint trailing glint
   c.restore();
 }
 
