@@ -1097,58 +1097,64 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     const base = resolveColor(layer.fill, ctx.theme);
     const cx = w / 2;
     const cy = h / 2;
-    const ix = w * 0.3;
-    const iy = h * 0.3;
-    // Outer points and inner "table" points of the cut.
     const t: [number, number] = [cx, 0];
     const r: [number, number] = [w, cy];
     const bo: [number, number] = [cx, h];
     const l: [number, number] = [0, cy];
-    const it: [number, number] = [cx, cy - iy];
-    const ir: [number, number] = [cx + ix, cy];
-    const ib: [number, number] = [cx, cy + iy];
-    const il: [number, number] = [cx - ix, cy];
-    const facet = (c: Konva.Context, pts: Array<[number, number]>, color: string) => {
+    const border = layer.effects.border;
+    const rhombus = (c: Konva.Context) => {
       c.beginPath();
-      c.moveTo(pts[0][0], pts[0][1]);
-      for (let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]);
+      c.moveTo(t[0], t[1]);
+      c.lineTo(r[0], r[1]);
+      c.lineTo(bo[0], bo[1]);
+      c.lineTo(l[0], l[1]);
       c.closePath();
-      c.setAttr("fillStyle", color);
-      c.fill();
     };
     return (
       <KonvaShape
-        {...paint}
-        sceneFunc={(c, shape) => {
-          // The rhombus body carries the layer's fill, border and glow.
-          c.beginPath();
-          c.moveTo(t[0], t[1]);
-          c.lineTo(r[0], r[1]);
-          c.lineTo(bo[0], bo[1]);
-          c.lineTo(l[0], l[1]);
-          c.closePath();
-          c.fillStrokeShape(shape);
-          // Facets in shades of the main colour — lit from the top-left, in
-          // shadow toward the bottom-right, with a bright table in the centre.
+        listening={false}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        sceneFunc={(c) => {
+          // A clean diamond in the main colour, lit from the top and shaded
+          // toward the bottom — the depth comes from a gradient, not facets.
+          // The node's shadow (glow) is applied to this fill by Konva.
+          const g = c.createLinearGradient(0, 0, 0, h);
+          g.addColorStop(0, lighten(base, 16));
+          g.addColorStop(0.5, base);
+          g.addColorStop(1, darken(base, 26));
+          rhombus(c);
+          c.setAttr("fillStyle", g);
+          c.fill();
+
+          // Inside-only highlight (top edges) and shadow (bottom edges).
           c.save();
+          rhombus(c);
+          c.clip();
           c.setAttr("shadowColor", "transparent");
           c.setAttr("shadowBlur", 0);
-          facet(c, [l, t, it, il], lighten(base, 12)); // top-left  (light)
-          facet(c, [t, r, ir, it], base); // top-right (mid)
-          facet(c, [r, bo, ib, ir], darken(base, 20)); // bottom-right (shadow)
-          facet(c, [bo, l, il, ib], darken(base, 30)); // bottom-left (deep shadow)
-          facet(c, [it, ir, ib, il], lighten(base, 26)); // table (bright)
-          // Facet seams for definition.
-          c.setAttr("strokeStyle", withAlpha(darken(base, 45), 0.55));
-          c.setAttr("lineWidth", 1);
+          c.setAttr("lineJoin", "round");
+          c.setAttr("strokeStyle", withAlpha(darken(base, 50), 0.6));
+          c.setAttr("lineWidth", Math.max(4, Math.min(w, h) * 0.08));
           c.beginPath();
-          c.moveTo(it[0], it[1]); c.lineTo(ir[0], ir[1]); c.lineTo(ib[0], ib[1]); c.lineTo(il[0], il[1]); c.closePath();
-          c.moveTo(it[0], it[1]); c.lineTo(t[0], t[1]);
-          c.moveTo(ir[0], ir[1]); c.lineTo(r[0], r[1]);
-          c.moveTo(ib[0], ib[1]); c.lineTo(bo[0], bo[1]);
-          c.moveTo(il[0], il[1]); c.lineTo(l[0], l[1]);
+          c.moveTo(l[0], l[1]);
+          c.lineTo(bo[0], bo[1]);
+          c.lineTo(r[0], r[1]);
+          c.stroke();
+          c.setAttr("strokeStyle", withAlpha(lighten(base, 45), 0.7));
+          c.setAttr("lineWidth", Math.max(2, Math.min(w, h) * 0.035));
+          c.beginPath();
+          c.moveTo(l[0], l[1]);
+          c.lineTo(t[0], t[1]);
+          c.lineTo(r[0], r[1]);
           c.stroke();
           c.restore();
+
+          if (border.enabled) {
+            rhombus(c);
+            c.setAttr("strokeStyle", resolveColor(border.color, ctx.theme));
+            c.setAttr("lineWidth", border.width);
+            c.stroke();
+          }
         }}
       />
     );

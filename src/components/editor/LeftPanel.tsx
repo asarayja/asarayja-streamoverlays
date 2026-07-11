@@ -417,13 +417,37 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
     },
   },
   {
-    label: "Gem",
+    label: "Gem — glow",
     patch: {
       shape: "gem",
       width: 160,
       height: 160,
       fill: "@accent",
       effects: { ...DEFAULT_EFFECTS, glow: { enabled: true, color: "@glow", strength: 26 } },
+    },
+  },
+  {
+    label: "Gem — inset",
+    patch: {
+      shape: "gem",
+      width: 160,
+      height: 160,
+      fill: "@accent",
+      // No outer effect — just the diamond's own top-light / bottom-shadow.
+      effects: { ...DEFAULT_EFFECTS },
+    },
+  },
+  {
+    label: "Gem — drop shadow",
+    patch: {
+      shape: "gem",
+      width: 160,
+      height: 160,
+      fill: "@accent",
+      effects: {
+        ...DEFAULT_EFFECTS,
+        shadow: { enabled: true, color: "@shadow", blur: 20, offsetX: 0, offsetY: 12, opacity: 0.7 },
+      },
     },
   },
   { label: "Harlequin", patch: { shape: "harlequin", width: 1920, height: 1080, fill: "@primary/14" } },
