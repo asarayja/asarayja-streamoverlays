@@ -319,6 +319,8 @@ function TemplatesTab() {
  * "add a shape then change its Kind to moon" is not a thing anyone discovers.
  */
 const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch }> = [
+  { label: "Colour fill", patch: { shape: "rect", x: 0, y: 0, width: 1920, height: 1080, fill: "@secondary" } },
+  { label: "Curved split", patch: { shape: "arcsplit", x: 0, y: 420, width: 1920, height: 660, fill: "@primary", cornerRadius: 180 } },
   { label: "Rectangle", patch: { shape: "rect", width: 320, height: 180, cornerRadius: 12, fill: "@primary" } },
   { label: "Ellipse", patch: { shape: "ellipse", width: 240, height: 240, fill: "@primary" } },
   { label: "Triangle", patch: { shape: "triangle", width: 220, height: 200, fill: "@accent" } },

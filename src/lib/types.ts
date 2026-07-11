@@ -372,6 +372,10 @@ export type ShapeKind =
   /** A freehand stroke drawn with the pencil tool — a smoothed polyline through
       `points` (layer-local coords), stroked in the layer's fill colour. */
   | "freehand"
+  /** A curved colour block: fills the area below an arc across the box, so
+      layered over another colour it splits the screen along the curve.
+      `cornerRadius` sets the arc's bend (0 = a straight edge). */
+  | "arcsplit"
   /** Brutalist print scaffold: heavy rules, crop marks, a registration
       crosshair and a tick ruler. */
   | "printRules"

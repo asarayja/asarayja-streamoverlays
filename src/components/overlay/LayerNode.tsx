@@ -723,6 +723,26 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     return <KonvaShape listening={false} sceneFunc={(c) => drawBloomVeil(c, w, h, ctx.time, hot, cool, seed)} />;
   }
 
+  if (layer.shape === "arcsplit") {
+    // Fills the region below an arc across the top of the box. Lay it over
+    // another colour and the screen splits into two along the curve.
+    const bend = layer.cornerRadius ?? 0;
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, s) => {
+          c.beginPath();
+          c.moveTo(0, bend);
+          c.quadraticCurveTo(w / 2, -bend, w, bend);
+          c.lineTo(w, h);
+          c.lineTo(0, h);
+          c.closePath();
+          c.fillStrokeShape(s);
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "chamfer") {
     return <Line closed points={chamferPoints(w, h)} {...paint} />;
   }
