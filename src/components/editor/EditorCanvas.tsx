@@ -9,6 +9,7 @@ import { resolveColor } from "@/lib/theme";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, DEFAULT_ANIMATION, DEFAULT_EFFECTS } from "@/lib/types";
 import type { ChannelProfile, LayerPatch, ShapeLayer } from "@/lib/types";
 import { uid } from "@/lib/id";
+import { getStroke } from "perfect-freehand";
 import { useElementSize } from "@/lib/useElementSize";
 import { brushStyle, useEditorStore } from "@/store/editor";
 
@@ -49,6 +50,7 @@ export function EditorCanvas({
   const toggleSelect = useEditorStore((s) => s.toggleSelect);
   const updateLayer = useEditorStore((s) => s.updateLayer);
   const insertLayer = useEditorStore((s) => s.insertLayer);
+  const eraseStrokes = useEditorStore((s) => s.eraseStrokes);
   const beginGesture = useEditorStore((s) => s.beginGesture);
   const setZoom = useEditorStore((s) => s.setZoom);
   const setPan = useEditorStore((s) => s.setPan);
@@ -89,19 +91,58 @@ export function EditorCanvas({
     const pts = stroke;
     setStroke(null);
     if (!pts || pts.length < 4) return;
-    const bs = brushStyle(drawBrush, drawWidth);
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (let i = 0; i < pts.length; i += 2) {
-      minX = Math.min(minX, pts[i]);
-      maxX = Math.max(maxX, pts[i]);
-      minY = Math.min(minY, pts[i + 1]);
-      maxY = Math.max(maxY, pts[i + 1]);
+
+    // Eraser removes freehand strokes the path crosses — no new layer.
+    if (drawBrush === "eraser") {
+      eraseStrokes(pts, Math.max(16, drawWidth * 2.5));
+      return;
     }
-    const pad = bs.strokeWidth + (bs.glow ?? 0);
-    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
-    const local = pts.map((v, i) => (i % 2 === 0 ? v - minX : v - minY));
+
+    let renderPts = pts;
+    let drawStyle: ShapeLayer["drawStyle"] = "line";
+    let strokeWidth = drawWidth;
+    let opacity = 1;
+    let dash: number[] | undefined;
     const effects = structuredClone(DEFAULT_EFFECTS);
-    if (bs.glow) effects.glow = { ...effects.glow, enabled: true, color: drawColor, strength: bs.glow };
+    let pad = drawWidth;
+
+    if (drawBrush === "ink") {
+      // Pressure/velocity-variable ink: a filled outline polygon.
+      const input: number[][] = [];
+      for (let i = 0; i < pts.length; i += 2) input.push([pts[i], pts[i + 1]]);
+      const outline = getStroke(input, {
+        size: drawWidth * 2.2,
+        thinning: 0.65,
+        smoothing: 0.55,
+        streamline: 0.5,
+        simulatePressure: true,
+      });
+      renderPts = outline.flat();
+      drawStyle = "fill";
+      pad = 2;
+    } else if (drawBrush === "spray") {
+      drawStyle = "spray";
+      opacity = 0.9;
+      pad = drawWidth * 3;
+    } else {
+      const bs = brushStyle(drawBrush, drawWidth);
+      strokeWidth = bs.strokeWidth;
+      opacity = bs.opacity;
+      dash = bs.dash;
+      pad = bs.strokeWidth + (bs.glow ?? 0);
+      if (bs.glow) effects.glow = { ...effects.glow, enabled: true, color: drawColor, strength: bs.glow };
+    }
+    if (renderPts.length < 4) return;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < renderPts.length; i += 2) {
+      minX = Math.min(minX, renderPts[i]);
+      maxX = Math.max(maxX, renderPts[i]);
+      minY = Math.min(minY, renderPts[i + 1]);
+      maxY = Math.max(maxY, renderPts[i + 1]);
+    }
+    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+    const local = renderPts.map((v, i) => (i % 2 === 0 ? v - minX : v - minY));
     const layer: ShapeLayer = {
       id: uid(),
       name: "Drawing",
@@ -112,19 +153,20 @@ export function EditorCanvas({
       width: maxX - minX,
       height: maxY - minY,
       rotation: 0,
-      opacity: bs.opacity,
+      opacity,
       visible: true,
       locked: false,
       fill: drawColor,
       cornerRadius: 0,
       points: local,
-      strokeWidth: bs.strokeWidth,
-      dash: bs.dash,
+      strokeWidth,
+      dash,
+      drawStyle,
       effects,
       animation: { ...DEFAULT_ANIMATION },
     };
     insertLayer(layer);
-  }, [stroke, drawWidth, drawBrush, drawColor, insertLayer]);
+  }, [stroke, drawWidth, drawBrush, drawColor, insertLayer, eraseStrokes]);
 
   // Fit once, as soon as the container has been measured.
   const fitted = useRef(false);
@@ -330,14 +372,40 @@ export function EditorCanvas({
               </Group>
 
               {stroke && stroke.length >= 4 && (() => {
-                const bs = brushStyle(drawBrush, drawWidth);
                 const col = resolveColor(drawColor, project.theme);
+                if (drawBrush === "eraser") {
+                  return (
+                    <Line
+                      points={stroke}
+                      stroke="rgba(255,255,255,0.6)"
+                      strokeWidth={Math.max(16, drawWidth * 2.5)}
+                      lineCap="round"
+                      lineJoin="round"
+                      opacity={0.3}
+                      listening={false}
+                    />
+                  );
+                }
+                if (drawBrush === "ink") {
+                  const input: number[][] = [];
+                  for (let i = 0; i < stroke.length; i += 2) input.push([stroke[i], stroke[i + 1]]);
+                  const outline = getStroke(input, {
+                    size: drawWidth * 2.2,
+                    thinning: 0.65,
+                    smoothing: 0.55,
+                    streamline: 0.5,
+                    simulatePressure: true,
+                  });
+                  return <Line points={outline.flat()} closed fill={col} listening={false} />;
+                }
+                const bs = brushStyle(drawBrush, drawWidth);
+                const opacity = drawBrush === "spray" ? 0.6 : bs.opacity;
                 return (
                   <Line
                     points={stroke}
                     stroke={col}
                     strokeWidth={bs.strokeWidth}
-                    opacity={bs.opacity}
+                    opacity={opacity}
                     dash={bs.dash}
                     lineCap="round"
                     lineJoin="round"

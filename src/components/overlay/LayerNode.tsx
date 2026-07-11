@@ -561,12 +561,52 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
   }
 
   if (layer.shape === "freehand") {
-    // A hand-drawn stroke: a smoothed polyline stroked in the fill colour.
     const pts = layer.points ?? [];
+    const col = resolveColor(layer.fill, ctx.theme);
+
+    // Ink / calligraphy: `points` is a closed outline polygon — render it filled.
+    if (layer.drawStyle === "fill") {
+      return <Line points={pts} closed fill={col} {...shadowProps(layer.effects, ctx.theme, glowBoost)} />;
+    }
+
+    // Airbrush: scatter soft deterministic dots along the drawn path.
+    if (layer.drawStyle === "spray") {
+      const r = layer.strokeWidth ?? 8;
+      return (
+        <KonvaShape
+          listening={false}
+          sceneFunc={(c) => {
+            const TAU = Math.PI * 2;
+            c.setAttr("fillStyle", col);
+            let k = 0;
+            for (let i = 0; i + 3 < pts.length; i += 2) {
+              const x0 = pts[i], y0 = pts[i + 1], x1 = pts[i + 2], y1 = pts[i + 3];
+              const segLen = Math.hypot(x1 - x0, y1 - y0);
+              const dots = Math.min(50, Math.max(2, Math.floor(segLen / 3.5)));
+              for (let d = 0; d < dots; d++) {
+                const t = d / dots;
+                const bx = x0 + (x1 - x0) * t, by = y0 + (y1 - y0) * t;
+                const ang = noise(k * 1.7) * TAU;
+                const rad = Math.sqrt(noise(k * 3.1 + 1)) * r;
+                const dr = 0.6 + noise(k * 5.3 + 2) * 1.8;
+                c.setAttr("globalAlpha", 0.35 + noise(k * 7.9 + 3) * 0.4);
+                c.beginPath();
+                c.arc(bx + Math.cos(ang) * rad, by + Math.sin(ang) * rad, dr, 0, TAU);
+                c.fill();
+                k++;
+              }
+            }
+            c.setAttr("globalAlpha", 1);
+          }}
+        />
+      );
+    }
+
+    // Default: a smoothed polyline stroked in the fill colour.
     return (
       <Line
         points={pts}
-        stroke={resolveColor(layer.fill, ctx.theme)}
+        stroke={col}
         strokeWidth={layer.strokeWidth ?? 8}
         lineCap="round"
         lineJoin="round"

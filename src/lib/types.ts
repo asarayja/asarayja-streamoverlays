@@ -414,6 +414,10 @@ export interface ShapeLayer extends LayerBase {
   strokeWidth?: number;
   /** For `shape: "freehand"`. Dash pattern (marker/dashed/dotted brushes). */
   dash?: number[];
+  /** For `shape: "freehand"`. How the points render: "line" a stroked polyline
+      (default), "fill" a filled outline polygon (ink/calligraphy brushes), or
+      "spray" scattered dots along the path (airbrush). */
+  drawStyle?: "line" | "fill" | "spray";
 }
 
 /**

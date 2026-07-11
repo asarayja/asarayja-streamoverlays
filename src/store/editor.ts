@@ -13,15 +13,27 @@ interface Snapshot {
 }
 
 /** Freehand brush presets for the pencil tool. */
-export type BrushKind = "pen" | "marker" | "highlighter" | "neon" | "dashed" | "dotted";
+export type BrushKind =
+  | "pen"
+  | "marker"
+  | "highlighter"
+  | "neon"
+  | "dashed"
+  | "dotted"
+  | "ink"
+  | "spray"
+  | "eraser";
 
 export const BRUSH_KINDS: { id: BrushKind; label: string }[] = [
   { id: "pen", label: "Pen" },
   { id: "marker", label: "Marker" },
+  { id: "ink", label: "Ink" },
   { id: "highlighter", label: "Highlight" },
   { id: "neon", label: "Neon" },
+  { id: "spray", label: "Spray" },
   { id: "dashed", label: "Dashed" },
   { id: "dotted", label: "Dotted" },
+  { id: "eraser", label: "Eraser" },
 ];
 
 /** How a brush turns a raw width into stroke width, opacity, dash and glow. */
@@ -117,6 +129,9 @@ interface EditorState {
   setDrawColor: (color: string) => void;
   setDrawWidth: (width: number) => void;
   setDrawBrush: (brush: BrushKind) => void;
+  /** Stroke eraser: delete freehand layers the erase path (canvas coords) passes
+      within `radius` of. */
+  eraseStrokes: (erasePts: number[], radius: number) => void;
 
   undo: () => void;
   redo: () => void;
@@ -527,6 +542,28 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     setDrawColor: (drawColor) => set({ drawColor }),
     setDrawWidth: (drawWidth) => set({ drawWidth: Math.max(1, Math.min(80, drawWidth)) }),
     setDrawBrush: (drawBrush) => set({ drawBrush }),
+
+    eraseStrokes: (erasePts, radius) => {
+      const { project } = get();
+      if (!project) return;
+      const r2 = radius * radius;
+      const hit = (l: Layer) => {
+        if (l.type !== "shape" || l.shape !== "freehand" || !l.points || l.locked) return false;
+        for (let i = 0; i < l.points.length; i += 2) {
+          const ax = l.x + l.points[i], ay = l.y + l.points[i + 1];
+          for (let j = 0; j < erasePts.length; j += 2) {
+            const dx = ax - erasePts[j], dy = ay - erasePts[j + 1];
+            if (dx * dx + dy * dy < r2) return true;
+          }
+        }
+        return false;
+      };
+      const remove = new Set(project.layers.filter(hit).map((l) => l.id));
+      if (remove.size === 0) return;
+      pushHistory();
+      mapLayers((layers) => layers.filter((l) => !remove.has(l.id)));
+      set((s) => ({ selectedIds: s.selectedIds.filter((id) => !remove.has(id)) }));
+    },
 
     undo: () => {
       const s = get();
