@@ -385,6 +385,10 @@ export type ShapeKind =
   /** Flag stripes bent into parallel arcs — a curved pride band. Colours from
       `facetColors`, arc bend from `cornerRadius`. */
   | "flagarc"
+  /** Flag stripes bent into parallel waves — a wavy pride band. */
+  | "flagwave"
+  /** Flag stripes as concentric rings — a round pride burst. */
+  | "flaground"
   /** Brutalist print scaffold: heavy rules, crop marks, a registration
       crosshair and a tick ruler. */
   | "printRules"

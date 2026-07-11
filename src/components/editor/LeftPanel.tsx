@@ -422,6 +422,30 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
         cornerRadius: 120,
       } as LayerPatch,
     },
+    {
+      label: `Pride — ${label} (waves)`,
+      patch: {
+        shape: "flagwave",
+        facetColors: stripes,
+        x: 0,
+        y: 220,
+        width: 1920,
+        height: 640,
+        cornerRadius: 80,
+      } as LayerPatch,
+    },
+    {
+      label: `Pride — ${label} (round)`,
+      patch: {
+        shape: "flaground",
+        facetColors: stripes,
+        x: 560,
+        y: 60,
+        width: 960,
+        height: 960,
+        cornerRadius: 0,
+      } as LayerPatch,
+    },
   ]),
 ];
 

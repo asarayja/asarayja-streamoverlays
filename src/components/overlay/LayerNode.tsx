@@ -849,6 +849,67 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "flagwave") {
+    // Flag stripes bent into parallel waves — a wavy pride band.
+    const cols =
+      layer.facetColors && layer.facetColors.length
+        ? layer.facetColors
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+    const n = cols.length;
+    const amp = layer.cornerRadius ?? 40;
+    const peaks = 2;
+    return (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) => {
+          const steps = 48;
+          const off = (x: number) => amp * Math.sin((x / w) * Math.PI * 2 * peaks);
+          for (let i = 0; i < n; i++) {
+            const y0 = (i / n) * h;
+            const y1 = ((i + 1) / n) * h;
+            c.setAttr("fillStyle", cols[i]);
+            c.beginPath();
+            c.moveTo(0, y0 + off(0));
+            for (let sIdx = 1; sIdx <= steps; sIdx++) {
+              const x = (w * sIdx) / steps;
+              c.lineTo(x, y0 + off(x));
+            }
+            for (let sIdx = steps; sIdx >= 0; sIdx--) {
+              const x = (w * sIdx) / steps;
+              c.lineTo(x, y1 + off(x));
+            }
+            c.closePath();
+            c.fill();
+          }
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "flaground") {
+    // Flag stripes as concentric rings — a round pride burst.
+    const cols =
+      layer.facetColors && layer.facetColors.length
+        ? layer.facetColors
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+    const n = cols.length;
+    return (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) => {
+          const cx = w / 2, cy = h / 2;
+          const maxR = Math.min(w, h) / 2;
+          for (let i = 0; i < n; i++) {
+            c.setAttr("fillStyle", cols[i]);
+            c.beginPath();
+            c.arc(cx, cy, maxR * (1 - i / n), 0, Math.PI * 2);
+            c.fill();
+          }
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "chamfer") {
     return <Line closed points={chamferPoints(w, h)} {...paint} />;
   }
