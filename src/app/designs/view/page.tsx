@@ -17,7 +17,7 @@ function DesignDetail() {
   const key = useSearchParams().get("d") ?? "";
   const router = useRouter();
   const profile = useRenderProfile();
-  const createDraft = useProjectsStore((s) => s.createDraft);
+  const createPack = useProjectsStore((s) => s.createPack);
   const design = getDesign(key);
 
   const [paletteId, setPaletteId] = useState(design?.coverPalette ?? "");
@@ -44,8 +44,10 @@ function DesignDetail() {
   }
 
   const open = (template: Template) => {
-    const project = createDraft(template.id);
-    if (project) router.push(`/editor?id=${project.id}`);
+    // Open the whole design as a pack: seed every sibling screen so the editor's
+    // Screens tab can switch between Starting Soon, BRB, alerts, … in place.
+    const cover = createPack(template.id);
+    if (cover) router.push(`/editor?id=${cover.id}`);
   };
 
   return (

@@ -97,6 +97,9 @@ interface EditorState {
 
   past: Snapshot[];
   future: Snapshot[];
+  /** Per-screen undo stacks, so switching screens in a pack keeps each
+      screen's own history. */
+  historyByProject: Record<string, { past: Snapshot[]; future: Snapshot[] }>;
   dirty: boolean;
 
   load: (project: Project) => void;
@@ -396,10 +399,26 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     duration: 5000,
     past: [],
     future: [],
+    historyByProject: {},
     dirty: false,
 
     load: (project) =>
-      set({ project, selectedIds: [], past: [], future: [], dirty: false, time: SETTLED_TIME }),
+      set((s) => {
+        // Stash the outgoing screen's undo stacks and restore the incoming
+        // screen's, so switching screens in a pack keeps per-screen undo.
+        const byId = { ...s.historyByProject };
+        if (s.project) byId[s.project.id] = { past: s.past, future: s.future };
+        const restored = byId[project.id] ?? { past: [], future: [] };
+        return {
+          project,
+          selectedIds: [],
+          past: restored.past,
+          future: restored.future,
+          historyByProject: byId,
+          dirty: false,
+          time: SETTLED_TIME,
+        };
+      }),
     markSaved: () => set({ dirty: false }),
     renameProject: (name) => patchProject((project) => ({ ...project, name })),
 

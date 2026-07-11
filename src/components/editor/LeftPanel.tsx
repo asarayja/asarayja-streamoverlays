@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowDown,
   ArrowUp,
@@ -8,9 +9,11 @@ import {
   Copy,
   Eye,
   EyeOff,
+  Film,
   Flag,
   GripVertical,
   AppWindow,
+  Plus,
   Tag,
   Sticker,
   Image as ImageIcon,
@@ -42,11 +45,15 @@ import { fileToDataUrl } from "@/lib/image";
 import { PLACEHOLDERS } from "@/lib/placeholders";
 import { ANIMATION_PRESETS, DEFAULT_ANIMATION, DEFAULT_EFFECTS } from "@/lib/types";
 import type { AnimationPreset, Layer, LayerPatch, LayerType, TextLayer } from "@/lib/types";
-import { useEditorStore, useSelectedLayer } from "@/store/editor";
+import { SETTLED_TIME, useEditorStore, useSelectedLayer } from "@/store/editor";
+import { useProjectsStore } from "@/store/projects";
+import { useRenderProfile } from "@/store/profile";
+import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 
-type Tab = "templates" | "add" | "layers" | "colors" | "text" | "animate" | "uploads";
+type Tab = "screens" | "templates" | "add" | "layers" | "colors" | "text" | "animate" | "uploads";
 
 const TABS: Array<{ id: Tab; label: string; icon: typeof LayersIcon }> = [
+  { id: "screens", label: "Screens", icon: Film },
   { id: "templates", label: "Templates", icon: LayoutTemplate },
   { id: "add", label: "Add", icon: PlusSquare },
   { id: "layers", label: "Layers", icon: LayersIcon },
@@ -116,6 +123,7 @@ export function LeftPanel() {
       </nav>
 
       <div className="min-w-0 flex-1 overflow-y-auto">
+        {tab === "screens" && <ScreensTab />}
         {tab === "templates" && <TemplatesTab />}
         {tab === "add" && <AddTab />}
         {tab === "layers" && <LayersTab />}
@@ -133,6 +141,102 @@ function PanelHeader({ title, subtitle }: { title: string; subtitle?: string }) 
     <div className="border-b border-white/[0.06] px-4 py-3.5">
       <h2 className="text-sm font-semibold text-zinc-100">{title}</h2>
       {subtitle && <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-500">{subtitle}</p>}
+    </div>
+  );
+}
+
+/* --------------------------------- Screens -------------------------------- */
+
+function ScreensTab() {
+  const project = useEditorStore((s) => s.project);
+  const projects = useProjectsStore((s) => s.projects);
+  const upsert = useProjectsStore((s) => s.upsert);
+  const addScreenToPack = useProjectsStore((s) => s.addScreenToPack);
+  const removeScreenFromPack = useProjectsStore((s) => s.removeScreenFromPack);
+  const profile = useRenderProfile();
+  const router = useRouter();
+
+  if (!project) return null;
+  const packId = project.packId;
+  const siblings = packId
+    ? projects.filter((p) => p.packId === packId).sort((a, b) => a.packOrder - b.packOrder)
+    : [project];
+
+  const goto = (id: string) => {
+    if (id === project.id) return;
+    upsert(project); // persist the current screen's edits before switching
+    router.replace(`/editor?id=${id}`);
+  };
+
+  const addScreen = () => {
+    if (!packId) return;
+    upsert(project);
+    const created = addScreenToPack(packId, "blank");
+    if (created) router.replace(`/editor?id=${created.id}`);
+  };
+
+  const remove = (id: string) => {
+    const next = siblings.find((x) => x.id !== id);
+    removeScreenFromPack(id);
+    if (id === project.id && next) router.replace(`/editor?id=${next.id}`);
+  };
+
+  return (
+    <div>
+      <PanelHeader
+        title="Screens"
+        subtitle="Every screen in this pack — switch, add or remove without leaving the editor."
+      />
+      <div className="space-y-2.5 p-4">
+        {siblings.map((s) => {
+          const active = s.id === project.id;
+          return (
+            <div
+              key={s.id}
+              className={cx(
+                "group overflow-hidden rounded-xl border transition-colors",
+                active ? "border-brand-400" : "border-white/[0.06] hover:border-white/15",
+              )}
+            >
+              <button onClick={() => goto(s.id)} className="block w-full text-left">
+                <div className="checker relative aspect-video w-full">
+                  <ClientOverlayStage
+                    layers={active ? project.layers : s.layers}
+                    theme={active ? project.theme : s.theme}
+                    profile={profile}
+                    time={SETTLED_TIME}
+                    mode="preview"
+                    width={292}
+                  />
+                </div>
+              </button>
+              <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
+                <span className="truncate text-[11px] font-medium text-zinc-300">
+                  {s.name}
+                  {active && <span className="ml-1.5 text-[10px] text-brand-400">• editing</span>}
+                </span>
+                {siblings.length > 1 && (
+                  <button
+                    onClick={() => remove(s.id)}
+                    className="shrink-0 text-zinc-600 transition-colors hover:text-red-400"
+                    title="Remove screen"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        {packId && (
+          <button
+            onClick={addScreen}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 py-3 text-[12px] font-medium text-zinc-400 transition-colors hover:border-brand-400/50 hover:text-white"
+          >
+            <Plus className="size-4" /> Add blank screen
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -62,6 +62,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const setMotion = useEditorStore((s) => s.setMotion);
 
   const upsert = useProjectsStore((s) => s.upsert);
+  const syncPackTheme = useProjectsStore((s) => s.syncPackTheme);
   const renameProject = useEditorStore((s) => s.renameProject);
   const hydrated = useProjectsStore((s) => s.hydrated);
   const saved = useProjectsStore((s) =>
@@ -96,11 +97,14 @@ export default function EditorShell({ projectId }: { projectId: string }) {
     if (!project || !dirty) return;
     const handle = setTimeout(() => {
       upsert(project);
+      // One shared palette per pack: fan the theme out to every sibling screen
+      // (a no-op when unchanged), then broadcast to this screen's live view.
+      if (project.packId) syncPackTheme(project.packId, project.theme);
       publishLive({ project, profile });
       markSaved();
     }, AUTOSAVE_DELAY);
     return () => clearTimeout(handle);
-  }, [project, dirty, upsert, markSaved, profile]);
+  }, [project, dirty, upsert, syncPackTheme, markSaved, profile]);
 
   // Keyboard shortcuts. Ignored while typing into a field.
   useEffect(() => {
