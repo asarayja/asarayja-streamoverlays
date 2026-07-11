@@ -3254,6 +3254,129 @@ const CYBER_PILL: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** Splash: liquid paint. Big glowing paint pools, paint dripping from the top
+    edge and flying flecks, headline in a marker hand — all lit with the Plasma
+    neon glow so the colour blooms. Colour follows the palette. */
+const SPLASH: FamilyStyle = {
+  id: "splash",
+  name: "Splash",
+  tags: ["Neon", "Anime", "RGB"],
+  display: "Permanent Marker",
+  displayWeight: 400,
+  displayTracking: 1,
+  displayTransform: "uppercase",
+  body: "Poppins",
+  radius: 20,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 3,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 3, radius: 20 },
+    glow: { enabled: true, color: "@glow", strength: 30 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 32 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 135 } },
+    }),
+    // Big glowing paint pools — the splashes, each blooming in its own hue.
+    shape("Splash — A", { x: 120, y: 140, width: 620, height: 520 }, {
+      shape: "ellipse",
+      fill: "@primary/45",
+      effects: { glow: { enabled: true, color: "@primary", strength: 110 } },
+    }),
+    shape("Splash — B", { x: 1180, y: 420, width: 640, height: 540 }, {
+      shape: "ellipse",
+      fill: "@secondary/40",
+      effects: { glow: { enabled: true, color: "@secondary", strength: 100 } },
+    }),
+    shape("Splash — C", { x: 700, y: 540, width: 560, height: 460 }, {
+      shape: "ellipse",
+      fill: "@accent/38",
+      effects: { glow: { enabled: true, color: "@accent", strength: 96 } },
+    }),
+    // Paint dripping down from the top edge.
+    shape("Drip — left", { x: 250, y: -70, width: 150, height: 300 }, {
+      shape: "drip",
+      fill: "@accent",
+      cornerRadius: 20,
+      effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+    }),
+    shape("Drip — right", { x: 1420, y: -80, width: 170, height: 330 }, {
+      shape: "drip",
+      fill: "@primary",
+      cornerRadius: 22,
+      effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+    }),
+    // Flying paint orbs and flecks.
+    particles("Decor — Blobs", { kind: "blobs", count: 6, size: 118, speed: 0.4, color: "@accent", opacity: 0.4 }),
+    particles("Decor — Flecks", { kind: "confetti", count: 30, size: 6, speed: 0.7, color: "@primary", opacity: 0.7 }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.35, color: "@text", opacity: 0.3 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Graffiti: street art. A concrete wall under spray mist and paint specks, a
+    bold tag bar dripping wet paint, and blocky letters with a hard offset edge.
+    Matte spray, not neon — a single corner splash carries the only glow. Colour
+    follows the palette. */
+const GRAFFITI: FamilyStyle = {
+  id: "graffiti",
+  name: "Graffiti",
+  tags: ["Cyberpunk", "RGB", "Dark"],
+  display: "Bungee",
+  displayWeight: 400,
+  displayTracking: 1,
+  displayTransform: "uppercase",
+  body: "Kanit",
+  radius: 4,
+  frameRadius: 4,
+  corners: false,
+  strokeWidth: 4,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 4, radius: 4 },
+    shadow: { enabled: true, color: "@shadow", blur: 12, offsetX: 6, offsetY: 8, opacity: 0.6 },
+  },
+  headlineEffects: {
+    emboss: { enabled: true, light: "@accent", dark: "@shadow", depth: 3 },
+    shadow: { enabled: true, color: "@shadow", blur: 6, offsetX: 6, offsetY: 8, opacity: 0.7 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 160 } },
+    }),
+    // Spray mist and paint specks drifting over the wall.
+    particles("Decor — Spray", { kind: "blobs", count: 5, size: 150, speed: 0.3, color: "@primary", opacity: 0.2 }),
+    particles("Decor — Specks", { kind: "confetti", count: 26, size: 5, speed: 0.5, color: "@accent", opacity: 0.5 }),
+    // A bold tag bar high in the frame, dripping wet paint beneath it.
+    shape("Tag bar", { x: 150, y: 230, width: 560, height: 84 }, {
+      shape: "rect",
+      fill: "@accent",
+      effects: { shadow: { enabled: true, color: "@shadow", blur: 10, offsetX: 4, offsetY: 8, opacity: 0.6 } },
+    }),
+    shape("Tag drip", { x: 150, y: 300, width: 560, height: 210 }, {
+      shape: "drip",
+      fill: "@accent",
+      cornerRadius: 0,
+    }),
+    // A single spray splash in the far corner, the one lit accent.
+    shape("Corner splash", { x: 1320, y: 640, width: 520, height: 420 }, {
+      shape: "ellipse",
+      fill: "@primary/28",
+      effects: { glow: { enabled: true, color: "@primary", strength: 64 } },
+    }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   HALLOWED_NIGHT,
   ASTRAL_DECK,
@@ -3274,6 +3397,8 @@ const NEW_FAMILIES: FamilyStyle[] = [
   CRYSTAL,
   MECHA,
   CYBER_PILL,
+  SPLASH,
+  GRAFFITI,
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);
