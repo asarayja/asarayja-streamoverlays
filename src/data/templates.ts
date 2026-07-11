@@ -3254,6 +3254,116 @@ const CYBER_PILL: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** Spectral Glow: the Hallowed Night haunt turned neon. The same graveyard,
+    ghosts, bats, moon, webs and chains, but every element blooms — a glowing
+    silhouette rim, luminous spectres, neon bats and a hot moon over a rising
+    ground glow. Gothic collection; colour follows the palette. */
+const SPECTRAL_GLOW: FamilyStyle = {
+  id: "spectral",
+  name: "Spectral Glow",
+  collection: "gothic",
+  tags: ["Horror", "Neon", "Dark"],
+  display: "Cinzel Decorative",
+  displayWeight: 700,
+  displayTracking: 6,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 12,
+  frameRadius: 12,
+  corners: false,
+  strokeWidth: 3,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 12 },
+    glow: { enabled: true, color: "@glow", strength: 34 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 44 } },
+  plateShape: "rect",
+  chatShape: "coffin",
+  alertShape: "coffin",
+  contentOffsetY: -175,
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 190 } },
+    }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 14, size: 6, speed: 0.5, color: "@glow", effects: { glow: { enabled: true, color: "@glow", strength: 18 } } }),
+    particles("Decor — Stars", { kind: "stars", count: 60, size: 2.6, speed: 0.14, color: "@accent", opacity: 0.8, effects: { glow: { enabled: true, color: "@accent", strength: 10 } } }),
+    // A hot neon moon.
+    shape("Decor — Moon", { x: 1520, y: 90, width: 210, height: 210 }, {
+      shape: "moon",
+      moonPhase: 1,
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 100 } },
+      animation: anim("float", { duration: 7000, intensity: 0.4 }),
+    }),
+    particles("Decor — Fog", { kind: "fog", count: 8, size: 5, speed: 0.5, color: "@secondary" }),
+    // A soft ground glow rising behind the graveyard.
+    shape("Glow — ground", { x: 160, y: 840, width: 1600, height: 320 }, {
+      shape: "ellipse",
+      fill: "@accent/14",
+      effects: { glow: { enabled: true, color: "@glow", strength: 110 } },
+    }),
+    // The silhouette, now with a neon rim blooming off its edges.
+    shape("Decor — Graveyard", { x: 0, y: 720, width: 1920, height: 360 }, {
+      shape: "graveyard",
+      fill: "@background",
+      effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+    }),
+    // Luminous bats and spectres.
+    particles("Decor — Bats", { kind: "bats", count: 9, size: 6, speed: 0.8, color: "@accent", opacity: 0.9, effects: { glow: { enabled: true, color: "@glow", strength: 16 } } }),
+    particles("Decor — Ghosts", { kind: "ghosts", count: 4, size: 14, speed: 0.6, color: "@accent", effects: { glow: { enabled: true, color: "@glow", strength: 26 } } }),
+    shape("Decor — Web left", { x: 0, y: 0, width: 300, height: 260 }, {
+      shape: "web",
+      fill: "@accent/60",
+      cornerRadius: 1.6,
+      effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+    }),
+    shape("Decor — Web right", { x: 1620, y: 0, width: 300, height: 260 }, {
+      shape: "web",
+      fill: "@accent/60",
+      cornerRadius: 1.6,
+      rotation: 90,
+      effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+    }),
+    shape("Decor — Chain", { x: 322, y: 0, width: 30, height: 300 }, {
+      shape: "chain",
+      fill: "@accent/85",
+      effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+      animation: anim("wave", { duration: 6000, intensity: 0.5 }),
+    }),
+    icon("Decor — Skull", { x: 118, y: 862, width: 74, height: 74 }, "skull", {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+      animation: anim("float", { duration: 6400, intensity: 0.4 }),
+    }),
+    icon("Decor — Candle", { x: 1740, y: 852, width: 66, height: 66 }, "candle", {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+      animation: anim("flicker", { duration: 2200 }),
+    }),
+  ],
+  overlayDecor: () => [
+    shape("Decor — Web left", { x: 0, y: 0, width: 260, height: 220 }, {
+      shape: "web",
+      fill: "@accent/45",
+      cornerRadius: 1.4,
+      effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+    }),
+    shape("Decor — Web right", { x: 1660, y: 0, width: 260, height: 220 }, {
+      shape: "web",
+      fill: "@accent/40",
+      cornerRadius: 1.4,
+      rotation: 90,
+      effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+    }),
+    particles("Decor — Bats left", { kind: "bats", count: 3, size: 5, speed: 0.7, color: "@accent", opacity: 0.8, box: MARGIN_LEFT, effects: { glow: { enabled: true, color: "@glow", strength: 14 } } }),
+    particles("Decor — Bats right", { kind: "bats", count: 3, size: 5, speed: 0.7, color: "@accent", opacity: 0.7, box: MARGIN_RIGHT, effects: { glow: { enabled: true, color: "@glow", strength: 14 } } }),
+    particles("Decor — Ghost left", { kind: "ghosts", count: 1, size: 11, speed: 0.5, color: "@accent", box: MARGIN_LEFT, effects: { glow: { enabled: true, color: "@glow", strength: 22 } } }),
+    particles("Decor — Ghost right", { kind: "ghosts", count: 1, size: 11, speed: 0.5, color: "@accent", box: MARGIN_RIGHT, effects: { glow: { enabled: true, color: "@glow", strength: 22 } } }),
+  ],
+};
+
 /** Splash: liquid paint. Big glowing paint pools, paint dripping from the top
     edge and flying flecks, headline in a marker hand — all lit with the Plasma
     neon glow so the colour blooms. Colour follows the palette. */
@@ -3399,6 +3509,7 @@ const NEW_FAMILIES: FamilyStyle[] = [
   CYBER_PILL,
   SPLASH,
   GRAFFITI,
+  SPECTRAL_GLOW,
 ];
 
 const GENERATED_FAMILY_TEMPLATES: BaseTemplate[] = NEW_FAMILIES.flatMap(familyScreens);

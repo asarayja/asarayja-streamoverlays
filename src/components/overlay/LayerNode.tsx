@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { cloneElement, useEffect, useRef } from "react";
 import Konva from "konva";
 import {
   Circle,
@@ -2623,6 +2623,23 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
         );
       }
     }
+  }
+
+  // A glow effect on a particle layer lights every particle — glowing ghosts,
+  // neon bats, embers with a real bloom. Cloned in so each branch above stays
+  // simple; the shadow is a pure per-node paint, safe under animation.
+  const g = layer.effects.glow;
+  if (g.enabled) {
+    const glowProps = {
+      shadowColor: resolveColor(g.color, ctx.theme),
+      shadowBlur: g.strength,
+      shadowOpacity: 1,
+    };
+    return (
+      <Group listening={false}>
+        {nodes.map((n) => cloneElement(n, glowProps))}
+      </Group>
+    );
   }
 
   return <Group listening={false}>{nodes}</Group>;
