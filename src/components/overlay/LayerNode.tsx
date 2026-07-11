@@ -526,6 +526,40 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "paintSplat") {
+    // Fill + glow come from `paint`, so the whole splatter blooms as lit wet
+    // paint. Seed salts each instance so no two splats are identical.
+    const seed = (layer.x + layer.y) * 0.013;
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, s) => {
+          paintSplatPath(c, w, h, ctx.time, seed);
+          c.fillStrokeShape(s);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "paintSpray") {
+    const col = resolveColor(layer.fill, ctx.theme);
+    return <KonvaShape listening={false} sceneFunc={(c) => paintSprayField(c, w, h, col, ctx.time)} />;
+  }
+
+  if (layer.shape === "spraySplat") {
+    const base = resolveColor(layer.fill, ctx.theme);
+    const ink = resolveColor("@shadow", ctx.theme);
+    const seed = (layer.x + layer.y) * 0.013;
+    return (
+      <KonvaShape listening={false} sceneFunc={(c) => spraySplatPaint(c, w, h, base, ink, ctx.time, seed)} />
+    );
+  }
+
+  if (layer.shape === "concreteWall") {
+    const base = resolveColor(layer.fill, ctx.theme);
+    return <KonvaShape listening={false} sceneFunc={(c) => concreteWallPaint(c, w, h, base)} />;
+  }
+
   if (layer.shape === "chamfer") {
     return <Line closed points={chamferPoints(w, h)} {...paint} />;
   }
@@ -1017,6 +1051,265 @@ function drawGlassSheet(
 }
 
 /**
+ * A thrown-paint splatter drawn as one path: an irregular lobed blob, thin
+ * curved tendrils ending in flung tip droplets, fling-stretched satellite
+ * drops and fine speckle. Handed to fillStrokeShape so the layer's fill + glow
+ * bloom a hard-edged paint mark, not an ellipse orb. `seed` salts each instance.
+ */
+function paintSplatPath(c: Konva.Context, w: number, h: number, time: number, seed: number) {
+  const TAU = Math.PI * 2;
+  const cx = w / 2, cy = h / 2;
+  const R = Math.min(w, h) * 0.3;
+  const S = seed;
+  const breathe = 1 + 0.012 * Math.sin(time / 1600);
+  c.beginPath();
+
+  // (1) Central blob with soft rounded lobes — a wavy bulbous outline, with a
+  // few bumps reaching further. Curve passes through edge midpoints (vertices
+  // as control points) so every lobe is round, never a facet or a spike.
+  const N = 15;
+  const px: number[] = [], py: number[] = [];
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * TAU;
+    let rr = R * (0.74 + noise(S + i * 1.7) * 0.42);
+    if (noise(S + i * 3.1 + 5) > 0.62) rr *= 1.3 + noise(S + i * 2.2) * 0.4; // bulbous lobe
+    rr *= breathe;
+    px[i] = cx + Math.cos(a) * rr;
+    py[i] = cy + Math.sin(a) * rr;
+  }
+  c.moveTo((px[N - 1] + px[0]) / 2, (py[N - 1] + py[0]) / 2);
+  for (let i = 0; i < N; i++) {
+    const j = (i + 1) % N;
+    c.quadraticCurveTo(px[i], py[i], (px[i] + px[j]) / 2, (py[i] + py[j]) / 2);
+  }
+  c.closePath();
+
+  // (2) A ring of small round satellite droplets flung off the blob — varied
+  // size, a few elongated. Round paint drops, the vector-splat idiom.
+  const D = 14;
+  for (let d = 0; d < D; d++) {
+    const a = noise(S + d * 2.3 + 1) * TAU;
+    const dist = R * (1.14 + Math.sqrt(noise(S + d * 4.7 + 1)) * 1.55);
+    const dr = R * (0.03 + noise(S + d * 6.1 + 1) * 0.14);
+    const ex = cx + Math.cos(a) * dist, ey = cy + Math.sin(a) * dist;
+    const elong = noise(S + d * 3.3 + 4) > 0.6 ? 1.55 : 1.05;
+    c.moveTo(ex + dr * elong, ey);
+    c.ellipse(ex, ey, dr * elong, dr, a, 0, TAU, false);
+  }
+
+  // (4) A little fine speckle.
+  const SP = 12;
+  for (let s = 0; s < SP; s++) {
+    const a = noise(S + s * 1.9 + 2) * TAU;
+    const dist = R * (1.4 + Math.sqrt(noise(S + s * 3.7 + 2)) * 2.0);
+    const sr = R * (0.009 + noise(S + s * 8.3 + 2) * 0.02);
+    const sx = cx + Math.cos(a) * dist, sy = cy + Math.sin(a) * dist;
+    c.moveTo(sx + sr, sy);
+    c.arc(sx, sy, sr, 0, TAU, false);
+  }
+}
+
+/** A matte aerosol haze: a 1/r density-graded cloud of fine dots, per-dot
+ *  alpha (dense core, sparse rim). Clipped to the box. */
+function paintSprayField(c: Konva.Context, w: number, h: number, color: string, time: number) {
+  const TAU = Math.PI * 2;
+  const cx = w * 0.5, cy = h * 0.5;
+  const R = Math.min(w, h) * 0.5;
+  const pulse = 1 + 0.03 * Math.sin(time / 1800);
+  c.save();
+  c.beginPath();
+  c.rect(0, 0, w, h);
+  c.clip();
+  c.setAttr("fillStyle", color);
+  const DOTS = 200;
+  for (let i = 0; i < DOTS; i++) {
+    const a = noise(i * 1.7) * TAU;
+    const rr = Math.pow(noise(i * 3.1), 1.5) * R * pulse;
+    const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+    const dr = 0.5 + noise(i * 5.3) * 1.9;
+    const edge = 1 - rr / R;
+    const al = 0.05 + edge * 0.4 * (0.4 + noise(i * 7.7) * 0.6);
+    c.setAttr("globalAlpha", al > 0 ? al : 0);
+    c.beginPath();
+    c.arc(x, y, dr, 0, TAU, false);
+    c.fill();
+  }
+  c.setAttr("globalAlpha", 1);
+  c.restore();
+}
+
+/** A spray-can paint mark: a radial body clipped to an organic blob, a density-
+ *  biased stipple, an overspray halo, wet drips and a hard matte outline. */
+function spraySplatPaint(c: Konva.Context, w: number, h: number, base: string, ink: string, time: number, seed: number) {
+  const TAU = Math.PI * 2;
+  const cx = w * 0.5, cy = h * 0.46;
+  const rx = w * 0.4, ry = h * 0.38;
+  const N = 16, S = seed, ph = time / 1000;
+
+  const vx: number[] = [], vy: number[] = [];
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * TAU;
+    const rmod = 0.62 + noise(S + i * 1.7) * 0.5;
+    const spike = noise(S + i * 2.3) > 0.82 ? 1.35 : 1.0;
+    vx[i] = cx + Math.cos(a) * rx * rmod * spike;
+    vy[i] = cy + Math.sin(a) * ry * rmod * spike;
+  }
+  const blob = () => {
+    c.beginPath();
+    c.moveTo((vx[0] + vx[N - 1]) / 2, (vy[0] + vy[N - 1]) / 2);
+    for (let i = 0; i < N; i++) {
+      const j = (i + 1) % N;
+      c.quadraticCurveTo(vx[i], vy[i], (vx[i] + vx[j]) / 2, (vy[i] + vy[j]) / 2);
+    }
+    c.closePath();
+  };
+
+  // BODY — soft radial fill clipped to the silhouette.
+  c.save();
+  blob();
+  c.clip();
+  const g = c.createRadialGradient(cx, cy, 0, cx, cy, Math.max(rx, ry) * 1.1);
+  g.addColorStop(0, hexAlpha(base, 0.55));
+  g.addColorStop(0.7, hexAlpha(base, 0.32));
+  g.addColorStop(1, hexAlpha(base, 0.05));
+  c.setAttr("fillStyle", g);
+  c.fillRect(0, 0, w, h);
+  // STIPPLE spray — power<1 biases dots toward the nozzle centre.
+  c.setAttr("fillStyle", base);
+  for (let k = 0; k < 200; k++) {
+    const th = noise(S + k * 1.7) * TAU;
+    const rr = Math.pow(noise(S + k * 3.1), 0.65);
+    const dx = cx + Math.cos(th) * rx * 1.05 * rr;
+    const dy = cy + Math.sin(th) * ry * 1.05 * rr;
+    const sr = 0.8 + noise(S + k * 5.7) * 2.4;
+    c.setAttr("globalAlpha", 0.25 + (1 - rr) * 0.55);
+    c.beginPath();
+    c.arc(dx, dy, sr, 0, TAU, false);
+    c.fill();
+  }
+  c.setAttr("globalAlpha", 1);
+  c.restore();
+
+  // OVERSPRAY halo — sparse faint dots just outside the edge.
+  c.setAttr("fillStyle", base);
+  for (let k = 0; k < 50; k++) {
+    const th = noise(S + k * 2.7 + 7) * TAU;
+    const band = 1.02 + noise(S + k * 4.9 + 7) * 0.3;
+    const dx = cx + Math.cos(th) * rx * band;
+    const dy = cy + Math.sin(th) * ry * band;
+    const sr = 0.6 + noise(S + k * 8.3 + 7) * 1.4;
+    const tw = 0.08 + 0.1 * (0.5 + 0.5 * Math.sin(ph * 0.6 + k));
+    c.setAttr("globalAlpha", Math.max(0, tw * (1.3 - band)));
+    c.beginPath();
+    c.arc(dx, dy, sr, 0, TAU, false);
+    c.fill();
+  }
+  c.setAttr("globalAlpha", 1);
+
+  // WET DRIPS off the lower belly.
+  for (let d = 0; d < 4; d++) {
+    const t = 0.2 + (d / 3) * 0.6;
+    const ox = cx + (t - 0.5) * 2 * rx * 0.8;
+    const nx = (ox - cx) / rx;
+    const oy = cy + Math.sqrt(Math.max(0, 1 - nx * nx)) * ry;
+    const len = (0.1 + noise(S + d * 1.9 + 3) * 0.22) * h * (1 + 0.06 * Math.sin(ph * 0.5 + d));
+    const wd = (0.01 + noise(S + d + 9) * 0.012) * w;
+    c.setAttr("fillStyle", base);
+    c.setAttr("globalAlpha", 0.9);
+    c.beginPath();
+    c.moveTo(ox - wd, oy - 4);
+    c.bezierCurveTo(ox - wd, oy + len * 0.5, ox - wd * 1.6, oy + len, ox, oy + len + wd * 1.4);
+    c.bezierCurveTo(ox + wd * 1.6, oy + len, ox + wd, oy + len * 0.5, ox + wd, oy - 4);
+    c.closePath();
+    c.fill();
+    if (noise(S + d + 21) > 0.5) {
+      c.beginPath();
+      c.arc(ox, oy + len + wd * 3.5, wd * 0.7, 0, TAU, false);
+      c.fill();
+    }
+  }
+  c.setAttr("globalAlpha", 1);
+
+  // HARD clean marker outline — the throw-up tell, matte.
+  blob();
+  c.setAttr("lineJoin", "round");
+  c.setAttr("lineCap", "round");
+  c.setAttr("lineWidth", Math.max(3, w * 0.006));
+  c.setAttr("strokeStyle", ink);
+  c.setAttr("shadowBlur", 0);
+  c.stroke();
+}
+
+/** A procedurally lit, mottled, cracked, speckled concrete wall with a centre
+ *  vignette — a surface for graffiti to sit on. Static. */
+function concreteWallPaint(c: Konva.Context, w: number, h: number, base: string) {
+  const TAU = Math.PI * 2;
+  c.save();
+  c.beginPath();
+  c.rect(0, 0, w, h);
+  c.clip();
+  const g = c.createLinearGradient(0, 0, w * 0.3, h);
+  g.addColorStop(0, lighten(base, 0.06));
+  g.addColorStop(1, darken(base, 0.1));
+  c.setAttr("fillStyle", g);
+  c.fillRect(0, 0, w, h);
+  // Broad mottling — grime patches.
+  for (let i = 0; i < 28; i++) {
+    const x = noise(i * 1.9) * w, y = noise(i * 2.7 + 5) * h;
+    const rad = 60 + noise(i * 3.3 + 2) * 220;
+    const lite = noise(i * 4.9) > 0.5;
+    const rg = c.createRadialGradient(x, y, 0, x, y, rad);
+    rg.addColorStop(0, hexAlpha(lite ? "#ffffff" : "#000000", 0.02 + noise(i * 5.3) * 0.04));
+    rg.addColorStop(1, hexAlpha(lite ? "#ffffff" : "#000000", 0));
+    c.setAttr("fillStyle", rg);
+    c.beginPath();
+    c.arc(x, y, rad, 0, TAU, false);
+    c.fill();
+  }
+  // Grit speckle — concrete tooth.
+  for (let k = 0; k < 280; k++) {
+    const x = noise(k * 1.3) * w, y = noise(k * 2.7) * h;
+    const lite = noise(k * 4.9) > 0.5;
+    c.setAttr("fillStyle", lite ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.10)");
+    c.fillRect(x, y, 1 + (noise(k * 6.1) > 0.85 ? 1 : 0), 1);
+  }
+  // Hairline cracks.
+  c.setAttr("strokeStyle", hexAlpha(darken(base, 0.4), 0.9));
+  c.setAttr("lineWidth", 1.4);
+  c.setAttr("globalAlpha", 0.25);
+  for (let s = 0; s < 3; s++) {
+    let x = noise(s * 9.7) * w, y = noise(s * 3.3) * h * 0.3;
+    let ang = Math.PI * 0.5 + (noise(s * 2.1) - 0.5);
+    c.beginPath();
+    c.moveTo(x, y);
+    for (let j = 1; j < 13; j++) {
+      ang += (noise(s * 5 + j) - 0.5) * 0.9;
+      x += Math.cos(ang) * w * 0.03;
+      y += Math.abs(Math.sin(ang)) * h * 0.045 + h * 0.01;
+      c.lineTo(x, y);
+    }
+    c.stroke();
+  }
+  c.setAttr("globalAlpha", 1);
+  // Drip stains — faint vertical streaks.
+  for (let s = 0; s < 4; s++) {
+    const x = 100 + noise(s * 7.1 + 4) * (w - 200);
+    const sh = c.createLinearGradient(x, 0, x, h);
+    sh.addColorStop(0, hexAlpha(darken(base, 0.2), 0.12));
+    sh.addColorStop(1, hexAlpha(darken(base, 0.2), 0));
+    c.setAttr("fillStyle", sh);
+    c.fillRect(x - 12, 0, 24, h);
+  }
+  // Vignette — focus the centre.
+  const vg = c.createRadialGradient(w / 2, h * 0.5, h * 0.35, w / 2, h * 0.5, h * 0.9);
+  vg.addColorStop(0, "rgba(0,0,0,0)");
+  vg.addColorStop(1, hexAlpha(darken(base, 0.3), 0.35));
+  c.setAttr("fillStyle", vg);
+  c.fillRect(0, 0, w, h);
+  c.restore();
+}
+
+/**
  * The lit limb of a moon at `phase` (0 = new, 0.5 = half, 1 = full).
  *
  * Canvas angles run clockwise on screen because y points down, so pi/2 is the
@@ -1284,6 +1577,13 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
     );
   }
 
+  // A border on a text layer is a stencil-cut outline: the stroke is drawn
+  // behind the fill (fillAfterStrokeEnabled) so it hugs the glyph edge cleanly.
+  const bd = layer.effects.border;
+  const outline = bd.enabled
+    ? { stroke: resolveColor(bd.color, ctx.theme), strokeWidth: bd.width, fillAfterStrokeEnabled: true }
+    : {};
+
   const common = {
     text: visible,
     width: layer.width,
@@ -1296,6 +1596,7 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
     lineHeight: layer.lineHeight,
     letterSpacing: layer.letterSpacing,
     wrap: "word" as const,
+    ...outline,
   };
 
   // Bevelled lettering: a light copy above-left and a dark copy below-right,

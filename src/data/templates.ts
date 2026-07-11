@@ -3408,9 +3408,10 @@ const SPECTRAL_GLOW: FamilyStyle = {
   ],
 };
 
-/** Splash: liquid paint. Big glowing paint pools, paint dripping from the top
-    edge and flying flecks, headline in a marker hand — all lit with the Plasma
-    neon glow so the colour blooms. Colour follows the palette. */
+/** Splash: thrown paint. Hard-edged paint splatters — an irregular blob with
+    radiating tendrils, flung droplets and speckle — over a matte aerosol haze,
+    each splat lit with the Plasma neon glow so the paint reads as wet and lit,
+    not a bloomy orb. Marker-hand headline. Colour follows the palette. */
 const SPLASH: FamilyStyle = {
   id: "splash",
   name: "Splash",
@@ -3428,7 +3429,11 @@ const SPLASH: FamilyStyle = {
     border: { enabled: true, color: "@accent", width: 3, radius: 20 },
     glow: { enabled: true, color: "@glow", strength: 30 },
   },
-  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 32 } },
+  // Neon bloom + a stencil outline so the letters cut cleanly over the splats.
+  headlineEffects: {
+    border: { enabled: true, color: "@background", width: 3 },
+    glow: { enabled: true, color: "@glow", strength: 28 },
+  },
   plateShape: "rect",
   scene: () => [
     shape("Backdrop", FULL, {
@@ -3436,55 +3441,62 @@ const SPLASH: FamilyStyle = {
       fill: "@background",
       effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 135 } },
     }),
-    // Big glowing paint pools — the splashes, each blooming in its own hue.
-    shape("Splash — A", { x: 120, y: 140, width: 620, height: 520 }, {
-      shape: "ellipse",
-      fill: "@primary/45",
-      effects: { glow: { enabled: true, color: "@primary", strength: 110 } },
+    // Matte aerosol haze behind the paint.
+    shape("Spray — A", { x: 80, y: 60, width: 1000, height: 900 }, { shape: "paintSpray", fill: "@primary", opacity: 0.18 }),
+    shape("Spray — B", { x: 900, y: 280, width: 1000, height: 820 }, { shape: "paintSpray", fill: "@secondary", opacity: 0.16 }),
+    // Four hard-edged paint splats hugging the corners, thin tendrils inward,
+    // each blooming with the Plasma glow. Centre lane stays clear for the copy.
+    shape("Splat A", { x: -40, y: -80, width: 860, height: 800 }, {
+      shape: "paintSplat",
+      fill: "@primary/85",
+      effects: { glow: { enabled: true, color: "@primary", strength: 54 } },
     }),
-    shape("Splash — B", { x: 1180, y: 420, width: 640, height: 540 }, {
-      shape: "ellipse",
-      fill: "@secondary/40",
-      effects: { glow: { enabled: true, color: "@secondary", strength: 100 } },
+    shape("Splat B", { x: 1120, y: 400, width: 900, height: 820 }, {
+      shape: "paintSplat",
+      fill: "@secondary/82",
+      effects: { glow: { enabled: true, color: "@secondary", strength: 50 } },
     }),
-    shape("Splash — C", { x: 700, y: 540, width: 560, height: 460 }, {
-      shape: "ellipse",
-      fill: "@accent/38",
-      effects: { glow: { enabled: true, color: "@accent", strength: 96 } },
+    shape("Splat C", { x: 1360, y: -60, width: 560, height: 520 }, {
+      shape: "paintSplat",
+      fill: "@accent/85",
+      effects: { glow: { enabled: true, color: "@accent", strength: 44 } },
     }),
-    // Paint dripping down from the top edge.
-    shape("Drip — left", { x: 250, y: -70, width: 150, height: 300 }, {
-      shape: "drip",
+    shape("Splat D", { x: 60, y: 640, width: 560, height: 520 }, {
+      shape: "paintSplat",
       fill: "@accent",
-      cornerRadius: 20,
-      effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+      effects: { glow: { enabled: true, color: "@accent", strength: 44 } },
     }),
-    shape("Drip — right", { x: 1420, y: -80, width: 170, height: 330 }, {
+    // Thin runny paint off the top edge.
+    shape("Drip — L", { x: 300, y: -70, width: 90, height: 260 }, {
       shape: "drip",
       fill: "@primary",
-      cornerRadius: 22,
-      effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+      cornerRadius: 16,
+      effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
     }),
-    // Flying paint orbs and flecks.
-    particles("Decor — Blobs", { kind: "blobs", count: 6, size: 118, speed: 0.4, color: "@accent", opacity: 0.4 }),
-    particles("Decor — Flecks", { kind: "confetti", count: 30, size: 6, speed: 0.7, color: "@primary", opacity: 0.7 }),
-    particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.35, color: "@text", opacity: 0.3 }),
+    shape("Drip — R", { x: 1520, y: -80, width: 110, height: 300 }, {
+      shape: "drip",
+      fill: "@secondary",
+      cornerRadius: 18,
+      effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+    }),
+    // Sparse flung droplets.
+    particles("Decor — Flecks", { kind: "confetti", count: 22, size: 5, speed: 0.6, color: "@accent", opacity: 0.7 }),
   ],
   overlayDecor: () => [],
   contentOffsetY: 0,
 };
 
-/** Graffiti: street art. A concrete wall under spray mist and paint specks, a
-    bold tag bar dripping wet paint, and blocky letters with a hard offset edge.
-    Matte spray, not neon — a single corner splash carries the only glow. Colour
-    follows the palette. */
+/** Graffiti: street art. Real spray-can throw-ups — stippled colour fields with
+    hard marker outlines, overspray halos and wet drips — on a procedural lit
+    concrete wall, with a poster-block headline. Matte throughout; only the tag
+    bar carries a small glow. Colour follows the palette. */
 const GRAFFITI: FamilyStyle = {
   id: "graffiti",
   name: "Graffiti",
   tags: ["Cyberpunk", "RGB", "Dark"],
-  display: "Bungee",
+  display: "Anton",
   displayWeight: 400,
-  displayTracking: 1,
+  displayTracking: 2,
   displayTransform: "uppercase",
   body: "Kanit",
   radius: 4,
@@ -3493,39 +3505,36 @@ const GRAFFITI: FamilyStyle = {
   strokeWidth: 4,
   frameEffects: {
     border: { enabled: true, color: "@accent", width: 4, radius: 4 },
-    shadow: { enabled: true, color: "@shadow", blur: 12, offsetX: 6, offsetY: 8, opacity: 0.6 },
+    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 8, offsetY: 10, opacity: 0.85 },
   },
+  // Hard, matte: a stencil-cut outline and a zero-blur paste-up offset shadow.
   headlineEffects: {
-    emboss: { enabled: true, light: "@accent", dark: "@shadow", depth: 3 },
-    shadow: { enabled: true, color: "@shadow", blur: 6, offsetX: 6, offsetY: 8, opacity: 0.7 },
+    border: { enabled: true, color: "@background", width: 4 },
+    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 8, offsetY: 10, opacity: 0.85 },
   },
   plateShape: "rect",
   scene: () => [
-    shape("Backdrop", FULL, {
-      background: true,
-      fill: "@background",
-      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 160 } },
-    }),
-    // Spray mist and paint specks drifting over the wall.
-    particles("Decor — Spray", { kind: "blobs", count: 5, size: 150, speed: 0.3, color: "@primary", opacity: 0.2 }),
-    particles("Decor — Specks", { kind: "confetti", count: 26, size: 5, speed: 0.5, color: "@accent", opacity: 0.5 }),
-    // A bold tag bar high in the frame, dripping wet paint beneath it.
-    shape("Tag bar", { x: 150, y: 230, width: 560, height: 84 }, {
+    // Lit, mottled, cracked, speckled concrete — the surface the paint sits on.
+    shape("Wall", FULL, { background: true, shape: "concreteWall", fill: "@surface" }),
+    // Four spray-can throw-ups loaded into the corners, centre kept open.
+    shape("Splat TL", { x: -120, y: -120, width: 820, height: 760 }, { shape: "spraySplat", fill: "@primary" }),
+    shape("Splat BR", { x: 1200, y: 440, width: 840, height: 760 }, { shape: "spraySplat", fill: "@secondary" }),
+    shape("Splat TR", { x: 1380, y: -160, width: 620, height: 560 }, { shape: "spraySplat", fill: "@accent" }),
+    shape("Splat BL", { x: -100, y: 600, width: 600, height: 560 }, { shape: "spraySplat", fill: "@accentSecondary" }),
+    // The one lit accent: a tag bar with a fat dark keyline, running paint below.
+    shape("Tag bar", { x: 150, y: 150, width: 520, height: 96 }, {
       shape: "rect",
       fill: "@accent",
-      effects: { shadow: { enabled: true, color: "@shadow", blur: 10, offsetX: 4, offsetY: 8, opacity: 0.6 } },
+      effects: {
+        border: { enabled: true, color: "@shadow", width: 6 },
+        glow: { enabled: true, color: "@glow", strength: 16 },
+      },
     }),
-    shape("Tag drip", { x: 150, y: 300, width: 560, height: 210 }, {
-      shape: "drip",
-      fill: "@accent",
-      cornerRadius: 0,
-    }),
-    // A single spray splash in the far corner, the one lit accent.
-    shape("Corner splash", { x: 1320, y: 640, width: 520, height: 420 }, {
-      shape: "ellipse",
-      fill: "@primary/28",
-      effects: { glow: { enabled: true, color: "@primary", strength: 64 } },
-    }),
+    shape("Tag drip", { x: 150, y: 222, width: 520, height: 200 }, { shape: "drip", fill: "@accent", cornerRadius: 0 }),
+    // Paint haze confined to the margins so it never fogs the centre.
+    particles("Fine mist L", { kind: "dots", count: 40, size: 3, speed: 0.3, color: "@text", opacity: 0.12, box: MARGIN_LEFT }),
+    particles("Fine mist R", { kind: "dots", count: 40, size: 3, speed: 0.3, color: "@text", opacity: 0.12, box: MARGIN_RIGHT }),
+    particles("Decor — Flecks", { kind: "confetti", count: 18, size: 5, speed: 0.5, color: "@accent", opacity: 0.4 }),
   ],
   overlayDecor: () => [],
   contentOffsetY: 0,

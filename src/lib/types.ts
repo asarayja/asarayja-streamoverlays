@@ -358,7 +358,17 @@ export type ShapeKind =
   /** A rectangle with its four corners cut at 45° — the mecha panel. */
   | "chamfer"
   /** A woven carbon-fibre texture fill. */
-  | "carbon";
+  | "carbon"
+  /** A thrown-paint splatter: an irregular blob with radiating tendrils, flung
+      satellite droplets and fine speckle. Carries the layer's fill and glow. */
+  | "paintSplat"
+  /** A matte aerosol haze — a density-graded cloud of fine dots. */
+  | "paintSpray"
+  /** A spray-can paint mark: a stippled colour field with a hard outline,
+      overspray halo and wet drips. Matte. */
+  | "spraySplat"
+  /** A procedurally lit, mottled, cracked and speckled concrete wall. */
+  | "concreteWall";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";
