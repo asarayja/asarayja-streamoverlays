@@ -22,6 +22,41 @@ export function useElementSize<T extends HTMLElement>() {
   return [ref, size] as const;
 }
 
+/** Whether the viewer has asked for reduced motion. Autoplay respects it. */
+export function usePrefersReducedMotion(): boolean {
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduce(m.matches);
+    const on = () => setReduce(m.matches);
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
+  }, []);
+  return reduce;
+}
+
+/**
+ * Live viewport visibility — toggles as the element scrolls in and out, unlike
+ * `useInView` which latches. Used to autoplay a card's animation only while it
+ * is actually on screen, so a long gallery isn't running dozens of clocks.
+ */
+export function useOnScreen<T extends HTMLElement>(rootMargin = "0px") {
+  const ref = useRef<T>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
+      rootMargin,
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  return [ref, visible] as const;
+}
+
 /** True once the element has been within `rootMargin` of the viewport. Latches. */
 export function useInView<T extends HTMLElement>(rootMargin = "300px") {
   const ref = useRef<T>(null);

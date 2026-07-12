@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { getPalette } from "@/data/palettes";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { useClock } from "@/lib/useClock";
-import { settledTime } from "@/lib/animation";
-import { useElementSize, useInView } from "@/lib/useElementSize";
+import { settledTime, timelineDuration } from "@/lib/animation";
+import { useElementSize, useInView, useOnScreen, usePrefersReducedMotion } from "@/lib/useElementSize";
 import { cx } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import type { ChannelProfile, Template, Theme } from "@/lib/types";
@@ -29,13 +29,22 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
   const t = useT();
   const [viewRef, inView] = useInView<HTMLDivElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
+  const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
   const [hovered, setHovered] = useState(false);
+  const reduceMotion = usePrefersReducedMotion();
 
-  // Every template supports motion — hover previews it, rest shows the still.
-  // The clock is unbounded: a looping one would replay the entry animation
-  // every cycle, which reads as the preview restarting.
-  const clock = useClock(hovered);
-  const time = hovered ? clock : settledTime(template.category, SETTLED);
+  // Autoplay the motion so people can see there IS animation without hovering.
+  // Only while the card is actually on screen (or hovered), so a long gallery
+  // isn't driving dozens of clocks; honours prefers-reduced-motion. The clock
+  // loops over the timeline plus a short settle, so entrance and stinger
+  // animations replay instead of playing once and freezing.
+  const play = hovered || (onScreen && !reduceMotion);
+  const loopAfter = useMemo(
+    () => timelineDuration(template.layers.map((l) => l.animation)) + 650,
+    [template.layers],
+  );
+  const clock = useClock(play, loopAfter);
+  const time = play ? clock : settledTime(template.category, SETTLED);
 
   const resolvedTheme = theme ?? getPalette(template.paletteId).theme;
   // Full-screen scenes carry their own background; partial overlays are meant to
@@ -59,7 +68,10 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
         )}
       >
         <div
-          ref={sizeRef}
+          ref={(el) => {
+            sizeRef.current = el;
+            screenRef.current = el;
+          }}
           className={cx("relative aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}
         >
           {inView && size.width > 0 && (

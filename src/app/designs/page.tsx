@@ -10,7 +10,9 @@ import { TopNav } from "@/components/site/TopNav";
 import { MyDesigns } from "@/components/gallery/MyDesigns";
 import { Chip, TextInput, cx } from "@/components/ui";
 import { getPalette } from "@/data/palettes";
-import { useElementSize, useInView } from "@/lib/useElementSize";
+import { useElementSize, useInView, useOnScreen, usePrefersReducedMotion } from "@/lib/useElementSize";
+import { useClock } from "@/lib/useClock";
+import { settledTime, timelineDuration } from "@/lib/animation";
 import { useRenderProfile } from "@/store/profile";
 import { useT } from "@/lib/i18n";
 import type { Collection } from "@/lib/types";
@@ -101,8 +103,20 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
   const t = useT();
   const [viewRef, inView] = useInView<HTMLAnchorElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
+  const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
+  const reduceMotion = usePrefersReducedMotion();
   const theme = getPalette(design.coverPalette).theme;
   const hasBackdrop = design.cover.layers.some((l) => l.type === "background");
+
+  // Autoplay the cover's motion while the card is on screen, so the landing
+  // gallery visibly moves; loops over the timeline plus a short settle.
+  const play = onScreen && !reduceMotion;
+  const loopAfter = useMemo(
+    () => timelineDuration(design.cover.layers.map((l) => l.animation)) + 650,
+    [design.cover.layers],
+  );
+  const clock = useClock(play, loopAfter);
+  const time = play ? clock : settledTime(design.cover.category, SETTLED);
 
   return (
     <Link
@@ -115,13 +129,19 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400",
       )}
     >
-      <div ref={sizeRef} className={cx("relative aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}>
+      <div
+        ref={(el) => {
+          sizeRef.current = el;
+          screenRef.current = el;
+        }}
+        className={cx("relative aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}
+      >
         {inView && size.width > 0 && (
           <ClientOverlayStage
             layers={design.cover.layers}
             theme={theme}
             profile={profile}
-            time={SETTLED}
+            time={time}
             mode="preview"
             width={size.width}
           />
