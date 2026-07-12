@@ -4938,7 +4938,271 @@ const METEOR_PRIDE: FamilyStyle = {
   ],
 };
 
+/* ----------------------------- New proposals ----------------------------- */
+
+/** Retrowave: an 80s synthwave sunset — a banded sun low on the horizon, a
+    glowing horizon line and a starfield, all in neon. Colour follows the
+    palette (magenta/cyan by default, but red/purple works too). */
+const RETROWAVE: FamilyStyle = {
+  id: "retrowave",
+  name: "Retrowave",
+  tags: ["Neon", "Cyberpunk", "Dark"],
+  display: "Audiowide",
+  displayWeight: 400,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Chakra Petch",
+  radius: 4,
+  frameRadius: 6,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 6 },
+    glow: { enabled: true, color: "@glow", strength: 30 },
+  },
+  headlineEffects: {
+    gradient: { enabled: true, from: "@accent", via: "@text", to: "@secondary", angle: 90 },
+    glow: { enabled: true, color: "@glow", strength: 36 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/35", angle: 90 } },
+    }),
+    shape("Sun", { x: 700, y: 470, width: 520, height: 520 }, {
+      shape: "ellipse",
+      fill: "@accent",
+      effects: {
+        gradient: { enabled: true, from: "@accent", to: "@secondary", angle: 90 },
+        glow: { enabled: true, color: "@glow", strength: 90 },
+      },
+      animation: anim("glow", { duration: 5200, intensity: 0.8 }),
+    }),
+    // Scanline slices cut across the lower half of the sun — the synthwave sun.
+    ...[0, 1, 2, 3, 4, 5].map((i) =>
+      shape(`Sun slice ${i}`, { x: 690, y: 740 + i * 42, width: 540, height: 14 + i * 5 }, {
+        fill: "@background",
+        opacity: 0.92,
+      }),
+    ),
+    shape("Horizon", { x: -60, y: 726, width: 2040, height: 5 }, {
+      fill: "@glow",
+      effects: { glow: { enabled: true, color: "@glow", strength: 44 } },
+      animation: anim("shimmer", { duration: 4200 }),
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 90, size: 2, speed: 0.12, color: "@text", opacity: 0.7 }),
+    particles("Decor — Haze", { kind: "bokeh", count: 8, size: 7, speed: 0.3, color: "@accent", opacity: 0.28 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Terrazzo: a calm flat design — a solid ground scattered with speckle chips
+    and a couple of soft colour fields. No glow, no gradient noise; the look is
+    clean and friendly. Reads in light or dark palettes. */
+const TERRAZZO: FamilyStyle = {
+  id: "terrazzo",
+  name: "Terrazzo",
+  tags: ["Minimal", "Cozy", "Light"],
+  display: "Fredoka",
+  displayWeight: 600,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 22,
+  frameRadius: 24,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 24 },
+  },
+  headlineEffects: {
+    shadow: { enabled: true, color: "@shadow", blur: 6, offsetY: 2, opacity: 0.25 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@surface" }),
+    shape("Field A", { x: -160, y: -140, width: 900, height: 760 }, {
+      shape: "ellipse",
+      fill: "@primary",
+      opacity: 0.14,
+      animation: anim("float", { duration: 9000, intensity: 0.3 }),
+    }),
+    shape("Field B", { x: 1240, y: 480, width: 940, height: 820 }, {
+      shape: "ellipse",
+      fill: "@secondary",
+      opacity: 0.14,
+      animation: anim("float", { duration: 10200, intensity: 0.3, delay: 800 }),
+    }),
+    particles("Decor — Chips A", { kind: "confetti", count: 44, size: 9, speed: 0.14, color: "@accent", opacity: 0.85 }),
+    particles("Decor — Chips B", { kind: "confetti", count: 30, size: 7, speed: 0.16, color: "@primary", opacity: 0.7 }),
+    particles("Decor — Chips C", { kind: "confetti", count: 24, size: 6, speed: 0.12, color: "@secondary", opacity: 0.6 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Blueprint: a technical drafting sheet — a ruled ground, corner reticles and
+    tick marks, with mono lettering. Cool and precise; distinct from Circuit's
+    node traces. Colour follows the palette (cyan-on-navy by default). */
+const BLUEPRINT: FamilyStyle = {
+  id: "blueprint",
+  name: "Blueprint",
+  tags: ["Sci-Fi", "Minimal", "Blue"],
+  display: "Chakra Petch",
+  displayWeight: 700,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Space Mono",
+  radius: 2,
+  frameRadius: 3,
+  corners: true,
+  strokeWidth: 1.5,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 1.5, radius: 3 },
+    glow: { enabled: true, color: "@glow", strength: 12 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/16", angle: 150 } },
+    }),
+    // The drafting rules — a fine technical grid.
+    shape("Rules", FULL, { shape: "printRules", fill: "@accent", opacity: 0.16, animation: anim("shimmer", { duration: 7000 }) }),
+    // Corner reticles: a ringed crosshair top-left and bottom-right.
+    ...[{ x: 150, y: 150 }, { x: 1610, y: 780 }].flatMap(({ x, y }, i) => [
+      shape(`Reticle ${i}`, { x, y, width: 160, height: 160 }, {
+        shape: "ellipse",
+        fill: "transparent",
+        effects: { border: { enabled: true, color: "@accent", width: 2, radius: 80 }, glow: { enabled: true, color: "@glow", strength: 14 } },
+        animation: anim("pulse", { duration: 4200 + i * 600, intensity: 0.5 }),
+      }),
+      shape(`Reticle ${i} H`, { x: x - 40, y: y + 78, width: 240, height: 2 }, { fill: "@accent", opacity: 0.7 }),
+      shape(`Reticle ${i} V`, { x: x + 79, y: y - 40, width: 2, height: 240 }, { fill: "@accent", opacity: 0.7 }),
+    ]),
+    // A dimension bar with end ticks along the top.
+    shape("Dim bar", { x: 360, y: 250, width: 1200, height: 2 }, { fill: "@secondary", opacity: 0.6 }),
+    shape("Dim tick L", { x: 360, y: 236, width: 2, height: 30 }, { fill: "@secondary", opacity: 0.6 }),
+    shape("Dim tick R", { x: 1558, y: 236, width: 2, height: 30 }, { fill: "@secondary", opacity: 0.6 }),
+    particles("Decor — Dust", { kind: "dots", count: 26, size: 2, speed: 0.3, color: "@glow", opacity: 0.35 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Ink Wash: sumi-e — soft ink blooms and a brush stroke drifting on a quiet
+    ground, with an elegant serif. Matte and minimal; made for red/purple/black
+    but follows the palette. */
+const INK_WASH: FamilyStyle = {
+  id: "inkwash",
+  name: "Ink Wash",
+  tags: ["Minimal", "Fantasy", "Dark"],
+  display: "Cormorant Garamond",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "EB Garamond",
+  radius: 6,
+  frameRadius: 8,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+  },
+  headlineEffects: {
+    shadow: { enabled: true, color: "@shadow", blur: 18, offsetY: 4, opacity: 0.5 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 135 } },
+    }),
+    // Ink blooms — soft, bleeding, matte (blur, no glow).
+    shape("Bloom A", { x: -80, y: -120, width: 900, height: 820 }, {
+      shape: "paintSplat",
+      fill: "@primary/70",
+      effects: { blur: { enabled: true, amount: 26 } },
+      animation: anim("breathe", { duration: 8000, intensity: 0.5 }),
+    }),
+    shape("Bloom B", { x: 1180, y: 420, width: 860, height: 780 }, {
+      shape: "paintSplat",
+      fill: "@secondary/62",
+      effects: { blur: { enabled: true, amount: 30 } },
+      animation: anim("breathe", { duration: 9000, intensity: 0.5, delay: 900 }),
+    }),
+    // A single deliberate brush stroke under the copy.
+    shape("Brush stroke", { x: 460, y: 690, width: 1000, height: 60 }, {
+      shape: "paintSpray",
+      fill: "@accent",
+      opacity: 0.85,
+      animation: anim("sway", { duration: 7000, intensity: 0.4 }),
+    }),
+    particles("Decor — Specks", { kind: "dots", count: 20, size: 3, speed: 0.25, color: "@text", opacity: 0.3 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Smolder: a moody ember hearth — drifting smoke, rising embers and a warm
+    glow from below, over a near-black ground. Built for red/purple/black but
+    follows the palette. */
+const SMOLDER: FamilyStyle = {
+  id: "smolder",
+  name: "Smolder",
+  tags: ["Dark", "Cozy", "Red"],
+  display: "Oswald",
+  displayWeight: 600,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Barlow",
+  radius: 8,
+  frameRadius: 10,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 10 },
+    glow: { enabled: true, color: "@glow", strength: 24 },
+  },
+  headlineEffects: {
+    glow: { enabled: true, color: "@glow", strength: 30 },
+    shadow: { enabled: true, color: "@shadow", blur: 20, offsetY: 6, opacity: 0.7 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 90 } },
+    }),
+    // Warm ember glow rising from the base.
+    shape("Ember glow", { x: 260, y: 620, width: 1400, height: 720 }, {
+      shape: "ellipse",
+      fill: "@glow",
+      opacity: 0.28,
+      effects: { blur: { enabled: true, amount: 90 } },
+      animation: anim("pulse", { duration: 5600, intensity: 0.6 }),
+    }),
+    particles("Decor — Smoke", { kind: "fog", count: 7, size: 190, speed: 0.22, color: "@secondary", opacity: 0.3 }),
+    particles("Decor — Embers", { kind: "embers", count: 46, size: 4, speed: 0.8, color: "@accent", opacity: 0.8 }),
+    particles("Decor — Sparks", { kind: "embers", count: 18, size: 2, speed: 1.2, color: "@glow", opacity: 0.7 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  RETROWAVE,
+  TERRAZZO,
+  BLUEPRINT,
+  INK_WASH,
+  SMOLDER,
   RADAR,
   CONTOUR,
   CHEVRON,
