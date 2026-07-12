@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { isContinuous } from "@/lib/animation";
+import { isContinuous, timelineDuration } from "@/lib/animation";
 import { cx } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { useEditorStore } from "@/store/editor";
@@ -27,24 +27,34 @@ export function Timeline() {
   const frameRef = useRef(0);
   const originRef = useRef(0);
 
+  // Loop-until where it reads well, without the designer having to set anything:
+  // a design with continuous ambient motion (glow, drifting particles) runs on
+  // an UNBOUNDED clock — wrapping time backwards would make every particle jump,
+  // which is what made a looping preview look like the whole overlay restarted;
+  // the entrance plays once and the ambient flows on, matching the OBS view. A
+  // pure one-shot (a stinger) has nothing continuous, so it loops over its own
+  // timeline plus a short settle to replay smoothly.
+  const loopAfter = useMemo(() => {
+    const anims = (project?.layers ?? []).map((l) => l.animation);
+    if (!anims.length || anims.some((a) => isContinuous(a.preset))) return 0;
+    const td = timelineDuration(anims);
+    return td > 0 ? td + 650 : 0;
+  }, [project?.layers]);
+
   useEffect(() => {
     if (!playing) return;
     originRef.current = performance.now() - time;
 
-    // The clock is unbounded, never wrapping back to zero. Ambient decor is a
-    // continuous function of absolute time, so wrapping time backwards makes
-    // every particle jump — which is exactly why a looping preview looked like
-    // the whole overlay was restarting. Entry animations play once and hold;
-    // "back to start" replays them. This matches the OBS view exactly.
     const tick = (now: number) => {
-      setTime(now - originRef.current);
+      const elapsed = now - originRef.current;
+      setTime(loopAfter > 0 ? elapsed % loopAfter : elapsed);
       frameRef.current = requestAnimationFrame(tick);
     };
     frameRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frameRef.current);
     // `time` is read once to resume; re-subscribing on every tick would reset it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, setTime]);
+  }, [playing, setTime, loopAfter]);
 
   if (!project) return null;
 
