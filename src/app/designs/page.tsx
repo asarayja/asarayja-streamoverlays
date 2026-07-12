@@ -141,7 +141,10 @@ export default function DesignsPage() {
           </div>
         </section>
 
-        <h2 className="mb-3 text-center text-sm font-semibold text-zinc-200">{t("Or browse a finished look")}</h2>
+        <h2 className="text-center text-sm font-semibold text-zinc-200">{t("Or browse a finished look")}</h2>
+        <p className="mx-auto mb-3 mt-1 max-w-md text-center text-xs text-zinc-500">
+          {t("Each card shows one colour — open a design to try every colour it comes in, and switch dark or light.")}
+        </p>
         <div className="mx-auto mb-5 max-w-md">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />

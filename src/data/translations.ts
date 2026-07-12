@@ -616,6 +616,7 @@ export const NO: Record<string, string> = {
   "Start something new": "Start noe nytt",
   "Build from a blank canvas, open a ready scaffold — a webcam frame, panels, a chat box — or import a design file.": "Bygg fra et blankt lerret, åpne et ferdig oppsett — en webcam-ramme, paneler, en chatboks — eller importer en design-fil.",
   "Or browse a finished look": "Eller bla gjennom et ferdig design",
+  "Each card shows one colour — open a design to try every colour it comes in, and switch dark or light.": "Hvert kort viser én farge — åpne et design for å prøve alle fargene det finnes i, og bytte mellom lys og mørk.",
   "New from a design": "Nytt fra et design",
   "Continue to designs": "Fortsett til design",
   "Blank canvas": "Tomt lerret",
