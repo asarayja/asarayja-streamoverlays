@@ -2394,8 +2394,9 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       socials(880, ["twitch", "discord", "instagram"]),
     ]),
 
+    // Gameplay sits over the live game, so it stays clean — just the branding
+    // bar, no full-screen ambient decor (rain, meteors, …) over the play area.
     base("gameplay", "Gameplay", "Gameplay", [
-      ...(f.overlayDecor?.() ?? []),
       ...flagBar({ x: 40, y: 96, width: 1840, height: 9 }),
       plate("Top bar", { x: 40, y: 28, width: 1840, height: 66 }, {
         animation: anim("slide", { direction: "up", duration: 700 }),
