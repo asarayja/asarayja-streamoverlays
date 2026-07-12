@@ -2243,8 +2243,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
   const alertScreen = (id: string, name: string, title: string, subtitle: string, hero: boolean) =>
     base(id, name, "Alerts", [
       ...(f.overlayDecor?.() ?? []),
-      ...flagBar({ x: 560, y: 366, width: 800, height: 18 }),
-      ...flagBar({ x: 560, y: 656, width: 800, height: 18 }),
+      // No static flag bar here — it sat still beside the animated decor and
+      // clashed. The flag lives on Panels and Intermission instead.
       alert("Alert", { x: 560, y: 400, width: 800, height: 240 }, title, subtitle, {
         fontFamily: f.display,
         cornerRadius: f.radius,
@@ -2324,7 +2324,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     // The widgets hold still and readable; each one carries its OWN glowing line
     // travelling around its edge (ring and every bar), the same runner the
     // webcam frame uses. On pride palettes the line flies the flag's colours.
-    ...flagBar({ x: 150, y: 300, width: 1170, height: 20 }),
+    // (No static flag bar — the goal runners carry the flag motion instead.)
     goal("Follower goal", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
       goalStyle: "ring",
       fontFamily: f.display,
@@ -2401,7 +2401,6 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     // Gameplay sits over the live game, so it stays clean — just the branding
     // bar, no full-screen ambient decor (rain, meteors, …) over the play area.
     base("gameplay", "Gameplay", "Gameplay", [
-      ...flagBar({ x: 40, y: 96, width: 1840, height: 9 }),
       plate("Top bar", { x: 40, y: 28, width: 1840, height: 66 }, {
         animation: anim("slide", { direction: "up", duration: 700 }),
       }),
