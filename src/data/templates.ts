@@ -4827,12 +4827,6 @@ const METEOR: FamilyStyle = {
     particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.3, color: "@accent", opacity: 0.3 }),
     particles("Decor — Meteors", { kind: "shootingStars", count: 22, size: 11, speed: 1.6, color: "@accent" }),
     particles("Decor — Meteors 2", { kind: "shootingStars", count: 14, size: 8, speed: 1.2, color: "@secondary" }),
-    shape("Centre dim", { x: 360, y: 320, width: 1200, height: 460 }, {
-      shape: "ellipse",
-      fill: "@background",
-      opacity: 0.55,
-      effects: { blur: { enabled: true, amount: 70 } },
-    }),
   ],
   overlayDecor: () => [
     particles("Decor — Meteors", { kind: "shootingStars", count: 10, size: 7, speed: 1.5, color: "@accent" }),
@@ -4872,12 +4866,6 @@ const RAIN: FamilyStyle = {
     particles("Decor — Rain back", { kind: "rain", count: 110, size: 5, speed: 1.1, color: "@secondary" }),
     particles("Decor — Rain mid", { kind: "rain", count: 100, size: 7, speed: 1.6, color: "@text", opacity: 0.9 }),
     particles("Decor — Rain front", { kind: "rain", count: 80, size: 9, speed: 2.1, color: "@accent" }),
-    shape("Centre dim", { x: 340, y: 320, width: 1240, height: 460 }, {
-      shape: "ellipse",
-      fill: "@background",
-      opacity: 0.6,
-      effects: { blur: { enabled: true, amount: 80 } },
-    }),
   ],
   overlayDecor: () => [
     particles("Decor — Rain", { kind: "rain", count: 60, size: 5, speed: 1.6, color: "@accent", opacity: 0.6 }),
@@ -4906,12 +4894,6 @@ const RAIN_PRIDE: FamilyStyle = {
     particles("Decor — Rain back", { kind: "rain", count: 110, size: 5, speed: 1.1, facetColors: PRIDE_RAIN_FLAG }),
     particles("Decor — Rain mid", { kind: "rain", count: 100, size: 7, speed: 1.6, facetColors: PRIDE_RAIN_FLAG, opacity: 0.95 }),
     particles("Decor — Rain front", { kind: "rain", count: 80, size: 9, speed: 2.1, facetColors: PRIDE_RAIN_FLAG }),
-    shape("Centre dim", { x: 340, y: 320, width: 1240, height: 460 }, {
-      shape: "ellipse",
-      fill: "@background",
-      opacity: 0.6,
-      effects: { blur: { enabled: true, amount: 80 } },
-    }),
   ],
   overlayDecor: () => [
     particles("Decor — Rain", { kind: "rain", count: 70, size: 7, speed: 1.8, facetColors: PRIDE_RAIN_FLAG }),
@@ -4934,12 +4916,6 @@ const METEOR_PRIDE: FamilyStyle = {
     particles("Decor — Stars", { kind: "stars", count: 160, size: 2.8, speed: 0.1, color: "@text", opacity: 0.9 }),
     particles("Decor — Meteors", { kind: "shootingStars", count: 28, size: 11, speed: 1.6, facetColors: PRIDE_RAIN_FLAG }),
     particles("Decor — Meteors 2", { kind: "shootingStars", count: 16, size: 8, speed: 1.2, facetColors: PRIDE_RAIN_FLAG }),
-    shape("Centre dim", { x: 360, y: 320, width: 1200, height: 460 }, {
-      shape: "ellipse",
-      fill: "@background",
-      opacity: 0.55,
-      effects: { blur: { enabled: true, amount: 70 } },
-    }),
   ],
   overlayDecor: () => [
     particles("Decor — Meteors", { kind: "shootingStars", count: 12, size: 9, speed: 1.6, facetColors: PRIDE_RAIN_FLAG }),
