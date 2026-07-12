@@ -51,6 +51,45 @@ const DEFS: PaletteDef[] = [
     },
   },
   {
+    // Built from the blue→violet→lavender hex ramp: azure accent, pure-blue and
+    // violet body, a thistle-lavender text over a near-black blue-violet ground.
+    id: "electric-iris",
+    name: "Electric Iris",
+    collection: "core",
+    tags: ["Blue", "Purple", "Neon", "Dark"],
+    theme: {
+      primary: "#0000ff",
+      secondary: "#7f00ff",
+      accent: "#0096ff",
+      background: "#06040f",
+      surface: "#120b26",
+      text: "#d8bfd8",
+      border: "#5a4fd8",
+      glow: "#38a9ff",
+      shadow: "#000000",
+    },
+  },
+  {
+    // The light companion: the same ramp on a soft thistle ground — violet and
+    // azure accents, a deep-violet text, over a lavender page.
+    id: "thistle",
+    name: "Thistle",
+    collection: "core",
+    tags: ["Light", "Purple", "Cozy"],
+    theme: {
+      primary: "#0000ff",
+      secondary: "#0096ff",
+      accent: "#7f00ff",
+      background: "#f5effb",
+      surface: "#e7daf3",
+      surfaceSecondary: "#d8bfd8",
+      text: "#1a0733",
+      border: "#b9a3d6",
+      glow: "#b799f5",
+      shadow: "#8a7ba3",
+    },
+  },
+  {
     id: "pink-vapor",
     name: "Pink Vapor",
     collection: "core",
