@@ -15,7 +15,6 @@ import {
 } from "@/lib/types";
 import { ABSTRACT_PALETTES, CORE_PALETTES, DEFAULT_PALETTE_ID, GOTHIC_PALETTES, PRIDE_PALETTES, PRISM_PALETTES, paletteTags } from "./palettes";
 import { CUSTOM_TEMPLATES } from "./custom-designs";
-import { noise } from "@/lib/animation";
 import type { Palette } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
@@ -2007,7 +2006,7 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   mecha: ["shards", 6],
   // Cyber — glitch.
   cyberpill: ["glitch", 0],
-  neonbars: ["shards", 0],
+  vanguard: ["shards", 0],
   // Crystal / glass — facets.
   holo: ["prism", 8],
   frost: ["prism", -6],
@@ -4332,118 +4331,93 @@ const AURORA_SILK_NEON: FamilyStyle = {
   ],
 };
 
-/** One diagonal neon capsule — a rounded-rect *outline* (hollow) with a glowing
-    tube stroke, rotated to the pack's diagonal. A traveling shimmer makes the
-    neon hum. */
-function neonBar(
-  name: string,
-  cx: number,
-  cy: number,
-  len: number,
-  thick: number,
-  color: string,
-  angle: number,
-  delay: number,
-  glowFill = false,
-): LayerSpec {
-  return shape(name, { x: cx - len / 2, y: cy - thick / 2, width: len, height: thick }, {
-    shape: "rect",
-    fill: "transparent",
-    rotation: angle,
-    cornerRadius: thick / 2,
-    effects: {
-      // A soft inner glow, strongest at the base and fading to nothing toward
-      // the tip — the light pooling inside the tube.
-      ...(glowFill
-        ? { gradient: { enabled: true, from: `${color}/38`, to: `${color}/0`, angle: 0 } }
-        : {}),
-      border: { enabled: true, color, width: 3, radius: thick / 2 },
-      glow: { enabled: true, color: "@glow", strength: 22 },
-    },
-    animation: anim("shimmer", { duration: 3600, delay }),
-  });
-}
-
-/** The signature: exactly five long diagonal neon capsules sweeping from one
-    side of the frame to the other. Some are wider than others; each has a
-    fading inner glow and a nested inner tube; the near ends line up on a
-    baseline with a single connector line just outside them (never crossing a
-    box). The first bars are @secondary, the rest @accent — the two-tone split. */
-function neonBand(): LayerSpec[] {
-  const angle = -30;
+/** Three skewed diagonal strips (white / accent / white) crossing a corner,
+    each with a soft drop shadow for the layered look. The top-left and
+    bottom-right groups mirror so the two slants lean toward each other. */
+function skewStrips(corner: "tl" | "br"): LayerSpec[] {
+  const angle = -34;
   const rad = (angle * Math.PI) / 180;
   const dx = Math.cos(rad);
   const dy = Math.sin(rad);
-  const px = -dy; // perpendicular (the stack direction)
+  const px = -dy;
   const py = dx;
-  const N = 5;
-  const gap = 156;
-  const baseX = 250;
-  const baseY = 730; // near-end anchor of the middle bar
-  const widths = [66, 30, 56, 30, 66]; // some wider than others
-  const lens = [1240, 980, 1360, 1010, 1180];
-  const bars: LayerSpec[] = [];
-  for (let i = 0; i < N; i++) {
-    const color = i <= 1 ? "@secondary" : "@accent";
-    const thick = widths[i];
-    const len = lens[i];
-    const perp = (i - (N - 1) / 2) * gap;
-    const nx = baseX + px * perp;
-    const ny = baseY + py * perp;
-    const cx = nx + dx * (len / 2);
-    const cy = ny + dy * (len / 2);
-    bars.push(neonBar(`Bar ${i}`, cx, cy, len, thick, color, angle, i * 150, true));
-    // A nested inner tube running most of the length — the line inside the box.
-    bars.push(neonBar(`Bar ${i} inner`, cx, cy, len - thick * 1.9, thick * 0.4, color, angle, i * 150 + 90, false));
+  const bx = corner === "tl" ? 250 : 1670;
+  const by = corner === "tl" ? 150 : 930;
+  const dir = corner === "tl" ? 1 : -1;
+  const specs: Array<{ color: string; thick: number }> = [
+    { color: "@text", thick: 40 },
+    { color: "@accent", thick: 86 },
+    { color: "@text", thick: 24 },
+  ];
+  const len = 1600;
+  const strips: LayerSpec[] = [];
+  let off = 0;
+  for (let i = 0; i < specs.length; i++) {
+    const s = specs[i];
+    const perp = (off + s.thick / 2) * dir;
+    off += s.thick + 26;
+    const cx = bx + px * perp;
+    const cy = by + py * perp;
+    strips.push(shape(`Strip ${corner} ${i}`, { x: cx - len / 2, y: cy - s.thick / 2, width: len, height: s.thick }, {
+      shape: "rect",
+      fill: s.color,
+      rotation: angle,
+      effects: { shadow: { enabled: true, color: "#000000", blur: 34, opacity: 0.5, offsetX: 0, offsetY: 20 } },
+    }));
   }
-  // One connector just outside the aligned near ends, perpendicular to the bars.
-  const conX = baseX - dx * 42;
-  const conY = baseY - dy * 42;
-  bars.push(neonBar("Bar tie", conX, conY, (N - 1) * gap + 80, 10, "@secondary", angle + 90, 0, false));
-  return bars;
+  return strips;
 }
 
-/** Neon Bars: a diagonal rain of glowing neon capsule outlines in two colour
-    zones — one accent on the left, another on the right — over pure black, the
-    reference wallpaper turned into an overlay family. Colour follows the palette. */
-const NEON_BARS: FamilyStyle = {
-  id: "neonbars",
-  name: "Neon Bars",
-  tags: ["Neon", "Esports", "Sci-Fi"],
-  display: "Orbitron",
-  displayWeight: 800,
-  displayTracking: 3,
+/** Vanguard: a clean broadcast look — a charcoal ground with three skewed
+    diagonal strips (white / accent / white) crossing the top-left and
+    bottom-right corners, leaning toward each other, and a big bordered box in
+    the middle that holds the copy. Colour follows the palette. */
+const VANGUARD: FamilyStyle = {
+  id: "vanguard",
+  name: "Vanguard",
+  tags: ["Esports", "Minimal", "Dark"],
+  display: "Bebas Neue",
+  displayWeight: 400,
+  displayTracking: 5,
   displayTransform: "uppercase",
-  body: "Rajdhani",
-  radius: 8,
-  frameRadius: 10,
+  body: "Inter",
+  radius: 6,
+  frameRadius: 8,
   corners: false,
   strokeWidth: 2,
   frameEffects: {
-    border: { enabled: true, color: "@accent", width: 2, radius: 10 },
-    glow: { enabled: true, color: "@glow", strength: 26 },
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 12 },
   },
-  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  headlineEffects: { shadow: { enabled: true, color: "#000000", blur: 18, opacity: 0.5, offsetX: 0, offsetY: 6 } },
   plateShape: "rect",
   scene: () => [
-    shape("Backdrop", FULL, { background: true, fill: "@background" }),
-    ...neonBand(),
-    // A dark pool behind the copy keeps it legible where a bar crosses.
-    shape("Centre dim", { x: 300, y: 320, width: 1320, height: 460 }, {
-      shape: "ellipse",
-      fill: "@background",
-      opacity: 0.72,
-      effects: { blur: { enabled: true, amount: 70 } },
+    // A charcoal ground — not near-black.
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@surface",
+      effects: { gradient: { enabled: true, from: "@surface", to: "@background", angle: 135 } },
     }),
-    particles("Decor — Dust", { kind: "dots", count: 36, size: 2.4, speed: 0.4, color: "@glow", opacity: 0.35 }),
+    ...skewStrips("tl"),
+    ...skewStrips("br"),
+    // The big centre box that holds the copy.
+    shape("Centre box", { x: 340, y: 300, width: 1240, height: 520 }, {
+      shape: "rect",
+      fill: "@background",
+      opacity: 0.5,
+      cornerRadius: 8,
+      effects: {
+        border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+        shadow: { enabled: true, color: "#000000", blur: 44, opacity: 0.45, offsetX: 0, offsetY: 12 },
+      },
+    }),
   ],
-  // Over gameplay/webcam: the same band, thinned so the play area stays clear.
-  overlayDecor: () => neonBand().slice(0, 4),
+  overlayDecor: () => [...skewStrips("tl"), ...skewStrips("br")],
   contentOffsetY: 0,
 };
 
 const NEW_FAMILIES: FamilyStyle[] = [
-  NEON_BARS,
+  VANGUARD,
   HALLOWED_NIGHT,
   ASTRAL_DECK,
   PIXEL_WINDOWS,
