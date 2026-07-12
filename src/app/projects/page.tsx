@@ -7,7 +7,9 @@ import { Copy, Star, Trash2 } from "lucide-react";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { TopNav } from "@/components/site/TopNav";
 import { Button, cx } from "@/components/ui";
-import { useElementSize, useInView } from "@/lib/useElementSize";
+import { useClock } from "@/lib/useClock";
+import { isStingerMotion, previewClock, settledTime, timelineDuration } from "@/lib/animation";
+import { useElementSize, useInView, useOnScreen, usePrefersReducedMotion } from "@/lib/useElementSize";
 import type { Project } from "@/lib/types";
 import { useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
@@ -96,6 +98,9 @@ function ProjectCard({ pack, profile }: { pack: PackView; profile: ReturnType<ty
   const router = useRouter();
   const [viewRef, inView] = useInView<HTMLDivElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
+  const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
+  const reduceMotion = usePrefersReducedMotion();
+  const [hovered, setHovered] = useState(false);
   const duplicate = useProjectsStore((s) => s.duplicate);
   const duplicatePack = useProjectsStore((s) => s.duplicatePack);
   const remove = useProjectsStore((s) => s.remove);
@@ -108,6 +113,20 @@ function ProjectCard({ pack, profile }: { pack: PackView; profile: ReturnType<ty
   const hasBackdrop = cover.layers.some((l) => l.type === "background");
   const title = cover.packName ?? cover.name;
 
+  // Autoplay the motion so the animation is visible without hovering (on screen
+  // and unless the user disabled motion). Gated on being on screen so a long
+  // grid isn't driving dozens of live canvases at once.
+  const play = cover.animationsEnabled !== false && (hovered || (onScreen && !reduceMotion));
+  const loopPeriod = useMemo(() => {
+    // Skip layers with no animation — a hand-added layer can lack one, and the
+    // stinger/duration helpers read .preset off each entry.
+    const anims = cover.layers.map((l) => l.animation).filter(Boolean);
+    const loop = isStingerMotion(anims) || cover.layers.some((l) => l.type === "alert");
+    return loop ? timelineDuration(anims) : 0;
+  }, [cover.layers]);
+  const clock = useClock(play);
+  const time = play ? previewClock(clock, loopPeriod) : settledTime(cover.category ?? "", SETTLED);
+
   const onDuplicate = () => {
     const copy = cover.packId ? duplicatePack(cover.packId) : duplicate(cover.id);
     if (copy) router.push(`/editor?id=${copy.id}`);
@@ -118,18 +137,29 @@ function ProjectCard({ pack, profile }: { pack: PackView; profile: ReturnType<ty
   };
 
   return (
-    <div ref={viewRef} className="group animate-rise">
+    <div
+      ref={viewRef}
+      className="group animate-rise"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <button
         onClick={() => router.push(`/editor?id=${cover.id}`)}
         className="relative block w-full overflow-hidden rounded-2xl border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/50"
       >
-        <div ref={sizeRef} className={cx("relative aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}>
+        <div
+          ref={(el) => {
+            sizeRef.current = el;
+            screenRef.current = el;
+          }}
+          className={cx("relative aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}
+        >
           {inView && size.width > 0 && (
             <ClientOverlayStage
               layers={cover.layers}
               theme={cover.theme}
               profile={profile}
-              time={SETTLED}
+              time={time}
               mode="preview"
               width={size.width}
             />
