@@ -3029,7 +3029,9 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
           marks a live webcam. A single bright dash marching along the border via
           an animated dashOffset: motion, never a blink. Drawn on top so the
           hole-punch doesn't clip it, in every mode (it's part of the look). */}
-      {(isCamera || layer.runner) && <CameraRunner layer={layer} ctx={ctx} accent={accent} />}
+      {/* Camera frames light this by default (it marks a live webcam); it can be
+          switched off per layer. Plain frames only light it when asked. */}
+      {(layer.runner ?? isCamera) && <CameraRunner layer={layer} ctx={ctx} accent={accent} />}
     </Group>
   );
 }
@@ -3076,7 +3078,8 @@ function runnerProps(opts: {
       strokeLinearGradientColorStops: stops,
     };
   }
-  return { ...base, stroke: accent };
+  // A single custom colour (editor override) wins over the accent default.
+  return { ...base, stroke: colors && colors.length === 1 ? colors[0] : accent };
 }
 
 function CameraRunner({ layer, ctx, accent }: { layer: FrameLayer; ctx: RenderContext; accent: string }) {
@@ -3090,7 +3093,7 @@ function CameraRunner({ layer, ctx, accent }: { layer: FrameLayer; ctx: RenderCo
     glow: resolveColor("@glow", ctx.theme),
     w,
     h,
-    colors: layer.runnerColors,
+    colors: layer.runnerColors?.map((c) => resolveColor(c, ctx.theme)),
   });
   if (layer.frameShape === "ellipse") {
     return <Ellipse x={w / 2} y={h / 2} radiusX={w / 2} radiusY={h / 2} {...runner} />;
@@ -3232,7 +3235,7 @@ function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: R
           glow: resolveColor("@glow", ctx.theme),
           w,
           h,
-          colors: layer.runnerColors,
+          colors: layer.runnerColors?.map((c) => resolveColor(c, ctx.theme)),
         });
         return coffin ? (
           <KonvaShape {...run} sceneFunc={(c, s) => { coffinPath(c, w, h); c.strokeShape(s); }} />
@@ -3412,7 +3415,7 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
               glow: resolveColor("@glow", ctx.theme),
               w,
               h,
-              colors: layer.runnerColors,
+              colors: layer.runnerColors?.map((c) => resolveColor(c, ctx.theme)),
             })}
             sceneFunc={(c, s) => {
               c.beginPath();
@@ -3516,7 +3519,7 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
           glow: resolveColor("@glow", ctx.theme),
           w,
           h,
-          colors: layer.runnerColors,
+          colors: layer.runnerColors?.map((c) => resolveColor(c, ctx.theme)),
         });
         if (coffin) {
           return <KonvaShape {...run} sceneFunc={(c, s) => { coffinPathH(c, w, h); c.strokeShape(s); }} />;

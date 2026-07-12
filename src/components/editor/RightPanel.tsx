@@ -465,6 +465,54 @@ interface TypeSectionProps {
   beginGesture: () => void;
 }
 
+/**
+ * The travelling edge light (runner) — the moving line around a webcam, chat
+ * box or goal. It isn't a keyframe `animation` preset, so it never showed up in
+ * the Animation panel; this exposes it where the colours live: a switch and,
+ * unless the palette is flying a pride flag, a colour override.
+ */
+function RunnerControl({
+  layer,
+  theme,
+  live,
+  commit,
+}: {
+  layer: FrameLayer | ChatBoxLayer | GoalLayer;
+  theme: Theme;
+  live: (patch: LayerPatch) => void;
+  commit: (patch: LayerPatch) => void;
+}) {
+  const t = useT();
+  const isCamera = layer.type === "camera";
+  const on = layer.runner ?? isCamera;
+  const colors = layer.runnerColors;
+  const isFlag = !!colors && colors.length > 1;
+  const single = colors && colors.length === 1 ? colors[0] : "@accent";
+  return (
+    <>
+      <Toggle
+        label={t("Animated edge light")}
+        checked={on}
+        onChange={(v) => commit({ runner: v } as LayerPatch)}
+      />
+      {on && isFlag && (
+        <p className="text-[11px] leading-relaxed text-zinc-600">
+          {t("Flies the flag's colours on pride palettes.")}
+        </p>
+      )}
+      {on && !isFlag && (
+        <ColorField
+          label={t("Edge light colour")}
+          theme={theme}
+          value={single}
+          onChange={(c) => live({ runnerColors: [c] } as LayerPatch)}
+          onCommit={(c) => commit({ runnerColors: [c] } as LayerPatch)}
+        />
+      )}
+    </>
+  );
+}
+
 function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionProps) {
   const t = useT();
   switch (layer.type) {
@@ -999,6 +1047,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             checked={frame.corners}
             onChange={(corners) => commit({ corners })}
           />
+          <RunnerControl layer={frame} theme={theme} live={live} commit={commit} />
           {layer.type === "camera" && (
             <p className="text-[11px] leading-relaxed text-zinc-600">
               {t("The fill is a studio placeholder only. In OBS the interior stays transparent so your webcam shows through.")}
@@ -1067,6 +1116,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onBegin={beginGesture}
             onChange={(cornerRadius) => live({ cornerRadius })}
           />
+          <RunnerControl layer={chat} theme={theme} live={live} commit={commit} />
         </Section>
       );
     }
@@ -1184,6 +1234,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(labelColor) => live({ labelColor })}
             onCommit={(labelColor) => commit({ labelColor })}
           />
+          <RunnerControl layer={g} theme={theme} live={live} commit={commit} />
         </Section>
       );
     }
