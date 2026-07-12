@@ -745,6 +745,9 @@ export interface ParticleLayer extends LayerBase {
   color: ColorValue;
   size: number;
   speed: number;
+  /** Optional per-particle palette — each particle cycles through these instead
+      of the single `color`. Pride packs substitute the flag stripes here. */
+  facetColors?: ColorValue[];
 }
 
 export type Layer =

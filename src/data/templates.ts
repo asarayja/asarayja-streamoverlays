@@ -413,6 +413,9 @@ function particles(
     color?: string;
     size?: number;
     speed?: number;
+    /** Per-particle palette — each particle cycles through these. Pride packs
+        substitute the flag stripes here at expansion time. */
+    facetColors?: string[];
     /** Confine the particle field to a box. Defaults to the whole canvas. */
     box?: Box;
   } = {},
@@ -427,6 +430,7 @@ function particles(
     color: o.color ?? "@glow",
     size: o.size ?? 4,
     speed: o.speed ?? 1,
+    facetColors: o.facetColors,
   };
 }
 
@@ -2016,6 +2020,8 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   circuit: ["glitch", 0],
   meteor: ["burst", 0],
   rain: ["liquid", 0],
+  meteorpride: ["ribbon", 0],
+  rainpride: ["ribbon", 0],
   // Crystal / glass — facets.
   holo: ["prism", 8],
   frost: ["prism", -6],
@@ -4879,6 +4885,67 @@ const RAIN: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** The classic six — the authored default flag; each pride palette substitutes
+    its own stripes at expansion time. */
+const PRIDE_RAIN_FLAG = ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+
+/** Rain Pride: the rain packs falling in the flag's colours. */
+const RAIN_PRIDE: FamilyStyle = {
+  ...RAIN,
+  id: "rainpride",
+  name: "Rain Pride",
+  collection: "pride",
+  tags: ["RGB", "Cozy", "Neon"],
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 180 } },
+    }),
+    particles("Decor — Fog", { kind: "fog", count: 6, size: 5, speed: 0.4, color: "@secondary" }),
+    particles("Decor — Rain back", { kind: "rain", count: 110, size: 5, speed: 1.1, facetColors: PRIDE_RAIN_FLAG }),
+    particles("Decor — Rain mid", { kind: "rain", count: 100, size: 7, speed: 1.6, facetColors: PRIDE_RAIN_FLAG, opacity: 0.95 }),
+    particles("Decor — Rain front", { kind: "rain", count: 80, size: 9, speed: 2.1, facetColors: PRIDE_RAIN_FLAG }),
+    shape("Centre dim", { x: 340, y: 320, width: 1240, height: 460 }, {
+      shape: "ellipse",
+      fill: "@background",
+      opacity: 0.6,
+      effects: { blur: { enabled: true, amount: 80 } },
+    }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Rain", { kind: "rain", count: 70, size: 7, speed: 1.8, facetColors: PRIDE_RAIN_FLAG }),
+  ],
+};
+
+/** Meteor Pride: meteors streaking in the flag's colours. */
+const METEOR_PRIDE: FamilyStyle = {
+  ...METEOR,
+  id: "meteorpride",
+  name: "Meteor Pride",
+  collection: "pride",
+  tags: ["RGB", "Sci-Fi", "Neon"],
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 200 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 160, size: 2.8, speed: 0.1, color: "@text", opacity: 0.9 }),
+    particles("Decor — Meteors", { kind: "shootingStars", count: 28, size: 11, speed: 1.6, facetColors: PRIDE_RAIN_FLAG }),
+    particles("Decor — Meteors 2", { kind: "shootingStars", count: 16, size: 8, speed: 1.2, facetColors: PRIDE_RAIN_FLAG }),
+    shape("Centre dim", { x: 360, y: 320, width: 1200, height: 460 }, {
+      shape: "ellipse",
+      fill: "@background",
+      opacity: 0.55,
+      effects: { blur: { enabled: true, amount: 70 } },
+    }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Meteors", { kind: "shootingStars", count: 12, size: 9, speed: 1.6, facetColors: PRIDE_RAIN_FLAG }),
+  ],
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   RADAR,
   CONTOUR,
@@ -6249,6 +6316,10 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
       if (layer.type === "text" && layer.fillStripes && palette.flag) {
         layer.fillStripes = palette.flag;
       }
+      // Flag-coloured particles (pride rain / meteor) fly the palette's stripes.
+      if (layer.type === "particle" && layer.facetColors && palette.flag) {
+        layer.facetColors = palette.flag;
+      }
       // A glass sheet / plasma waves take the palette's flag colours.
       if (
         layer.type === "shape" &&
@@ -6277,6 +6348,7 @@ export const TEMPLATES: Template[] = [
   ...expand(GENERATED_FAMILY_TEMPLATES, CORE_PALETTES),
   ...expand(GOTHIC_TEMPLATES, GOTHIC_PALETTES),
   ...expand(PRIDE_TEMPLATES, PRIDE_PALETTES),
+  ...expand([...familyScreens(RAIN_PRIDE), ...familyScreens(METEOR_PRIDE)], PRIDE_PALETTES),
   ...expand(PRISM_PRIDE_TEMPLATES, PRISM_PALETTES),
   ...ABSTRACT_TEMPLATES,
   ...CUSTOM_TEMPLATES,

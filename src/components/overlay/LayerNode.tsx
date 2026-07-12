@@ -3742,7 +3742,10 @@ function edgeFade(value: number, extent: number, band: number): number {
 
 function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderContext }) {
   const { width: w, height: h } = layer;
-  const color = resolveColor(layer.color, ctx.theme);
+  const baseColor = resolveColor(layer.color, ctx.theme);
+  const palette = layer.facetColors?.length
+    ? layer.facetColors.map((c) => resolveColor(c, ctx.theme))
+    : null;
   const t = ctx.time / 1000;
   const count = ctx.mode === "preview" ? Math.min(layer.count, 30) : layer.count;
 
@@ -3753,6 +3756,8 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
     const seedX = noise(i * 1.7);
     const seedY = noise(i * 3.1 + 5);
     const seedS = noise(i * 5.3 + 11);
+    // Each particle takes a flag stripe when a palette is given, else the base.
+    const color = palette ? palette[i % palette.length] : baseColor;
     const size = layer.size * (0.5 + seedS);
     const opacity = 0.35 + 0.65 * noise(i * 7.9);
 
