@@ -28,6 +28,7 @@ import {
   supportedVideo,
 } from "@/lib/export";
 import { createZip, toBytes, type ZipEntry } from "@/lib/zip";
+import { STINGER_MS, STINGER_PEAK } from "@/lib/animation";
 import { SETTLED_TIME } from "@/store/editor";
 import { buildObsUrl } from "@/lib/share";
 import { resolveColor } from "@/lib/theme";
@@ -161,6 +162,33 @@ export function ExportDialog({
         onProgress: (progress) => setJob({ label: t("Rendering frames"), progress }),
       });
       downloadBlob(blob, `${name}-png-sequence.zip`);
+    });
+
+  // A stinger is a transition, not a static overlay: it must be an alpha video
+  // OBS plays during a scene cut. Render the whole wipe once, from t=0, at 60fps
+  // so the cover→reveal is captured, and tell the user the transition point.
+  const isStinger = getTemplate(project.templateId)?.category === "Stinger Transitions";
+  const transitionPointMs = Math.round(STINGER_MS * STINGER_PEAK);
+  const stingerFps = 60;
+  const doStinger = () =>
+    run(t("Rendering stinger frames"), async () => {
+      const blob = await exportPngSequence({
+        stage: stage(),
+        durationMs: STINGER_MS,
+        fps: stingerFps,
+        setTime: setExportTime,
+        onProgress: (progress) => setJob({ label: t("Rendering frames"), progress }),
+        readmeExtra: [
+          "STINGER TRANSITION — set-up in OBS:",
+          `  1. Encode the WebM with alpha (command below).`,
+          `  2. Scene Transitions → + → Stinger → pick overlay.webm.`,
+          `  3. Set the Transition Point to ${transitionPointMs} ms (or ${Math.round(
+            (STINGER_PEAK * STINGER_MS) / (1000 / stingerFps),
+          )} frames) — the moment the screen is fully covered, where OBS cuts.`,
+          `  Total length ${(STINGER_MS / 1000).toFixed(2)}s at ${stingerFps} fps.`,
+        ],
+      });
+      downloadBlob(blob, `${name}-stinger-frames.zip`);
     });
 
   /**
@@ -371,6 +399,21 @@ export function ExportDialog({
         )}
 
         <div className="space-y-6 p-5">
+          {isStinger && (
+            <section className="rounded-xl border border-brand-400/30 bg-brand-500/10 p-4">
+              <SectionTitle icon={<Film className="size-3.5" />}>{t("Stinger transition")}</SectionTitle>
+              <Button variant="primary" disabled={!!job} onClick={doStinger} className="w-full">
+                <Download className="size-4" />
+                {t("Export stinger for OBS · alpha")}
+              </Button>
+              <Note>
+                {t(
+                  "A stinger is a transition video, not a static overlay: it wipes in to fully cover the screen, then reveals the next scene. This renders the whole {s}s wipe at {fps}fps as transparent frames, with the exact FFmpeg command for an alpha WebM. In OBS set the Transition Point to {p} ms — the frame where the screen is fully covered.",
+                  { s: (STINGER_MS / 1000).toFixed(2), fps: stingerFps, p: transitionPointMs },
+                )}
+              </Note>
+            </section>
+          )}
           <section>
             <SectionTitle icon={<ImageIcon className="size-3.5" />}>{t("Still image")}</SectionTitle>
             <div className="mb-3">

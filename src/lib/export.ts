@@ -197,6 +197,8 @@ export interface SequenceOptions {
   fps: number;
   setTime: (t: number) => void;
   onProgress?: (fraction: number) => void;
+  /** Extra README lines (e.g. a stinger's OBS transition point). */
+  readmeExtra?: string[];
 }
 
 /**
@@ -205,7 +207,7 @@ export interface SequenceOptions {
  * then encoded, so a slow machine produces the same output as a fast one.
  */
 export async function exportPngSequence(options: SequenceOptions): Promise<Blob> {
-  const { stage, durationMs, fps, setTime, onProgress } = options;
+  const { stage, durationMs, fps, setTime, onProgress, readmeExtra } = options;
   const frames = Math.max(1, Math.round((durationMs / 1000) * fps));
   const entries: ZipEntry[] = [];
 
@@ -229,6 +231,7 @@ export async function exportPngSequence(options: SequenceOptions): Promise<Blob>
         "Asarayja — transparent PNG sequence",
         "",
         `${frames} frames at ${fps} fps (${(durationMs / 1000).toFixed(2)}s), 1920x1080 RGBA.`,
+        ...(readmeExtra && readmeExtra.length ? ["", ...readmeExtra] : []),
         "",
         "Encode to WebM with alpha (for OBS, browsers):",
         `  ffmpeg -framerate ${fps} -i frame_%04d.png -c:v libvpx-vp9 \\`,

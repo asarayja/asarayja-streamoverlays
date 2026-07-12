@@ -449,6 +449,11 @@ export const NO: Record<string, string> = {
   "PNG · full scene": "PNG · hel scene",
   "PNG · transparent": "PNG · gjennomsiktig",
   "PNG sequence · alpha": "PNG-sekvens · alfa",
+  "Stinger transition": "Stinger-overgang",
+  "Export stinger for OBS · alpha": "Eksporter stinger for OBS · alfa",
+  "Rendering stinger frames": "Rendrer stinger-bilder",
+  "A stinger is a transition video, not a static overlay: it wipes in to fully cover the screen, then reveals the next scene. This renders the whole {s}s wipe at {fps}fps as transparent frames, with the exact FFmpeg command for an alpha WebM. In OBS set the Transition Point to {p} ms — the frame where the screen is fully covered.":
+    "En stinger er en overgangsvideo, ikke et statisk overlay: den feier inn og dekker skjermen helt, så avdekker den neste scene. Dette rendrer hele {s}s-feien i {fps}fps som gjennomsiktige bilder, med den nøyaktige FFmpeg-kommandoen for en alfa-WebM. I OBS setter du Transition Point til {p} ms — bildet der skjermen er helt dekket.",
   "Preset": "Forhåndsinnstilling",
   "Preview every template using the colours from your channel profile": "Forhåndsvis alle malene med fargene fra kanalprofilen din",
   "Pride": "Pride",
