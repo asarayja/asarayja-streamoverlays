@@ -455,6 +455,19 @@ function particles(
  */
 const FULL: Box = { x: 0, y: 0, width: 1920, height: 1080 };
 
+// The full-screen idle screens. On these the slogan and social bar rarely suit
+// the card, so they're dropped by default and become opt-in (add them from the
+// editor's Add panel). Functional screens — gameplay, the dedicated social bar,
+// intermission — keep theirs. Declared early: expand()/buildVariant run during
+// module init, so this must be initialised before the first expansion.
+const IDLE_MESSAGE = new Set<TemplateCategory>([
+  "Starting Soon",
+  "BRB",
+  "Stream Ending",
+  "Pause",
+  "Offline",
+]);
+
 /**
  * Overlay screens (gameplay, webcam, chat) put the game or camera in the
  * centre. Roaming decor — bats, ghosts, hearts — must stay in the margins
@@ -6902,7 +6915,15 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
     family: base.family ?? (base.collection !== "core" ? base.collection : undefined),
     subStyle: palette.subStyle,
     paletteId: palette.id,
-    layers: base.layers.map((spec, i) => {
+    layers: base.layers
+      .filter((spec) => {
+        // Idle message screens stay clean: slogan and social bar are opt-in.
+        if (!IDLE_MESSAGE.has(base.category)) return true;
+        if (spec.type === "social") return false;
+        if (spec.type === "text" && (spec as { text?: string }).text === "{{SLOGAN}}") return false;
+        return true;
+      })
+      .map((spec, i) => {
       const layer = { ...spec, id: `${base.id}-l${i}` } as Layer;
       // In the finished designs the text and social bars hold still — the motion
       // belongs to the scene, the frames and the decor around them. Strip any
