@@ -487,7 +487,14 @@ function neonScene(): LayerSpec[] {
       fill: "@background",
       effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 170 } },
     }),
-    particles("Decor — Grid dust", { kind: "dots", count: 44, size: 3, speed: 0.4, color: "@glow", opacity: 0.55 }),
+    particles("Decor — Grid dust", { kind: "dots", count: 54, size: 3, speed: 0.6, color: "@glow", opacity: 0.6 }),
+    // A soft pooled glow low in the frame that breathes.
+    shape("Decor — Horizon glow", { x: 260, y: 720, width: 1400, height: 420 }, {
+      shape: "ellipse",
+      fill: "@accent/10",
+      effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
+      animation: anim("glow", { duration: 4200, intensity: 0.9 }),
+    }),
     shape("Decor — Top rail", { x: 0, y: 0, width: 1920, height: 4 }, {
       fill: "@accent",
       effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
@@ -497,6 +504,16 @@ function neonScene(): LayerSpec[] {
       fill: "@accent",
       effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
       animation: anim("shimmer", { duration: 3600, delay: 600 }),
+    }),
+    shape("Decor — Left rail", { x: 0, y: 0, width: 4, height: 1080 }, {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+      animation: anim("shimmer", { duration: 4200, delay: 300 }),
+    }),
+    shape("Decor — Right rail", { x: 1916, y: 0, width: 4, height: 1080 }, {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+      animation: anim("shimmer", { duration: 4200, delay: 900 }),
     }),
   ];
 }
@@ -2217,15 +2234,20 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       : [];
 
   /** A full-screen message scene: ground, headline, name, slogan, socials. */
+  // A full-field stripe glass sheet over the copy would veil the text; for
+  // "stripes" families the sheet sits behind the words so they read on top.
+  // The "sides" glass (a light sheen) stays over the copy — the behind-glass look.
+  const stripesBehind = f.facetMode === "stripes";
   const scene = (id: string, name: string, category: TemplateCategory, copy: string, extra: LayerSpec[] = []) =>
     base(id, name, category, [
       ...f.scene(),
+      ...(stripesBehind ? glassSheet() : []),
       ...extra,
       headline(copy),
       channelName(600),
       slogan(700),
       socials(880),
-      ...glassSheet(),
+      ...(stripesBehind ? [] : glassSheet()),
     ]);
 
   const PANELS = ["ABOUT ME", "COMMANDS", "DONATE", "DISCORD", "LINKS", "MERCH"];
@@ -3101,10 +3123,12 @@ const WITCHING_HOUR: FamilyStyle = {
       effects: { glow: { enabled: true, color: "@glow", strength: 42 } },
       animation: anim("float", { duration: 8000, intensity: 0.4 }),
     }),
-    // A great faint pentacle turning slowly over the sky.
+    // A great pentacle turning over the sky — slow and ritual, but clearly in
+    // motion, with a breathing glow.
     icon("Decor — Pentacle", { x: 700, y: 30, width: 520, height: 520 }, "pentagram", {
-      fill: "@accent/12",
-      animation: anim("rotate", { duration: 60000 }),
+      fill: "@accent/16",
+      effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+      animation: anim("rotate", { duration: 26000, loop: true }),
     }),
     particles("Decor — Smoke", { kind: "fog", count: 8, size: 5, speed: 0.45, color: "@secondary" }),
     // The witch's altar, tucked into the lower corners.
@@ -3310,18 +3334,21 @@ const PLASMA: FamilyStyle = {
       fill: "@primary/20",
       effects: { glow: { enabled: true, color: "@glow", strength: 120 } },
     }),
-    // Plasma energy: glowing red waves crossing the frame.
+    // Plasma energy: glowing red waves crossing the frame, each flowing on its
+    // own rhythm so the energy is always in motion.
     shape("Wave — plasma back", { x: -120, y: 120, width: 2160, height: 420 }, {
       shape: "wave",
       fill: "@primary/70",
       opacity: 0.85,
       effects: { glow: { enabled: true, color: "@glow", strength: 66 } },
+      animation: anim("wave", { duration: 6400, intensity: 1.3 }),
     }),
     shape("Wave — plasma bright", { x: -120, y: 300, width: 2160, height: 300 }, {
       shape: "wave",
       fill: "@glow",
       opacity: 0.8,
       effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
+      animation: anim("float", { duration: 5200, intensity: 1.6, delay: 300 }),
     }),
     // A deeper red wave low in the frame, keeping the energy flowing under the
     // copy without a dull metal ribbon.
@@ -3330,6 +3357,7 @@ const PLASMA: FamilyStyle = {
       fill: "@primary/55",
       opacity: 0.8,
       effects: { glow: { enabled: true, color: "@glow", strength: 58 } },
+      animation: anim("sway", { duration: 7600, intensity: 0.8, delay: 600 }),
     }),
     // 40–60 sparks rising through the scene.
     particles("Decor — Sparks", { kind: "embers", count: 52, size: 3, speed: 0.7, color: "@glow", opacity: 0.7 }),
@@ -3438,6 +3466,7 @@ const NEBULA: FamilyStyle = {
       fill: "@glow",
       opacity: 0.4,
       effects: { glow: { enabled: true, color: "@glow", strength: 70 } },
+      animation: anim("wave", { duration: 7200, intensity: 1.5 }),
     }),
     shape("Planet", { x: 1500, y: 120, width: 190, height: 190 }, {
       shape: "moon",
@@ -3908,7 +3937,8 @@ const CYBER_PILL: FamilyStyle = {
       fill: "@accent/12",
       effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
     }),
-    // Streamlined neon HUD frame with a green-to-blue gradient edge.
+    // Streamlined neon HUD frame with a green-to-blue gradient edge — its glow
+    // breathes so the frame pulses like a live HUD.
     shape("HUD frame", { x: 54, y: 54, width: 1812, height: 972 }, {
       shape: "rect",
       fill: "@surface/0",
@@ -3917,6 +3947,7 @@ const CYBER_PILL: FamilyStyle = {
         gradientStroke: { enabled: true, from: "@accent", to: "@secondary", angle: 35, width: 3 },
         glow: { enabled: true, color: "@glow", strength: 22 },
       },
+      animation: anim("glow", { duration: 3800, intensity: 0.9 }),
     }),
     // The pack's signature capsule — just the round cap in the corner.
     shape("Pill — cap", { x: 96, y: 96, width: 46, height: 46 }, {
@@ -3924,13 +3955,15 @@ const CYBER_PILL: FamilyStyle = {
       cornerRadius: 23,
       fill: "@accent",
       effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+      animation: anim("pulse", { duration: 2600, intensity: 1.2 }),
     }),
-    // Slim neon accent bars framing the headline.
+    // Slim neon accent bar framing the headline — a glint sweeps along it.
     shape("Accent — top", { x: 710, y: 392, width: 500, height: 6 }, {
       shape: "rect",
       cornerRadius: 3,
       fill: "@accent",
       effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+      animation: anim("shimmer", { duration: 3200 }),
     }),
     particles("Decor — Sparks", { kind: "embers", count: 16, size: 2, speed: 0.5, color: "@accent", opacity: 0.4 }),
   ],
