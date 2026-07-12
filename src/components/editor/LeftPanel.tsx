@@ -105,6 +105,14 @@ const ADDABLE: LayerType[] = [
   "particle",
 ];
 
+function flagSwatch(stripes: string[]): string {
+  const n = stripes.length;
+  const stops = stripes
+    .map((c, i) => `${c} ${((i / n) * 100).toFixed(2)}% ${(((i + 1) / n) * 100).toFixed(2)}%`)
+    .join(", ");
+  return `linear-gradient(90deg, ${stops})`;
+}
+
 export function LeftPanel() {
   const [tab, setTab] = useState<Tab>("layers");
   const t = useT();
@@ -762,6 +770,26 @@ function AddTab() {
       </div>
 
       <NBandGenerator />
+
+      <div className="border-t border-white/[0.06] px-4 py-4">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Pride flags")}</p>
+        <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
+          {t("Drop a flag bar onto the canvas, then move and resize it. Its stripes stay fixed to the flag you pick.")}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {PRIDE_FLAGS.map((f) => (
+            <button
+              key={f.label}
+              onClick={() => addLayer("flag", { stripes: f.stripes, cornerRadius: 6 } as Partial<Layer>)}
+              className="flex items-center gap-2 overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] p-1.5 text-[11px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
+              title={t("Add {name} flag bar", { name: f.label })}
+            >
+              <span className="h-5 w-8 shrink-0 rounded ring-1 ring-white/15" style={{ background: flagSwatch(f.stripes) }} />
+              <span className="truncate">{f.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="border-t border-white/[0.06] px-4 py-4">
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Decor")}</p>
