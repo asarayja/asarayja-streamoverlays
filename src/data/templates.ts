@@ -4372,20 +4372,33 @@ function neonFan(prefix: string, color: string, side: "L" | "R", vpos: "T" | "B"
   const dy = Math.sin(rad);
   const px = -dy; // perpendicular to the bar direction — the fan spread
   const py = dx;
-  const gap = 80;
+  const gap = 110;
+  const along0 = 48; // where the bars' near ends line up, out from the anchor
   const bars: LayerSpec[] = [];
   for (let i = 0; i < N; i++) {
-    const thick = i % 2 === 0 ? 58 : 22; // alternate thick / thin
-    const len = 360 + noise(seed + i * 4.3) * 480;
+    const thick = i % 2 === 0 ? 62 : 26; // alternate thick / thin
+    const len = 400 + noise(seed + i * 4.3) * 470;
     const perp = (i - (N - 1) / 2) * gap;
-    const along = 70; // push the fan out from the corner along the bars
-    const cx = ox + px * perp + dx * along;
-    const cy = oy + py * perp + dy * along;
+    // Near ends aligned on a baseline; each bar runs outward from there.
+    const nx = ox + px * perp + dx * along0;
+    const ny = oy + py * perp + dy * along0;
+    const cx = nx + dx * (len / 2);
+    const cy = ny + dy * (len / 2);
     bars.push(neonBar(`${prefix} ${i}`, cx, cy, len, thick, color, angle, i * 150));
+    // The thick bars carry a short inner tube near their base — the detail
+    // inside the box; the thin ones stay single-line.
+    if (i % 2 === 0) {
+      const innerLen = len * 0.4;
+      const iCx = nx + dx * (innerLen / 2 + thick * 0.95);
+      const iCy = ny + dy * (innerLen / 2 + thick * 0.95);
+      bars.push(neonBar(`${prefix} ${i} inner`, iCx, iCy, innerLen, thick * 0.36, color, angle, i * 150 + 90));
+    }
   }
-  // A thin connector line across the fan, perpendicular to the bars, tying them
-  // together at the corner.
-  bars.push(neonBar(`${prefix} tie`, ox, oy, (N - 1) * gap + 60, 8, color, angle + 90, 0));
+  // The connector sits just BEFORE the near ends (toward the corner), so it ties
+  // the bars together from OUTSIDE and never crosses a box interior.
+  const conCx = ox + dx * (along0 - 44);
+  const conCy = oy + dy * (along0 - 44);
+  bars.push(neonBar(`${prefix} tie`, conCx, conCy, (N - 1) * gap + 72, 10, color, angle + 90, 0));
   return bars;
 }
 
