@@ -5824,9 +5824,10 @@ const CHALKBOARD: FamilyStyle = {
       shape: "rect", fill: "transparent",
       effects: { border: { enabled: true, color: "@text/45", width: 3, radius: 8 } },
     }),
-    // Two chalk rules under the copy area.
-    shape("Rule 1", { x: 360, y: 604, width: 1200, height: 4 }, { fill: "@accent", opacity: 0.7 }),
-    shape("Rule 2", { x: 460, y: 620, width: 1000, height: 3 }, { fill: "@text/45" }),
+    // Two chalk rules between the headline and the name, so the channel name
+    // sits right under the lines.
+    shape("Rule 1", { x: 360, y: 566, width: 1200, height: 4 }, { fill: "@accent", opacity: 0.7 }),
+    shape("Rule 2", { x: 460, y: 580, width: 1000, height: 3 }, { fill: "@text/45" }),
     particles("Decor — Dust", { kind: "dots", count: 28, size: 2.5, speed: 0.25, color: "@text", opacity: 0.3 }),
     particles("Decor — Sparkle", { kind: "stars", count: 30, size: 2, speed: 0.15, color: "@accent", opacity: 0.5 }),
   ],
