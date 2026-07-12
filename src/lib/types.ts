@@ -158,6 +158,11 @@ export const ANIMATION_PRESETS = [
   "tada",
   "rubberBand",
   "roll",
+  // Stinger cover→reveal: transparent → full cover at the mid peak → transparent.
+  // The end pose is the CLEARED state, so a stinger actually wipes through.
+  "sweep",
+  "sweepScale",
+  "flash",
 ] as const;
 
 export type AnimationPreset = (typeof ANIMATION_PRESETS)[number];

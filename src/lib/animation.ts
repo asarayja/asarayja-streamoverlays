@@ -33,6 +33,25 @@ export const IDENTITY: AnimationSample = {
   reveal: 1,
 };
 
+/**
+ * Where a stinger reaches 100% coverage — the OBS "transition point". The
+ * `sweep`/`sweepScale`/`flash` presets peak here, and stinger thumbnails are
+ * sampled at `duration * STINGER_PEAK` so the gallery shows the covered frame.
+ */
+export const STINGER_PEAK = 0.45;
+/** Total run of a stinger wipe (ms). Kept in sync with the templates. */
+export const STINGER_MS = 1160;
+
+/**
+ * The frame a gallery card shows at rest. Normal screens hold their finished
+ * entry pose (`fallback`, ~6000ms). A stinger's finished pose is CLEARED, so
+ * showing it there renders a blank card — instead show its covered peak (the
+ * transition point), which is the recognisable branded frame.
+ */
+export function settledTime(category: string, fallback: number): number {
+  return category === "Stinger Transitions" ? Math.round(STINGER_MS * STINGER_PEAK) : fallback;
+}
+
 /* --------------------------------- easing --------------------------------- */
 
 const c1 = 1.70158;
@@ -291,6 +310,39 @@ function atProgress(anim: Animation, raw: number): AnimationSample {
         rotation: -360 * (1 - p),
         opacity: Math.min(1, raw * 2),
       };
+    }
+
+    /* ----------------------- stinger cover → reveal ----------------------- */
+    // A stinger must go transparent → 100% cover at the peak (where OBS cuts the
+    // scene) → transparent again, and HOLD the cleared state. These three do
+    // that; the peak sits at STINGER_PEAK of the timeline.
+    case "sweep": {
+      // A full-frame band travels off the enter edge → dead-centre (covering) →
+      // off the opposite edge. `direction` is the exit direction.
+      const [vx, vy] = SLIDE_VECTORS[anim.direction];
+      const span = 2800 * (k || 1);
+      const phase =
+        raw <= STINGER_PEAK
+          ? EASING_FNS.easeOut(raw / STINGER_PEAK) - 1 // -1 → 0
+          : EASING_FNS.easeIn((raw - STINGER_PEAK) / (1 - STINGER_PEAK)); // 0 → +1
+      return { ...IDENTITY, dx: vx * span * phase, dy: vy * span * phase };
+    }
+    case "sweepScale": {
+      // Grows from nothing to fully covering at the peak, then shrinks away.
+      const s =
+        raw <= STINGER_PEAK
+          ? EASING_FNS.easeOut(raw / STINGER_PEAK)
+          : 1 - EASING_FNS.easeIn((raw - STINGER_PEAK) / (1 - STINGER_PEAK));
+      const scale = Math.max(0.02, s * (k || 1));
+      return { ...IDENTITY, scaleX: scale, scaleY: scale, opacity: Math.min(1, s * 4) };
+    }
+    case "flash": {
+      // Fades/pops in for the cover peak, then fades out — for the wordmark or
+      // logo that reads at the transition point.
+      const w =
+        raw <= STINGER_PEAK ? raw / STINGER_PEAK : Math.max(0, 1 - (raw - STINGER_PEAK) / (1 - STINGER_PEAK));
+      const e = EASING_FNS.easeOut(w);
+      return { ...IDENTITY, opacity: e, scaleX: 0.9 + 0.1 * e, scaleY: 0.9 + 0.1 * e };
     }
     default:
       return IDENTITY;

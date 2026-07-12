@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import { getPalette } from "@/data/palettes";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { useClock } from "@/lib/useClock";
+import { settledTime } from "@/lib/animation";
 import { useElementSize, useInView } from "@/lib/useElementSize";
 import { cx } from "@/components/ui";
 import { useT } from "@/lib/i18n";
@@ -34,7 +35,7 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
   // The clock is unbounded: a looping one would replay the entry animation
   // every cycle, which reads as the preview restarting.
   const clock = useClock(hovered);
-  const time = hovered ? clock : SETTLED;
+  const time = hovered ? clock : settledTime(template.category, SETTLED);
 
   const resolvedTheme = theme ?? getPalette(template.paletteId).theme;
   // Full-screen scenes carry their own background; partial overlays are meant to
