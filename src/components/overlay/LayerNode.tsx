@@ -2981,21 +2981,62 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
   );
 }
 
+/**
+ * The travelling-light props shared by the webcam frame and the goal widgets:
+ * one bright dash marching around a perimeter via an animated dashOffset. With
+ * `colors` (a pride flag) the dash is a gradient of the flag laid across the
+ * shape and runs longer, so the light that circles the edge is the flag itself
+ * rather than a single accent.
+ */
+function runnerProps(opts: {
+  perim: number;
+  time: number;
+  strokeWidth: number;
+  accent: string;
+  glow: string;
+  w: number;
+  h: number;
+  colors?: string[];
+}) {
+  const { perim, time, strokeWidth, accent, glow, w, h, colors } = opts;
+  const flag = colors && colors.length > 1;
+  const seg = perim * (flag ? 0.44 : 0.16);
+  const base = {
+    strokeWidth: Math.max(2, strokeWidth),
+    dash: [seg, perim - seg],
+    dashOffset: -(((time / 1000) * perim * 0.3) % perim),
+    lineCap: "round" as const,
+    shadowColor: glow,
+    shadowBlur: 20,
+    shadowOpacity: 1,
+    listening: false as const,
+  };
+  if (flag) {
+    const stops: (number | string)[] = [];
+    colors!.forEach((c, i) => stops.push(i / (colors!.length - 1), c));
+    return {
+      ...base,
+      strokeLinearGradientStartPoint: { x: 0, y: 0 },
+      strokeLinearGradientEndPoint: { x: w, y: h },
+      strokeLinearGradientColorStops: stops,
+    };
+  }
+  return { ...base, stroke: accent };
+}
+
 function CameraRunner({ layer, ctx, accent }: { layer: FrameLayer; ctx: RenderContext; accent: string }) {
   const { width: w, height: h } = layer;
   const perim = layer.frameShape === "ellipse" ? (Math.PI * (w + h)) / 2 : 2 * (w + h);
-  const seg = perim * 0.16;
-  const runner = {
-    stroke: accent,
-    strokeWidth: Math.max(2, layer.strokeWidth * 1.4),
-    dash: [seg, perim - seg],
-    dashOffset: -(((ctx.time / 1000) * perim * 0.3) % perim),
-    lineCap: "round" as const,
-    shadowColor: resolveColor("@glow", ctx.theme),
-    shadowBlur: 20,
-    shadowOpacity: 1,
-    listening: false,
-  };
+  const runner = runnerProps({
+    perim,
+    time: ctx.time,
+    strokeWidth: layer.strokeWidth * 1.4,
+    accent,
+    glow: resolveColor("@glow", ctx.theme),
+    w,
+    h,
+    colors: layer.runnerColors,
+  });
   if (layer.frameShape === "ellipse") {
     return <Ellipse x={w / 2} y={h / 2} radiusX={w / 2} radiusY={h / 2} {...runner} />;
   }
@@ -3289,6 +3330,25 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
           wrap="none"
           fill={labelColor}
         />
+        {layer.runner && (
+          <KonvaShape
+            {...runnerProps({
+              perim: 2 * Math.PI * R,
+              time: ctx.time,
+              strokeWidth: Math.max(3, thick * 0.5),
+              accent: barColor,
+              glow: resolveColor("@glow", ctx.theme),
+              w,
+              h,
+              colors: layer.runnerColors,
+            })}
+            sceneFunc={(c, s) => {
+              c.beginPath();
+              c.arc(cx, cy, R, 0, Math.PI * 2);
+              c.strokeShape(s);
+            }}
+          />
+        )}
       </Group>
     );
   }
@@ -3375,6 +3435,25 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         />
       )}
+      {layer.runner && (() => {
+        const run = runnerProps({
+          perim: 2 * (w + h),
+          time: ctx.time,
+          strokeWidth: Math.max(3, h * 0.055),
+          accent: resolveColor(layer.barColor, ctx.theme),
+          glow: resolveColor("@glow", ctx.theme),
+          w,
+          h,
+          colors: layer.runnerColors,
+        });
+        if (coffin) {
+          return <KonvaShape {...run} sceneFunc={(c, s) => { coffinPathH(c, w, h); c.strokeShape(s); }} />;
+        }
+        if (plaque) {
+          return <KonvaShape {...run} sceneFunc={(c, s) => { plaquePath(c, w, h); c.strokeShape(s); }} />;
+        }
+        return <Rect width={w} height={h} cornerRadius={layer.cornerRadius} {...run} />;
+      })()}
     </Group>
   );
 }

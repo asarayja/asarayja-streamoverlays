@@ -244,6 +244,7 @@ function goal(
     valueColor?: string;
     fontFamily?: string;
     cornerRadius?: number;
+    runner?: boolean;
   } = {},
 ): LayerSpec {
   return {
@@ -262,6 +263,7 @@ function goal(
     valueColor: o.valueColor ?? "@text",
     fontFamily: o.fontFamily ?? "Inter",
     cornerRadius: o.cornerRadius ?? 16,
+    runner: o.runner,
   };
 }
 
@@ -2284,17 +2286,9 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
   // decor: a goals overlay sits over live gameplay, so it stays clean. Each
   // goal is its own layer, free to rearrange into a row or a stack.
   const goalsScreen = base("goals", "Goals", "Goals", [
-    // A container box holds the whole widget still while a single glowing line
-    // travels around its edge — the motion lives on the frame, never on the
-    // numbers (which must stay readable). Same runner as the webcam frame.
-    frame("Goals box", { x: 108, y: 268, width: 1254, height: 512 }, {
-      strokeColor: "@accent/55",
-      strokeWidth: 3,
-      cornerRadius: f.radius + 6,
-      fill: "@surface/22",
-      runner: true,
-      effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
-    }),
+    // The widgets hold still and readable; each one carries its OWN glowing line
+    // travelling around its edge (ring and every bar), the same runner the
+    // webcam frame uses. On pride palettes the line flies the flag's colours.
     ...flagBar({ x: 150, y: 300, width: 1170, height: 20 }),
     goal("Follower goal", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
       goalStyle: "ring",
@@ -2303,6 +2297,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       trackColor: "@surface/60",
       valueColor: "@text",
       labelColor: "@accent",
+      runner: true,
       effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
     }),
     goal("Sub goal", { x: 560, y: 430, width: 760, height: 150 }, "SUB GOAL", 62, 100, {
@@ -2313,6 +2308,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       barColor: "@accent",
       labelColor: "@accent",
       cornerRadius: f.radius,
+      runner: true,
       effects: {
         glow: { enabled: true, color: "@glow", strength: 22 },
         border: { enabled: true, color: "@border", width: 1, radius: f.radius },
@@ -2326,6 +2322,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       barColor: "@primary",
       labelColor: "@accent",
       cornerRadius: f.radius,
+      runner: true,
       effects: {
         glow: { enabled: true, color: "@glow", strength: 22 },
         border: { enabled: true, color: "@border", width: 1, radius: f.radius },
@@ -6322,6 +6319,16 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
         palette.flag
       ) {
         layer.facetColors = palette.flag;
+      }
+      // The edge runner (webcam frames, runner frames, goal widgets) flies the
+      // flag's colours on pride palettes instead of a single flat accent.
+      if (palette.flag) {
+        if (layer.type === "camera" || (layer.type === "frame" && layer.runner)) {
+          layer.runnerColors = palette.flag;
+        }
+        if (layer.type === "goal" && layer.runner) {
+          layer.runnerColors = palette.flag;
+        }
       }
       return layer;
     }),

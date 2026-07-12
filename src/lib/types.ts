@@ -645,6 +645,8 @@ export interface FrameLayer extends LayerBase {
       opt-in here so a decorative container (e.g. a goals box) can carry the
       same moving line while its contents stay still. */
   runner?: boolean;
+  /** Pride palettes colour the runner with the flag instead of a flat accent. */
+  runnerColors?: string[];
 }
 
 export interface ChatBoxLayer extends LayerBase {
@@ -698,6 +700,11 @@ export interface GoalLayer extends LayerBase {
   valueColor: ColorValue;
   fontFamily: string;
   cornerRadius: number;
+  /** A glowing line travels around this widget's own edge — the moving accent
+      that replaces an entrance animation. Each goal runs its own. */
+  runner?: boolean;
+  /** Pride palettes colour the runner with the flag instead of a flat accent. */
+  runnerColors?: string[];
 }
 
 export interface SocialLayer extends LayerBase {
