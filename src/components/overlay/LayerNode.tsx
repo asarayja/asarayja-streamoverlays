@@ -3921,15 +3921,15 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
         const span = h + 120;
         const y = ((t * 360 * layer.speed + seedY * span) % span) - 60;
         const x = seedX * w;
-        const len = 24 + seedS * 30;
+        const len = 30 + seedS * 40;
         nodes.push(
           <Line
             key={i}
             points={[x, y, x - 7, y - len]}
             stroke={color}
-            strokeWidth={Math.max(1, layer.size * 0.42)}
+            strokeWidth={Math.max(1.4, layer.size * 0.5)}
             lineCap="round"
-            opacity={0.22 + seedS * 0.4}
+            opacity={0.5 + seedS * 0.4}
           />,
         );
         break;

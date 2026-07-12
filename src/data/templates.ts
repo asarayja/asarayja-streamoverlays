@@ -4817,7 +4817,7 @@ const METEOR: FamilyStyle = {
       fill: "@background",
       effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 200 } },
     }),
-    particles("Decor — Stars", { kind: "stars", count: 150, size: 2, speed: 0.1, color: "@text", opacity: 0.85 }),
+    particles("Decor — Stars", { kind: "stars", count: 160, size: 2.8, speed: 0.1, color: "@text", opacity: 0.9 }),
     particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.3, color: "@accent", opacity: 0.3 }),
     particles("Decor — Meteors", { kind: "shootingStars", count: 22, size: 11, speed: 1.6, color: "@accent" }),
     particles("Decor — Meteors 2", { kind: "shootingStars", count: 14, size: 8, speed: 1.2, color: "@secondary" }),
@@ -4839,7 +4839,7 @@ const METEOR: FamilyStyle = {
 const RAIN: FamilyStyle = {
   id: "rain",
   name: "Rain",
-  tags: ["Cozy", "Nordic", "Dark"],
+  tags: ["Cozy", "Blue", "Nordic"],
   display: "Poppins",
   displayWeight: 700,
   displayTracking: 3,
@@ -4862,9 +4862,10 @@ const RAIN: FamilyStyle = {
       effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 180 } },
     }),
     particles("Decor — Fog", { kind: "fog", count: 6, size: 5, speed: 0.4, color: "@secondary" }),
-    // Two sheets of rain at different speeds for depth.
-    particles("Decor — Rain back", { kind: "rain", count: 90, size: 4, speed: 1.2, color: "@secondary", opacity: 0.5 }),
-    particles("Decor — Rain front", { kind: "rain", count: 70, size: 6, speed: 1.8, color: "@accent", opacity: 0.7 }),
+    // Three sheets of bright rain at different speeds for depth.
+    particles("Decor — Rain back", { kind: "rain", count: 110, size: 5, speed: 1.1, color: "@secondary" }),
+    particles("Decor — Rain mid", { kind: "rain", count: 100, size: 7, speed: 1.6, color: "@text", opacity: 0.9 }),
+    particles("Decor — Rain front", { kind: "rain", count: 80, size: 9, speed: 2.1, color: "@accent" }),
     shape("Centre dim", { x: 340, y: 320, width: 1240, height: 460 }, {
       shape: "ellipse",
       fill: "@background",
