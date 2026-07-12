@@ -729,6 +729,8 @@ export type ParticleKind =
   // Sky decor.
   | "clouds"
   | "shootingStars"
+  /** Falling rain: many thin near-vertical streaks. */
+  | "rain"
   /** Blurred mesh-gradient orbs cycling through the theme's brand hues. */
   | "blobs"
   /** Drifting sheeted ghosts. */

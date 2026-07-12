@@ -3916,6 +3916,25 @@ function ParticleContent({ layer, ctx }: { layer: ParticleLayer; ctx: RenderCont
         break;
       }
 
+      case "rain": {
+        // Thin near-vertical streaks falling and wrapping, each on its own phase.
+        const span = h + 120;
+        const y = ((t * 360 * layer.speed + seedY * span) % span) - 60;
+        const x = seedX * w;
+        const len = 24 + seedS * 30;
+        nodes.push(
+          <Line
+            key={i}
+            points={[x, y, x - 7, y - len]}
+            stroke={color}
+            strokeWidth={Math.max(1, layer.size * 0.42)}
+            lineCap="round"
+            opacity={0.22 + seedS * 0.4}
+          />,
+        );
+        break;
+      }
+
       case "shootingStars": {
         // Each star has its own slot in a repeating cycle, so they streak one
         // after another instead of all at once.

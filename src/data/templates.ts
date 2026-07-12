@@ -2009,10 +2009,13 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   vanguard: ["shards", 0],
   vanguardglow: ["shards", 0],
   vanguardwave: ["shards", 0],
+  vanguardwaveglow: ["shards", 0],
   radar: ["iris", 0],
   contour: ["wave", 0],
   chevron: ["shards", 0],
   circuit: ["glitch", 0],
+  meteor: ["burst", 0],
+  rain: ["liquid", 0],
   // Crystal / glass — facets.
   holo: ["prism", 8],
   frost: ["prism", -6],
@@ -4492,6 +4495,25 @@ const VANGUARD_WAVE: FamilyStyle = {
   overlayDecor: () => [...waveStrips("tl"), ...waveStrips("br")],
 };
 
+/** Vanguard Wave Glow: the wavy strips blooming in neon. */
+const VANGUARD_WAVE_GLOW: FamilyStyle = {
+  ...VANGUARD,
+  id: "vanguardwaveglow",
+  name: "Vanguard Wave Glow",
+  tags: ["Esports", "Neon", "Red"],
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 24 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    ...waveStrips("tl", true),
+    ...waveStrips("br", true),
+  ],
+  overlayDecor: () => [...waveStrips("tl", true), ...waveStrips("br", true)],
+};
+
 /** Concentric ring outlines centred on a corner, so only the in-frame quarter
     shows — radar arcs radiating from the corner. A staggered glow pulse sends a
     wave of light sweeping outward. */
@@ -4768,11 +4790,101 @@ const CIRCUIT: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** Meteor: a night sky with a starfield and streaking meteors that fall one
+    after another. Colour follows the palette. */
+const METEOR: FamilyStyle = {
+  id: "meteor",
+  name: "Meteor",
+  tags: ["Sci-Fi", "Fantasy", "Dark"],
+  display: "Orbitron",
+  displayWeight: 800,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 8,
+  frameRadius: 10,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 10 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 200 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 150, size: 2, speed: 0.1, color: "@text", opacity: 0.85 }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.3, color: "@accent", opacity: 0.3 }),
+    particles("Decor — Meteors", { kind: "shootingStars", count: 22, size: 11, speed: 1.6, color: "@accent" }),
+    particles("Decor — Meteors 2", { kind: "shootingStars", count: 14, size: 8, speed: 1.2, color: "@secondary" }),
+    shape("Centre dim", { x: 360, y: 320, width: 1200, height: 460 }, {
+      shape: "ellipse",
+      fill: "@background",
+      opacity: 0.55,
+      effects: { blur: { enabled: true, amount: 70 } },
+    }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Meteors", { kind: "shootingStars", count: 10, size: 7, speed: 1.5, color: "@accent" }),
+  ],
+  contentOffsetY: 0,
+};
+
+/** Rain: sheets of falling rain over a moody dark ground, with soft fog.
+    Colour follows the palette. */
+const RAIN: FamilyStyle = {
+  id: "rain",
+  name: "Rain",
+  tags: ["Cozy", "Nordic", "Dark"],
+  display: "Poppins",
+  displayWeight: 700,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 12,
+  frameRadius: 14,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 14 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 180 } },
+    }),
+    particles("Decor — Fog", { kind: "fog", count: 6, size: 5, speed: 0.4, color: "@secondary" }),
+    // Two sheets of rain at different speeds for depth.
+    particles("Decor — Rain back", { kind: "rain", count: 90, size: 4, speed: 1.2, color: "@secondary", opacity: 0.5 }),
+    particles("Decor — Rain front", { kind: "rain", count: 70, size: 6, speed: 1.8, color: "@accent", opacity: 0.7 }),
+    shape("Centre dim", { x: 340, y: 320, width: 1240, height: 460 }, {
+      shape: "ellipse",
+      fill: "@background",
+      opacity: 0.6,
+      effects: { blur: { enabled: true, amount: 80 } },
+    }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Rain", { kind: "rain", count: 60, size: 5, speed: 1.6, color: "@accent", opacity: 0.6 }),
+  ],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   RADAR,
   CONTOUR,
   CHEVRON,
   CIRCUIT,
+  METEOR,
+  RAIN,
   HALLOWED_NIGHT,
   ASTRAL_DECK,
   PIXEL_WINDOWS,
@@ -4818,7 +4930,7 @@ const VANGUARD_PALETTES = [
   ...ABSTRACT_PALETTES.filter((p) => p.id.includes("vanguard")),
 ];
 const ABSTRACT_TEMPLATES: Template[] = [
-  ...expand([...familyScreens(VANGUARD), ...familyScreens(VANGUARD_GLOW), ...familyScreens(VANGUARD_WAVE)], VANGUARD_PALETTES),
+  ...expand([...familyScreens(VANGUARD), ...familyScreens(VANGUARD_GLOW), ...familyScreens(VANGUARD_WAVE), ...familyScreens(VANGUARD_WAVE_GLOW)], VANGUARD_PALETTES),
   ...expand(familyScreens(RISO_CONCRETE), RISO_CONCRETE_PALETTES),
   ...expand([...familyScreens(AURORA_SILK), ...familyScreens(AURORA_SILK_NEON)], AURORA_SILK_PALETTES),
 ];
