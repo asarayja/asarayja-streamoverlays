@@ -14,6 +14,19 @@ import { useProjectsStore } from "@/store/projects";
 import { useT } from "@/lib/i18n";
 import type { Template } from "@/lib/types";
 
+/** A palette reads as "light" when its background is bright. Drives the
+    dark/light filter so a streamer can jump straight to the mode they run. */
+function paletteIsLight(id: string): boolean {
+  const n = getPalette(id).theme.background.replace("#", "");
+  if (n.length < 6) return false;
+  const r = parseInt(n.slice(0, 2), 16);
+  const g = parseInt(n.slice(2, 4), 16);
+  const b = parseInt(n.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5;
+}
+
+type ColourMode = "all" | "dark" | "light";
+
 function DesignDetail() {
   const t = useT();
   const key = useSearchParams().get("d") ?? "";
@@ -28,6 +41,24 @@ function DesignDetail() {
     () => (design ? designScreens(design, paletteId) : []),
     [design, paletteId],
   );
+
+  const [mode, setMode] = useState<ColourMode>("all");
+  const shownPalettes = useMemo(() => {
+    const list = design?.palettes ?? [];
+    return mode === "all" ? list : list.filter((id) => paletteIsLight(id) === (mode === "light"));
+  }, [design, mode]);
+  const hasLight = useMemo(() => (design?.palettes ?? []).some(paletteIsLight), [design]);
+  const hasDark = useMemo(() => (design?.palettes ?? []).some((id) => !paletteIsLight(id)), [design]);
+
+  // Switching filter keeps a valid selection: if the active colour is filtered
+  // out, jump to the first one still shown so the grid never renders empty.
+  const pickMode = (m: ColourMode) => {
+    setMode(m);
+    const next = (design?.palettes ?? []).filter(
+      (id) => m === "all" || paletteIsLight(id) === (m === "light"),
+    );
+    if (next.length && !next.includes(paletteId)) setPaletteId(next[0]);
+  };
 
   if (!design) {
     return (
@@ -76,13 +107,32 @@ function DesignDetail() {
         {/* The one design, in each of its colours — pick one and the whole set
             recolours. */}
         <div className="sticky top-16 z-30 -mx-6 mb-8 border-y border-white/[0.06] bg-ink-950/85 px-6 py-4 backdrop-blur-xl">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-            {t("Colour")}
-          </p>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+              {t("Colour")}
+            </p>
+            {/* Only worth showing when the design actually has both modes. */}
+            {hasLight && hasDark && (
+              <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-white/10 bg-white/[0.02] p-0.5 text-[11px] font-medium">
+                {(["all", "dark", "light"] as const).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => pickMode(m)}
+                    className={cx(
+                      "rounded-full px-2.5 py-1 transition-colors",
+                      mode === m ? "bg-brand-500/20 text-white" : "text-zinc-400 hover:text-zinc-200",
+                    )}
+                  >
+                    {t(m === "all" ? "All" : m === "dark" ? "Dark" : "Light")}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {/* One swipeable row on a phone (so the sticky bar stays short), a
               wrapped grid on bigger screens. */}
           <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:pb-0">
-            {design.palettes.map((id) => (
+            {shownPalettes.map((id) => (
               <PaletteSwatch
                 key={id}
                 id={id}
