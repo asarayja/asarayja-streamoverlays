@@ -2010,6 +2010,7 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   vanguardglow: ["shards", 0],
   radar: ["iris", 0],
   contour: ["wave", 0],
+  chevron: ["shards", 0],
   // Crystal / glass — facets.
   holo: ["prism", 8],
   frost: ["prism", -6],
@@ -4567,9 +4568,79 @@ const CONTOUR: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** A single chevron ("&gt;" or "&lt;") — two capsule arms meeting at a vertex. */
+function chevron(prefix: string, px: number, py: number, L: number, thick: number, color: string, pointRight: boolean, delay: number): LayerSpec[] {
+  const rad = Math.PI / 180;
+  const angs = pointRight ? [220, 140] : [320, 40];
+  return angs.map((deg, k) => {
+    const a = deg * rad;
+    const cx = px + Math.cos(a) * (L / 2);
+    const cy = py + Math.sin(a) * (L / 2);
+    return shape(`${prefix} ${k}`, { x: cx - L / 2, y: cy - thick / 2, width: L, height: thick }, {
+      shape: "rect",
+      fill: color,
+      rotation: deg,
+      cornerRadius: thick / 2,
+      effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+      animation: anim("glow", { duration: 2400, delay, intensity: 1 }),
+    });
+  });
+}
+
+/** A vertical stack of chevrons pointing toward the centre — the two columns
+    lean in from opposite sides. A sequential glow pulse reads as speed. */
+function chevronColumn(side: "L" | "R", color: string): LayerSpec[] {
+  const pointRight = side === "L";
+  const px = side === "L" ? 360 : 1560;
+  const out: LayerSpec[] = [];
+  const N = 6;
+  for (let i = 0; i < N; i++) {
+    const py = 175 + i * 148;
+    const thick = i % 2 ? 24 : 44;
+    out.push(...chevron(`Chev ${side} ${i}`, px, py, 210, thick, color, pointRight, i * 170));
+  }
+  return out;
+}
+
+/** Chevron: two columns of neon chevrons race in from the sides toward the copy
+    over a dark ground. Colour follows the palette. */
+const CHEVRON: FamilyStyle = {
+  id: "chevron",
+  name: "Chevron",
+  tags: ["Esports", "Neon", "Dark"],
+  display: "Orbitron",
+  displayWeight: 800,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 6,
+  frameRadius: 8,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/18", angle: 90 } },
+    }),
+    ...chevronColumn("L", "@secondary"),
+    ...chevronColumn("R", "@accent"),
+    particles("Decor — Sparks", { kind: "embers", count: 16, size: 2, speed: 0.6, color: "@accent", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [...chevronColumn("L", "@secondary"), ...chevronColumn("R", "@accent")],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   RADAR,
   CONTOUR,
+  CHEVRON,
   HALLOWED_NIGHT,
   ASTRAL_DECK,
   PIXEL_WINDOWS,
