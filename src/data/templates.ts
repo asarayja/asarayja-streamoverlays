@@ -2009,6 +2009,7 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   vanguard: ["shards", 0],
   vanguardglow: ["shards", 0],
   radar: ["iris", 0],
+  contour: ["wave", 0],
   // Crystal / glass — facets.
   holo: ["prism", 8],
   frost: ["prism", -6],
@@ -4505,8 +4506,70 @@ const RADAR: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** A field of parallel wavy lines — topographic contours flowing across the
+    frame. Most are a quiet secondary; every fourth is a brighter accent. Each
+    undulates on its own rhythm. */
+function contourLines(): LayerSpec[] {
+  const lines: LayerSpec[] = [];
+  const N = 11;
+  for (let i = 0; i < N; i++) {
+    const y = -30 + i * 100;
+    const accent = i % 4 === 0;
+    lines.push(shape(`Contour ${i}`, { x: -120, y, width: 2160, height: 46 }, {
+      shape: "wave",
+      fill: accent ? "@accent" : "@secondary/70",
+      opacity: accent ? 0.85 : 0.45,
+      effects: { glow: { enabled: true, color: "@glow", strength: accent ? 16 : 7 } },
+      animation: anim("wave", { duration: 6000 + i * 280, intensity: 0.9 }),
+    }));
+  }
+  return lines;
+}
+
+/** Contour: a calm field of flowing topographic lines over a soft dark ground.
+    Colour follows the palette. */
+const CONTOUR: FamilyStyle = {
+  id: "contour",
+  name: "Contour",
+  tags: ["Minimal", "Sci-Fi", "Dark"],
+  display: "Poppins",
+  displayWeight: 600,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 14,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 16 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 160 } },
+    }),
+    ...contourLines(),
+    // A dark pool behind the copy keeps it legible where lines cross.
+    shape("Centre dim", { x: 320, y: 320, width: 1280, height: 460 }, {
+      shape: "ellipse",
+      fill: "@background",
+      opacity: 0.68,
+      effects: { blur: { enabled: true, amount: 80 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 30, size: 2, speed: 0.12, color: "@accent", opacity: 0.5 }),
+  ],
+  overlayDecor: () => contourLines(),
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   RADAR,
+  CONTOUR,
   HALLOWED_NIGHT,
   ASTRAL_DECK,
   PIXEL_WINDOWS,
