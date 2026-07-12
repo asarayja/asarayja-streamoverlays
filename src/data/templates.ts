@@ -1439,6 +1439,9 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   "prism-stripes": ["ribbon", 0],
   "frost-stripes": ["ribbon", 10],
   "plasma-flag": ["ribbon", -10],
+  // Aquatic — organic blobs bloom.
+  aquarium: ["liquid", 6],
+  aquariumpride: ["ribbon", 12],
   // Promoted standalone pieces, grouped by vibe.
   minimalplay: ["iris", 0],
   chatlounge: ["iris", 6],
@@ -4354,6 +4357,91 @@ const METEOR_PRIDE: FamilyStyle = {
   ],
 };
 
+/** The Aquarium ground: a graded blue tank with light shafts breaking the
+    surface and three sheets of bubbles rising at different depths. Every colour
+    comes from the palette tokens, so it holds up in any palette; Aquarium Pride
+    below swaps the bubbles for the flag's colours. */
+const aquariumScene = (bubbleColors?: {
+  back: Parameters<typeof particles>[1];
+  mid: Parameters<typeof particles>[1];
+  front: Parameters<typeof particles>[1];
+}): LayerSpec[] => [
+  shape("Backdrop", FULL, {
+    background: true,
+    fill: "@background",
+    // Lighter near the surface (top), deepening to the dark tank floor.
+    effects: { gradient: { enabled: true, from: "@primary/22", to: "@background", angle: 180 } },
+  }),
+  // The light breaking the water surface.
+  shape("Decor — Surface glow", { x: 260, y: -260, width: 1400, height: 560 }, {
+    shape: "ellipse",
+    fill: "@glow/12",
+    effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
+    animation: anim("pulse", { duration: 5200, intensity: 0.6 }),
+  }),
+  // Two slow caustic light shafts angling down from the surface.
+  shape("Decor — Shaft one", { x: 420, y: -120, width: 150, height: 1320 }, {
+    fill: "@text/6",
+    rotation: 14,
+    effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+    animation: anim("float", { duration: 9000, intensity: 0.25 }),
+  }),
+  shape("Decor — Shaft two", { x: 1180, y: -120, width: 110, height: 1320 }, {
+    fill: "@text/5",
+    rotation: 14,
+    effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+    animation: anim("float", { duration: 11000, intensity: 0.22, delay: 800 }),
+  }),
+  // Three sheets of rising bubbles for depth: small/slow behind, big/fast front.
+  particles("Decor — Bubbles back", { kind: "bubbles", count: 40, size: 5, speed: 0.5, ...(bubbleColors?.back ?? { color: "@secondary", opacity: 0.5 }) }),
+  particles("Decor — Bubbles mid", { kind: "bubbles", count: 30, size: 9, speed: 0.8, ...(bubbleColors?.mid ?? { color: "@text", opacity: 0.55 }) }),
+  particles("Decor — Bubbles front", { kind: "bubbles", count: 20, size: 14, speed: 1.15, ...(bubbleColors?.front ?? { color: "@accent", opacity: 0.65 }) }),
+];
+
+const AQUARIUM: FamilyStyle = {
+  id: "aquarium",
+  name: "Aquarium",
+  tags: ["Blue", "Cozy", "Minimal"],
+  display: "Poppins",
+  displayWeight: 700,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 18,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 20 },
+    glow: { enabled: true, color: "@glow", strength: 18 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+  plateShape: "rect",
+  scene: () => aquariumScene(),
+  overlayDecor: () => [
+    particles("Decor — Bubbles", { kind: "bubbles", count: 18, size: 8, speed: 0.7, color: "@accent", opacity: 0.4 }),
+  ],
+};
+
+/** Aquarium Pride: the same tank, but the bubbles rise in the flag's colours
+    (buildVariant substitutes each pride palette's stripes for PRIDE_RAIN_FLAG). */
+const AQUARIUM_PRIDE: FamilyStyle = {
+  ...AQUARIUM,
+  id: "aquariumpride",
+  name: "Aquarium Pride",
+  collection: "pride",
+  tags: ["RGB", "Blue", "Cozy"],
+  scene: () =>
+    aquariumScene({
+      back: { facetColors: PRIDE_RAIN_FLAG, opacity: 0.7 },
+      mid: { facetColors: PRIDE_RAIN_FLAG, opacity: 0.8 },
+      front: { facetColors: PRIDE_RAIN_FLAG, opacity: 0.9 },
+    }),
+  overlayDecor: () => [
+    particles("Decor — Bubbles", { kind: "bubbles", count: 20, size: 9, speed: 0.8, facetColors: PRIDE_RAIN_FLAG, opacity: 0.85 }),
+  ],
+};
+
 /* ----------------------------- New proposals ----------------------------- */
 
 /** Retrowave: an 80s synthwave sunset — a banded sun low on the horizon, a
@@ -6203,6 +6291,7 @@ const SIGNATURE: FamilyStyle = {
 };
 
 const NEW_FAMILIES: FamilyStyle[] = [
+  AQUARIUM,
   MINIMAL_PLAY,
   ESPORTS_HUD,
   CHAT_LOUNGE,
@@ -7710,7 +7799,7 @@ export const TEMPLATES: Template[] = [
   ...expand(GENERATED_FAMILY_TEMPLATES, CORE_PALETTES),
   ...expand(GOTHIC_TEMPLATES, GOTHIC_PALETTES),
   ...expand(PRIDE_TEMPLATES, PRIDE_PALETTES),
-  ...expand([...familyScreens(RAIN_PRIDE), ...familyScreens(METEOR_PRIDE), ...familyScreens(PAPERCUT_PRIDE)], PRIDE_PALETTES),
+  ...expand([...familyScreens(RAIN_PRIDE), ...familyScreens(METEOR_PRIDE), ...familyScreens(PAPERCUT_PRIDE), ...familyScreens(AQUARIUM_PRIDE)], PRIDE_PALETTES),
   ...expand(PRISM_PRIDE_TEMPLATES, PRISM_PALETTES),
   ...ABSTRACT_TEMPLATES,
   ...CUSTOM_TEMPLATES,
