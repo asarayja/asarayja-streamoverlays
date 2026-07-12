@@ -238,6 +238,38 @@ function hexMeshPath(c: Konva.Context, w: number, h: number) {
   }
 }
 
+/** A cartoon ghost: domed head over straight sides, a scalloped hem, drawn to
+    fill the box (square boxes read best). */
+function ghostPath(c: Konva.Context, w: number, h: number) {
+  const r = w / 2;
+  const shoulder = Math.max(r, h * 0.6); // where the dome meets the straight sides
+  c.beginPath();
+  c.moveTo(0, shoulder);
+  c.lineTo(0, r);
+  c.arc(r, r, r, Math.PI, 0, true); // dome over the top
+  c.lineTo(w, shoulder);
+  // Scalloped hem back to the left — downward bumps.
+  const bumps = 4;
+  const bw = w / bumps;
+  for (let i = 0; i < bumps; i++) {
+    const x1 = w - (i + 1) * bw;
+    const cx = w - i * bw - bw / 2;
+    c.quadraticCurveTo(cx, h, x1, shoulder);
+  }
+  c.closePath();
+}
+
+/** A classic heart filling the box. */
+function heartPath(c: Konva.Context, w: number, h: number) {
+  c.beginPath();
+  c.moveTo(w * 0.5, h * 0.32);
+  c.bezierCurveTo(w * 0.5, h * 0.1, w * 0.08, h * 0.04, w * 0.04, h * 0.36);
+  c.bezierCurveTo(w * 0.0, h * 0.64, w * 0.34, h * 0.82, w * 0.5, h);
+  c.bezierCurveTo(w * 0.66, h * 0.82, w * 1.0, h * 0.64, w * 0.96, h * 0.36);
+  c.bezierCurveTo(w * 0.92, h * 0.04, w * 0.5, h * 0.1, w * 0.5, h * 0.32);
+  c.closePath();
+}
+
 /** Rect with its four corners cut — the "hex cut" webcam frame. */
 function chamferPoints(w: number, h: number): number[] {
   const c = Math.min(w, h) * 0.12;
@@ -422,6 +454,40 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
         {...paint}
         sceneFunc={(c, shape) => {
           dripPath(c, w, h, Math.min(layer.cornerRadius, w / 2, h / 2));
+          c.fillStrokeShape(shape);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "ghost") {
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          ghostPath(c, w, h);
+          c.fillStrokeShape(shape);
+          // Two dark eyes + a small mouth, so a giant ghost still reads as one.
+          c.setAttr("fillStyle", "rgba(16,12,24,0.82)");
+          for (const ex of [w * 0.36, w * 0.64]) {
+            c.beginPath();
+            c.arc(ex, h * 0.42, w * 0.06, 0, Math.PI * 2, false);
+            c.fill();
+          }
+          c.beginPath();
+          c.arc(w * 0.5, h * 0.58, w * 0.045, 0, Math.PI * 2, false);
+          c.fill();
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "heart") {
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          heartPath(c, w, h);
           c.fillStrokeShape(shape);
         }}
       />

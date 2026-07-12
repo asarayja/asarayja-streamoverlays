@@ -474,7 +474,12 @@ export type ShapeKind =
   /** A faceted cut gem — a rhombus with cut lines. */
   | "gem"
   /** A tiling harlequin/argyle diamond lattice, stroked in the fill colour. */
-  | "harlequin";
+  | "harlequin"
+  /** A cartoon ghost: a domed body with a scalloped hem and two dark eyes —
+      the gothic stinger motif that zooms up to cover the frame. */
+  | "ghost"
+  /** A heart — the pride stinger motif. */
+  | "heart";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";

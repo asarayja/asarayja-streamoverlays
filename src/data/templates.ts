@@ -1931,260 +1931,96 @@ function stingerName(f: FamilyStyle, dy: number, plate = false): LayerSpec[] {
   ];
 }
 
-const STINGER_FORMS: Record<StingerKind, (f: FamilyStyle, dy: number, a: number) => LayerSpec[]> = {
-  // Gothic curtains: two full panels converge from opposite sides, cover at the
-  // peak, then part again — a hot moon and bats flash at the transition point.
-  veil: (f, dy, a) => [
-    shape("Curtain L", STINGER_FULL, {
-      fill: "@surface",
-      rotation: a,
-      effects: { gradient: { enabled: true, from: "@surface", to: "@background", angle: 90 } },
-      animation: stSweep("right"),
-    }),
-    shape("Curtain R", STINGER_FULL, {
-      fill: "@primary",
-      rotation: a,
-      opacity: 0.98,
-      effects: {
-        gradient: { enabled: true, from: "@primary", to: "@background", angle: 90 },
-        glow: { enabled: true, color: "@glow", strength: 18 },
-      },
-      animation: stSweep("left"),
-    }),
-    shape("Decor — Moon", { x: 830, y: 150, width: 260, height: 260 }, {
-      shape: "moon",
-      moonPhase: 1,
-      fill: "@accent",
-      effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
-      animation: stFlash(),
-    }),
-    particles("Decor — Bats", { kind: "bats", count: 12, size: 7, speed: 1.1, color: "@secondary", opacity: 0.9, animation: stFlash() }),
-    ...stingerName(f, dy),
-  ],
-
-  // Skewed strips: an angled cover panel wipes through with an accent blade and
-  // a white sliver riding it — the classic premium diagonal-strip stinger.
-  shards: (f, dy, a) => [
-    shape("Cover", STINGER_FULL, {
-      fill: "@primary",
-      rotation: a - 16,
-      effects: { gradient: { enabled: true, from: "@primary", to: "@background", angle: 90 } },
-      animation: stSweep("right"),
-    }),
-    shape("Blade — accent", { x: -600, y: -540, width: 900, height: 2160 }, {
-      fill: "@accent",
-      rotation: a - 16,
-      opacity: 0.92,
-      effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
-      animation: stSweep("right", 60),
-    }),
-    shape("Blade — light", { x: 520, y: -540, width: 300, height: 2160 }, {
-      fill: "@surface",
-      rotation: a - 16,
-      opacity: 0.96,
-      effects: { border: { enabled: true, color: "@accent", width: 2, radius: 0 } },
-      animation: stSweep("right", 120),
-    }),
-    particles("Decor — Sparks", { kind: "embers", count: 18, size: 2, speed: 0.6, color: "@accent", opacity: 0.6, animation: stFlash() }),
-    ...stingerName(f, dy),
-  ],
-
-  // Cyber tear: a cover slams through, neon slices rip the opposite way.
-  glitch: (f, dy) => [
-    shape("Cover", STINGER_FULL, {
-      fill: "@primary",
-      effects: { gradient: { enabled: true, from: "@primary", to: "@background", angle: 90 } },
-      animation: stSweep("right"),
-    }),
-    shape("Slice — accent", { x: -600, y: 150, width: 3200, height: 150 }, {
-      fill: "@accent",
-      opacity: 0.9,
-      effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
-      animation: stSweep("left", 40),
-    }),
-    shape("Slice — secondary", { x: -600, y: 760, width: 3200, height: 110 }, {
-      fill: "@secondary",
-      opacity: 0.85,
-      effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
-      animation: stSweep("right", 80),
-    }),
-    particles("Decor — Scan dust", { kind: "dots", count: 60, size: 2, speed: 0.4, color: "@glow", opacity: 0.5, animation: stFlash() }),
-    text("Channel name", { x: 210, y: 470 + dy, width: 1500, height: 130 }, "{{CHANNEL_NAME}}", {
-      fontFamily: f.display,
-      fontSize: 94,
-      fontWeight: f.displayWeight,
-      italic: f.displayItalic,
-      align: "center",
-      fill: f.displayFill ?? "@text",
-      letterSpacing: f.displayTracking,
-      textTransform: f.displayTransform,
-      effects: f.headlineEffects,
-      animation: stFlash(),
-    }),
-  ],
-
-  // Pride: the flag itself is the cover, sweeping through full-bleed.
-  ribbon: (f, dy, a) => [
-    shape("Ground", STINGER_FULL, {
+/**
+ * A stinger is a themed motif that rushes at the camera: it grows from nothing
+ * to fully cover the frame at the peak (the OBS transition point), then shrinks
+ * away to reveal the next scene. A colour cover scales just behind it so the
+ * frame is 100% opaque at the peak even where the motif's silhouette doesn't
+ * reach the corners.
+ */
+function stingerZoom(
+  f: FamilyStyle,
+  dy: number,
+  o: {
+    motif: ShapeKind;
+    motifFill?: string;
+    cover?: string;
+    coverShape?: ShapeKind;
+    grow?: number;
+    decor?: ParticleKind;
+    decorColor?: string;
+    plate?: boolean;
+  },
+): LayerSpec[] {
+  return [
+    // A flat near-black cover seals the whole frame at the peak, so the vivid
+    // motif reads at full contrast against it (no colour clash).
+    shape("Cover", { x: -960, y: -1140, width: 3840, height: 3360 }, {
+      shape: o.coverShape ?? "ellipse",
       fill: "@background",
-      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 120 } },
-      animation: stSweep("right"),
+      animation: stScale(80, 1.05),
     }),
-    flag("Flag cover", STINGER_FULL, {
+    // A soft pool of the theme colour behind the motif for depth.
+    shape("Halo", { x: 460, y: 40, width: 1000, height: 1000 }, {
+      shape: "ellipse",
+      fill: o.cover ?? "@primary",
+      opacity: 0.6,
+      effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
+      animation: stScale(20, 1.8),
+    }),
+    // A clear, glowing emblem centred on the dark cover — reads as a shape, not
+    // a colour field. It still fills enough to feel like a full-screen hit.
+    shape("Motif", { x: 660, y: 240, width: 600, height: 600 }, {
+      shape: o.motif,
+      fill: o.motifFill ?? "@accent",
+      effects: {
+        glow: { enabled: true, color: "@glow", strength: 60 },
+        border: { enabled: true, color: "@text", width: 4, radius: 0 },
+      },
+      animation: stScale(0, o.grow ?? 1.7),
+    }),
+    ...(o.decor
+      ? [particles("Decor", { kind: o.decor, count: 16, size: 7, speed: 1, color: o.decorColor ?? "@accent", opacity: 0.85, animation: stFlash() })]
+      : []),
+    ...stingerName(f, dy, o.plate ?? true),
+  ];
+}
+
+const STINGER_FORMS: Record<StingerKind, (f: FamilyStyle, dy: number) => LayerSpec[]> = {
+  // A pale ghost swells up over the dark frame, then shrinks away.
+  veil: (f, dy) => stingerZoom(f, dy, { motif: "ghost", motifFill: "#EDEAF7", cover: "@primary", grow: 2.2, decor: "bats", decorColor: "@secondary" }),
+  // A tech hexagon punches in.
+  shards: (f, dy) => stingerZoom(f, dy, { motif: "hexagon", motifFill: "@accent", cover: "@primary", coverShape: "rect", grow: 4, decor: "embers" }),
+  // A glitched diamond slams to full then clears.
+  glitch: (f, dy) => stingerZoom(f, dy, { motif: "diamond", motifFill: "@accent", cover: "@primary", coverShape: "rect", grow: 4.4, decor: "dots", decorColor: "@glow" }),
+  // Pride: the flag floods the frame with a heart bursting over it.
+  ribbon: (f, dy) => [
+    flag("Flag cover", { x: -960, y: -1140, width: 3840, height: 3360 }, {
       stackDirection: "vertical",
       cornerRadius: 0,
-      rotation: a,
-      animation: stSweep("right", 60),
+      animation: stScale(60, 1.05),
     }),
-    particles("Decor — Confetti", { kind: "confetti", count: 44, size: 6, speed: 1, color: "@accent", animation: stFlash() }),
+    shape("Heart", { x: 660, y: 240, width: 600, height: 600 }, {
+      shape: "heart",
+      fill: "#FFFFFF",
+      effects: { glow: { enabled: true, color: "@glow", strength: 44 }, border: { enabled: true, color: "@accent", width: 5, radius: 0 } },
+      animation: stScale(0, 2),
+    }),
+    particles("Decor — Confetti", { kind: "confetti", count: 40, size: 6, speed: 1, color: "@accent", animation: stFlash() }),
     ...stingerName(f, dy, true),
   ],
-
-  // Crystal: a cover panel wipes down while gem facets bloom and a refraction
-  // sliver streaks across.
-  prism: (f, dy, a) => [
-    shape("Cover", STINGER_FULL, {
-      fill: "@primary",
-      rotation: a,
-      effects: { gradient: { enabled: true, from: "@primary", to: "@background", angle: a + 60 } },
-      animation: stSweep("down"),
-    }),
-    shape("Facet A", { x: 260, y: 90, width: 900, height: 900 }, {
-      shape: "gem",
-      fill: "@accent",
-      opacity: 0.6,
-      rotation: a + 12,
-      effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
-      animation: stScale(60, 1.1),
-    }),
-    shape("Facet B", { x: 900, y: 200, width: 820, height: 820 }, {
-      shape: "gem",
-      fill: "@secondary",
-      opacity: 0.55,
-      rotation: a - 8,
-      animation: stScale(140, 1),
-    }),
-    shape("Refraction", { x: 900, y: -540, width: 120, height: 2160 }, {
-      fill: "@accent+20",
-      opacity: 0.8,
-      rotation: a + 18,
-      effects: { glow: { enabled: true, color: "@glow", strength: 40 } },
-      animation: stSweep("right", 120),
-    }),
-    particles("Decor — Sparkle", { kind: "stars", count: 30, size: 3, speed: 0.3, color: "@accent", opacity: 0.7, animation: stFlash() }),
-    ...stingerName(f, dy),
-  ],
-
-  // Riso columns rise and fall like venetian slats to cover, then clear.
-  bars: (f, dy, a) =>
-    [
-      ...[0, 1, 2, 3, 4, 5].map((i) =>
-        shape(`Column ${i + 1}`, { x: -60 + i * 340, y: -520, width: 344, height: 2120 }, {
-          fill: i % 3 === 0 ? "@accent" : i % 3 === 1 ? "@surface" : "@secondary",
-          opacity: i % 3 === 1 ? 1 : 0.9,
-          rotation: a,
-          animation: stSweep(i % 2 ? "down" : "up", i * 50),
-        }),
-      ),
-      particles("Decor — Halftone", { kind: "dots", count: 70, size: 3, speed: 0, color: "@accent", opacity: 0.25, animation: stFlash() }),
-      ...stingerName(f, dy, true),
-    ],
-
-  // Energy: a radial field blooms to full cover as rays fan out from a hot core.
-  burst: (f, dy) =>
-    [
-      shape("Cover", { x: -440, y: -860, width: 2800, height: 2800 }, {
-        shape: "ellipse",
-        fill: "@primary",
-        effects: { gradient: { enabled: true, from: "@accent", to: "@primary", angle: 90 } },
-        animation: stScale(0, 1.05),
-      }),
-      ...Array.from({ length: 12 }, (_, i) =>
-        shape(`Ray ${i + 1}`, { x: 940, y: -700, width: 40, height: 2480 }, {
-          fill: i % 2 ? "@accent" : "@secondary",
-          opacity: 0.6,
-          rotation: i * 15,
-          effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
-          animation: stFlash(i * 10),
-        }),
-      ),
-      shape("Core", { x: 760, y: 340, width: 400, height: 400 }, {
-        shape: "burst",
-        fill: "@accent",
-        effects: { glow: { enabled: true, color: "@glow", strength: 60 } },
-        animation: stFlash(),
-      }),
-      particles("Decor — Embers", { kind: "embers", count: 20, size: 2, speed: 0.7, color: "@accent", opacity: 0.6, animation: stFlash() }),
-      ...stingerName(f, dy, true),
-    ],
-
-  // Liquid floods to full cover then drains — blobs bloom over it.
-  liquid: (f, dy) => [
-    shape("Cover", { x: -440, y: -860, width: 2800, height: 2800 }, {
-      shape: "ellipse",
-      fill: "@accent",
-      effects: { gradient: { enabled: true, from: "@accent", to: "@primary", angle: 120 } },
-      animation: stScale(0, 1.05),
-    }),
-    shape("Blob B", { x: 300, y: -300, width: 1500, height: 1500 }, {
-      shape: "ellipse",
-      fill: "@secondary",
-      opacity: 0.6,
-      effects: { glow: { enabled: true, color: "@glow", strength: 40 } },
-      animation: stScale(80, 1),
-    }),
-    shape("Blob C", { x: 1000, y: 300, width: 1200, height: 1200 }, {
-      shape: "ellipse",
-      fill: "@accent+20",
-      opacity: 0.5,
-      animation: stScale(160, 0.9),
-    }),
-    particles("Decor — Bubbles", { kind: "bubbles", count: 20, size: 6, speed: 0.6, color: "@accent", opacity: 0.6, animation: stFlash() }),
-    ...stingerName(f, dy, true),
-  ],
-
-  // Silk: a cover sweeps through while glowing bands drift across.
-  wave: (f, dy) =>
-    [
-      shape("Cover", STINGER_FULL, {
-        fill: "@primary",
-        effects: { gradient: { enabled: true, from: "@primary", to: "@background", angle: 160 } },
-        animation: stSweep("right"),
-      }),
-      ...[0, 1, 2].map((i) =>
-        shape(`Wave ${i + 1}`, { x: -520, y: 120 + i * 320, width: 2960, height: 460 }, {
-          shape: "ellipse",
-          fill: i === 1 ? "@secondary" : "@accent",
-          opacity: 0.5 - i * 0.06,
-          effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
-          animation: stSweep(i % 2 ? "left" : "right", 60 + i * 80),
-        }),
-      ),
-      particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.2, color: "@accent", opacity: 0.7, animation: stFlash() }),
-      ...stingerName(f, dy),
-    ],
-
-  // Soft bloom: a circle irises open to full cover, then closes.
-  iris: (f, dy) => [
-    shape("Cover", { x: -440, y: -860, width: 2800, height: 2800 }, {
-      shape: "ellipse",
-      fill: "@primary",
-      effects: { gradient: { enabled: true, from: "@accent", to: "@primary", angle: 90 } },
-      animation: stScale(0, 1.05),
-    }),
-    shape("Iris ring", { x: 360, y: -60, width: 1200, height: 1200 }, {
-      shape: "ellipse",
-      fill: "transparent",
-      opacity: 0.9,
-      effects: {
-        border: { enabled: true, color: "@accent", width: 4, radius: 600 },
-        glow: { enabled: true, color: "@glow", strength: 24 },
-      },
-      animation: stScale(90, 1),
-    }),
-    particles("Decor — Bokeh", { kind: "bokeh", count: 16, size: 8, speed: 0.4, color: "@glow", opacity: 0.6, animation: stFlash() }),
-    ...stingerName(f, dy, true),
-  ],
+  // A cut gem blooms to cover.
+  prism: (f, dy) => stingerZoom(f, dy, { motif: "gem", motifFill: "@accent", cover: "@primary", grow: 4, decor: "stars" }),
+  // A riso ink blot floods.
+  bars: (f, dy) => stingerZoom(f, dy, { motif: "ellipse", motifFill: "@accent", cover: "@secondary", grow: 4.2, decor: "dots" }),
+  // A lightning bolt cracks in and blows out.
+  burst: (f, dy) => stingerZoom(f, dy, { motif: "bolt", motifFill: "@accent", cover: "@primary", grow: 4.4, decor: "embers" }),
+  // An ink drop floods up and drains.
+  liquid: (f, dy) => stingerZoom(f, dy, { motif: "ellipse", motifFill: "@accent", cover: "@accent", grow: 4.4, decor: "bubbles" }),
+  // A star blooms across a silk night.
+  wave: (f, dy) => stingerZoom(f, dy, { motif: "star", motifFill: "@accent", cover: "@primary", grow: 4, decor: "stars" }),
+  // A moon irises up to cover, then closes.
+  iris: (f, dy) => stingerZoom(f, dy, { motif: "moon", motifFill: "@accent", cover: "@primary", grow: 4, decor: "bokeh", decorColor: "@glow" }),
 };
 
 /** Which form each family wears, and the tilt that keeps same-form families
@@ -2237,8 +2073,8 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
 
 /** Build a family's stinger transition screen in its own identity. */
 function stingerScreen(f: FamilyStyle, dy: number): LayerSpec[] {
-  const [kind, angle] = FAMILY_STINGER[f.id] ?? ["veil", 0];
-  return STINGER_FORMS[kind](f, dy, angle);
+  const [kind] = FAMILY_STINGER[f.id] ?? ["veil", 0];
+  return STINGER_FORMS[kind](f, dy);
 }
 
 function familyScreens(f: FamilyStyle): BaseTemplate[] {
@@ -5158,39 +4994,40 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
 
   {
     id: "gothic-stinger",
-    name: "Stinger — Gothic Veil",
+    name: "Stinger — Gothic Ghost",
     category: "Stinger Transitions",
     tags: ["Fantasy", "Dark"],
     collection: "gothic",
+    // A ghost rushes at the camera: it swells from nothing to fill the frame at
+    // the mid peak (the OBS transition point), then shrinks away to reveal the
+    // next scene. A dark cover scales behind it to seal the corners.
     layers: [
-      // Two dark curtains converge from opposite sides to full cover at the mid
-      // peak (the OBS transition point), then part again to reveal — a moon and
-      // bats flash at the cover.
-      shape("Curtain L", { x: -520, y: -520, width: 2960, height: 2120 }, {
-        fill: "@surface",
-        rotation: 10,
-        effects: { gradient: { enabled: true, from: "@surface", to: "@background", angle: 90 } },
-        animation: anim("sweep", { direction: "right", duration: 1160, easing: "linear" }),
+      shape("Cover", { x: -960, y: -1140, width: 3840, height: 3360 }, {
+        shape: "ellipse",
+        fill: "@background",
+        animation: anim("sweepScale", { duration: 1160, delay: 80, intensity: 1.05, easing: "linear" }),
       }),
-      shape("Curtain R", { x: -520, y: -520, width: 2960, height: 2120 }, {
+      shape("Halo", { x: 460, y: 40, width: 1000, height: 1000 }, {
+        shape: "ellipse",
         fill: "@primary",
-        rotation: 10,
-        opacity: 0.98,
-        effects: {
-          gradient: { enabled: true, from: "@primary", to: "@background", angle: 90 },
-          glow: { enabled: true, color: "@glow", strength: 18 },
-        },
-        animation: anim("sweep", { direction: "left", duration: 1160, easing: "linear" }),
-      }),
-      shape("Decor — Moon", { x: 810, y: 190, width: 300, height: 300 }, {
-        shape: "moon",
-        moonPhase: 1,
-        fill: "@accent",
+        opacity: 0.6,
         effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
+        animation: anim("sweepScale", { duration: 1160, delay: 20, intensity: 1.8, easing: "linear" }),
+      }),
+      shape("Ghost", { x: 660, y: 240, width: 600, height: 600 }, {
+        shape: "ghost",
+        fill: "#EDEAF7",
+        effects: { glow: { enabled: true, color: "@glow", strength: 70 } },
+        animation: anim("sweepScale", { duration: 1160, intensity: 2.2, easing: "linear" }),
+      }),
+      particles("Decor — Bats", { kind: "bats", count: 16, size: 7, speed: 1.1, color: "@secondary", opacity: 0.9, animation: anim("flash", { duration: 1160, easing: "linear" }) }),
+      shape("Name plate", { x: 360, y: 462, width: 1200, height: 150 }, {
+        fill: "@background",
+        opacity: 0.6,
+        cornerRadius: 16,
         animation: anim("flash", { duration: 1160, easing: "linear" }),
       }),
-      particles("Decor — Bats", { kind: "bats", count: 14, size: 7, speed: 1.1, color: "@secondary", opacity: 0.9, animation: anim("flash", { duration: 1160, easing: "linear" }) }),
-      text("Channel name", { x: 210, y: 560, width: 1500, height: 130 }, "{{CHANNEL_NAME}}", {
+      text("Channel name", { x: 210, y: 470, width: 1500, height: 130 }, "{{CHANNEL_NAME}}", {
         fontFamily: "UnifrakturMaguntia",
         fontSize: 96,
         fontWeight: 400,
@@ -5833,23 +5670,23 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
 
   {
     id: "pride-stinger",
-    name: "Stinger — Pride Ribbon",
+    name: "Stinger — Pride Heart",
     category: "Stinger Transitions",
     tags: ["Cozy", "RGB"],
     collection: "pride",
-    // The flag itself is the cover: a dark ground and the full-bleed flag sweep
-    // through to 100% cover at the mid peak, then off again to reveal.
+    // The flag floods the frame from nothing to full cover at the mid peak while
+    // a heart bursts over it, then both recede to reveal the next scene.
     layers: [
-      shape("Ground", { x: -520, y: -520, width: 2960, height: 2120 }, {
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 120 } },
-        animation: anim("sweep", { direction: "right", duration: 1160, easing: "linear" }),
-      }),
-      flag("Flag cover", { x: -520, y: -520, width: 2960, height: 2120 }, {
+      flag("Flag cover", { x: -960, y: -1140, width: 3840, height: 3360 }, {
         stackDirection: "vertical",
         cornerRadius: 0,
-        rotation: -8,
-        animation: anim("sweep", { direction: "right", duration: 1160, delay: 60, easing: "linear" }),
+        animation: anim("sweepScale", { duration: 1160, delay: 60, intensity: 1.05, easing: "linear" }),
+      }),
+      shape("Heart", { x: 660, y: 240, width: 600, height: 600 }, {
+        shape: "heart",
+        fill: "#FFFFFF",
+        effects: { glow: { enabled: true, color: "@glow", strength: 44 }, border: { enabled: true, color: "@accent", width: 5, radius: 0 } },
+        animation: anim("sweepScale", { duration: 1160, intensity: 2, easing: "linear" }),
       }),
       particles("Decor — Confetti", { kind: "confetti", count: 46, size: 6, speed: 1, color: "@accent", animation: anim("flash", { duration: 1160, easing: "linear" }) }),
       shape("Name plate", { x: 360, y: 462, width: 1200, height: 150 }, {
