@@ -174,9 +174,9 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/templates">
+            <Link href="/">
               <Button variant="primary">
-                {configured ? t("Browse templates") : t("Continue to templates")}
+                {configured ? t("Browse designs") : t("Continue to designs")}
                 <ArrowRight className="size-4" />
               </Button>
             </Link>

@@ -44,8 +44,8 @@ export default function ProjectsPage() {
               <Star className={cx("size-3.5", onlyFavorites && "fill-current")} />
               {t("Favorites")}
             </Button>
-            <Link href="/templates">
-              <Button variant="primary">{t("New from template")}</Button>
+            <Link href="/">
+              <Button variant="primary">{t("New from a design")}</Button>
             </Link>
           </div>
         </div>
@@ -55,8 +55,8 @@ export default function ProjectsPage() {
             <p className="text-sm text-zinc-400">
               {projects.length === 0 ? t("No projects yet.") : t("No favorites yet.")}
             </p>
-            <Link href="/templates">
-              <Button className="mt-4">{t("Browse templates")}</Button>
+            <Link href="/">
+              <Button className="mt-4">{t("Browse designs")}</Button>
             </Link>
           </div>
         ) : (

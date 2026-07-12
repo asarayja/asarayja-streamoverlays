@@ -613,6 +613,11 @@ export const NO: Record<string, string> = {
   "Star": "Stjerne",
   "Start from scratch": "Start fra bunnen av",
   "Start from a starter": "Start fra en mal",
+  "Start something new": "Start noe nytt",
+  "Build from a blank canvas, open a ready scaffold — a webcam frame, panels, a chat box — or import a design file.": "Bygg fra et blankt lerret, åpne et ferdig oppsett — en webcam-ramme, paneler, en chatboks — eller importer en design-fil.",
+  "Or browse a finished look": "Eller bla gjennom et ferdig design",
+  "New from a design": "Nytt fra et design",
+  "Continue to designs": "Fortsett til design",
   "Blank canvas": "Tomt lerret",
   "Scenes like Starting Soon are quick to build on a blank canvas. For the fiddly pieces — a webcam frame, panels, a chat box — open a neutral scaffold and make it yours.":
     "Scener som Starting Soon er raske å bygge på et tomt lerret. For de pirkete delene — en webcam-ramme, paneler, en chat-boks — åpne et nøytralt utgangspunkt og gjør det til ditt.",

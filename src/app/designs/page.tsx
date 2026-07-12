@@ -1,21 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import Link from "next/link";
-import { LayoutGrid, Palette as PaletteIcon, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { LayoutGrid, Palette as PaletteIcon, PenTool, Search, Upload } from "lucide-react";
 import { DESIGNS } from "@/lib/designs";
 import type { Design } from "@/lib/designs";
+import { STARTERS } from "@/data/templates";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { TopNav } from "@/components/site/TopNav";
 import { MyDesigns } from "@/components/gallery/MyDesigns";
-import { Chip, TextInput, cx } from "@/components/ui";
+import { StarterCard } from "@/components/gallery/StarterCard";
+import { Button, Chip, TextInput, cx } from "@/components/ui";
 import { getPalette } from "@/data/palettes";
 import { useElementSize, useInView, useOnScreen, usePrefersReducedMotion } from "@/lib/useElementSize";
 import { useClock } from "@/lib/useClock";
 import { isStingerMotion, previewClock, settledTime, timelineDuration } from "@/lib/animation";
 import { useRenderProfile } from "@/store/profile";
+import { useProjectsStore } from "@/store/projects";
 import { useT } from "@/lib/i18n";
-import type { Collection } from "@/lib/types";
+import type { Collection, Template } from "@/lib/types";
 
 const SETTLED = 6000;
 
@@ -28,9 +32,41 @@ const FILTERS: Array<{ id: Collection | "all"; label: string }> = [
 
 export default function DesignsPage() {
   const t = useT();
+  const router = useRouter();
   const profile = useRenderProfile();
+  const createDraft = useProjectsStore((s) => s.createDraft);
+  const importDesign = useProjectsStore((s) => s.importDesign);
+  const importRef = useRef<HTMLInputElement>(null);
   const [collection, setCollection] = useState<Collection | "all">("all");
   const [query, setQuery] = useState("");
+
+  const openBlank = () => {
+    const project = createDraft("blank");
+    if (project) router.push(`/editor?id=${project.id}`);
+  };
+
+  // Starters are one-off scaffolds, so they open as a single draft.
+  const openStarter = (template: Template) => {
+    const project = createDraft(template.id);
+    if (project) router.push(`/editor?id=${project.id}`);
+  };
+
+  const onImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (parsed?.kind !== "asarayja-design") {
+        alert(t("That isn't an Asarayja design file."));
+        return;
+      }
+      const cover = importDesign(parsed);
+      if (cover) router.push(`/editor?id=${cover.id}`);
+    } catch {
+      alert(t("Could not read that design file."));
+    }
+  };
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -65,6 +101,47 @@ export default function DesignsPage() {
 
         <MyDesigns />
 
+        {/* Build a completely new overlay: a blank canvas, a ready scaffold for
+            the fiddly pieces, or an imported design file. */}
+        <section className="mb-10">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-200">{t("Start something new")}</h2>
+              <p className="mt-0.5 text-xs text-zinc-500">
+                {t("Build from a blank canvas, open a ready scaffold — a webcam frame, panels, a chat box — or import a design file.")}
+              </p>
+            </div>
+            <input
+              ref={importRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={onImportFile}
+            />
+            <Button
+              onClick={() => importRef.current?.click()}
+              title={t("Import a design file (.asarayja-design.json)")}
+              className="shrink-0"
+            >
+              <Upload className="size-3.5" />
+              {t("Import design")}
+            </Button>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <button
+              onClick={openBlank}
+              className="group flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 text-zinc-400 transition-colors hover:border-brand-400/50 hover:text-brand-300"
+            >
+              <PenTool className="size-5" />
+              <span className="text-xs font-semibold">{t("Start from scratch")}</span>
+            </button>
+            {STARTERS.map((s) => (
+              <StarterCard key={s.id} template={s} profile={profile} onOpen={openStarter} />
+            ))}
+          </div>
+        </section>
+
+        <h2 className="mb-3 text-center text-sm font-semibold text-zinc-200">{t("Or browse a finished look")}</h2>
         <div className="mx-auto mb-5 max-w-md">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />

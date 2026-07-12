@@ -255,8 +255,8 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         <div className="text-center">
           <h1 className="text-lg font-semibold text-white">{t("Project not found")}</h1>
           <p className="mt-1 text-sm text-zinc-500">{t("It may have been deleted from this browser.")}</p>
-          <Link href="/templates">
-            <Button className="mt-5">{t("Back to templates")}</Button>
+          <Link href="/">
+            <Button className="mt-5">{t("Back to designs")}</Button>
           </Link>
         </div>
       </div>

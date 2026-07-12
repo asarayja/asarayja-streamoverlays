@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderOpen, LayoutGrid, Shapes, UserRound, Zap } from "lucide-react";
+import { FolderOpen, Shapes, UserRound, Zap } from "lucide-react";
 import { cx } from "@/components/ui";
 import { useProfileStore } from "@/store/profile";
 import { useT } from "@/lib/i18n";
 import { LangSwitch } from "@/components/site/LangSwitch";
 
-// The design gallery is the landing page (/); templates live at /templates.
+// The design gallery is the landing page (/) and the single catalog: browse by
+// look, open a design to see every screen, create from the "new" section there.
 const LINKS = [
   { href: "/", label: "Designs", icon: Shapes, match: ["/", "/designs"] },
-  { href: "/templates", label: "Templates", icon: LayoutGrid, match: ["/templates"] },
   { href: "/projects", label: "Projects", icon: FolderOpen, match: ["/projects"] },
   { href: "/profile", label: "Channel profile", icon: UserRound, match: ["/profile"] },
 ];
