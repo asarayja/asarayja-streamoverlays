@@ -5,7 +5,7 @@ import { Sparkles } from "lucide-react";
 import { getPalette } from "@/data/palettes";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { useClock } from "@/lib/useClock";
-import { settledTime, timelineDuration } from "@/lib/animation";
+import { isContinuous, settledTime, timelineDuration } from "@/lib/animation";
 import { useElementSize, useInView, useOnScreen, usePrefersReducedMotion } from "@/lib/useElementSize";
 import { cx } from "@/components/ui";
 import { useT } from "@/lib/i18n";
@@ -35,14 +35,17 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
 
   // Autoplay the motion so people can see there IS animation without hovering.
   // Only while the card is actually on screen (or hovered), so a long gallery
-  // isn't driving dozens of clocks; honours prefers-reduced-motion. The clock
-  // loops over the timeline plus a short settle, so entrance and stinger
-  // animations replay instead of playing once and freezing.
+  // isn't driving dozens of clocks; honours prefers-reduced-motion.
   const play = hovered || (onScreen && !reduceMotion);
-  const loopAfter = useMemo(
-    () => timelineDuration(template.layers.map((l) => l.animation)) + 650,
-    [template.layers],
-  );
+  // Scenes with continuous ambient motion (glow, drifting particles) run on an
+  // unbounded clock: the entrance plays once, then the ambient loops forever
+  // and smoothly — no jarring restart. Pure one-shots (stingers) have nothing
+  // continuous, so they loop over their timeline plus a short settle to replay.
+  const loopAfter = useMemo(() => {
+    const anims = template.layers.map((l) => l.animation);
+    if (anims.some((a) => isContinuous(a.preset))) return 0;
+    return timelineDuration(anims) + 650;
+  }, [template.layers]);
   const clock = useClock(play, loopAfter);
   const time = play ? clock : settledTime(template.category, SETTLED);
 

@@ -30,7 +30,7 @@ function groupKeyOf(t: Template): string {
   return t.family ?? `core:${t.name}`;
 }
 
-const PRETTY: Record<string, string> = { gothic: "Gothic", pride: "Pride" };
+const PRETTY: Record<string, string> = { gothic: "Midnight Cathedral", pride: "Pride" };
 
 function displayName(t: Template): string {
   if (!t.family) return t.name;
