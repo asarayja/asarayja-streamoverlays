@@ -238,24 +238,27 @@ function hexMeshPath(c: Konva.Context, w: number, h: number) {
   }
 }
 
-/** A cartoon ghost: domed head over straight sides, a scalloped hem, drawn to
-    fill the box (square boxes read best). */
+/** Metrics for the sheeted ghost, matching the `ghosts` particle sprite so the
+    stinger ghost is the same character, just bigger. */
+function ghostMetrics(w: number, h: number) {
+  const g = Math.min(w, h) * 0.44;
+  return { g, cx: w / 2, cy: h * 0.44, hem: h * 0.44 + g * 1.15 };
+}
+
+/** A sheeted ghost — domed head, straight shoulders, a scalloped hem — drawn to
+    fill the box. Same silhouette as the drifting `ghosts` particle. */
 function ghostPath(c: Konva.Context, w: number, h: number) {
-  const r = w / 2;
-  const shoulder = Math.max(r, h * 0.6); // where the dome meets the straight sides
+  const { g, cx, cy, hem } = ghostMetrics(w, h);
   c.beginPath();
-  c.moveTo(0, shoulder);
-  c.lineTo(0, r);
-  c.arc(r, r, r, Math.PI, 0, false); // dome over the top (clockwise, y-down canvas)
-  c.lineTo(w, shoulder);
-  // Scalloped hem back to the left — downward bumps.
-  const bumps = 4;
-  const bw = w / bumps;
-  for (let i = 0; i < bumps; i++) {
-    const x1 = w - (i + 1) * bw;
-    const cx = w - i * bw - bw / 2;
-    c.quadraticCurveTo(cx, h, x1, shoulder);
+  c.arc(cx, cy, g, Math.PI, 0, false); // dome over the top
+  c.lineTo(cx + g, hem);
+  for (let k = 0; k < 4; k++) {
+    const x0 = cx + g - (k * 2 * g) / 4;
+    const x1 = cx + g - ((k + 1) * 2 * g) / 4;
+    const mid = (x0 + x1) / 2;
+    c.quadraticCurveTo(mid, hem + (k % 2 === 0 ? g * 0.42 : -g * 0.12), x1, hem);
   }
+  c.lineTo(cx - g, cy);
   c.closePath();
 }
 
@@ -461,21 +464,23 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
   }
 
   if (layer.shape === "ghost") {
+    const { g, cx, cy } = ghostMetrics(w, h);
+    const eye = g * 0.16;
     return (
       <KonvaShape
         {...paint}
         sceneFunc={(c, shape) => {
           ghostPath(c, w, h);
           c.fillStrokeShape(shape);
-          // Two dark eyes + a small mouth, so a giant ghost still reads as one.
-          c.setAttr("fillStyle", "rgba(16,12,24,0.82)");
-          for (const ex of [w * 0.36, w * 0.64]) {
+          // Two eyes + a mouth at the same proportions as the ghost sprite.
+          c.setAttr("fillStyle", "rgba(12,10,20,0.8)");
+          for (const dx of [-g * 0.32, g * 0.32]) {
             c.beginPath();
-            c.arc(ex, h * 0.42, w * 0.06, 0, Math.PI * 2, false);
+            c.arc(cx + dx, cy - g * 0.1, eye, 0, Math.PI * 2, false);
             c.fill();
           }
           c.beginPath();
-          c.arc(w * 0.5, h * 0.58, w * 0.045, 0, Math.PI * 2, false);
+          c.ellipse(cx, cy + g * 0.42, eye * 0.7, eye, 0, 0, Math.PI * 2, false);
           c.fill();
         }}
       />

@@ -1954,7 +1954,7 @@ function stingerZoom(o: {
 
 const STINGER_FORMS: Record<StingerKind, (f: FamilyStyle, dy: number) => LayerSpec[]> = {
   // A themed ghost swells in, whole silhouette on show, then vanishes.
-  veil: () => stingerZoom({ motif: "ghost", motifFill: "@accent", borderColor: "@text", grow: 2.4, glow: 40, decor: "bats", decorColor: "@secondary" }),
+  veil: () => stingerZoom({ motif: "ghost", motifFill: "@accent", borderColor: "@text", grow: 2.4, glow: 40 }),
   // Half cover: a tech hexagon punches in.
   shards: () => stingerZoom({ motif: "hexagon", motifFill: "@accent", grow: 1.8, glow: 44, decor: "embers" }),
   // Half cover: a glitched diamond slams in.
@@ -4963,7 +4963,6 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
         },
         animation: anim("sweepScale", { duration: 1160, intensity: 2.4, easing: "linear" }),
       }),
-      particles("Decor — Bats", { kind: "bats", count: 16, size: 7, speed: 1.1, color: "@secondary", opacity: 0.9, animation: anim("flash", { duration: 1160, easing: "linear" }) }),
     ],
   },
 ];
