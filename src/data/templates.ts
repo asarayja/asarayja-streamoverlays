@@ -5303,65 +5303,6 @@ const ART_DECO: FamilyStyle = {
   contentOffsetY: 0,
 };
 
-/** Stained Glass: cathedral glass — jewel panels leaded with dark cames, lit
-    from behind, with an engraved serif. Rich and ornate; colour follows the
-    palette. */
-const STAINED_GLASS: FamilyStyle = {
-  id: "stainedglass",
-  name: "Stained Glass",
-  tags: ["Fantasy", "RGB", "Dark"],
-  display: "Cinzel",
-  displayWeight: 600,
-  displayTracking: 3,
-  displayTransform: "uppercase",
-  body: "EB Garamond",
-  radius: 4,
-  frameRadius: 6,
-  corners: false,
-  strokeWidth: 3,
-  frameEffects: {
-    border: { enabled: true, color: "@background", width: 4, radius: 6 },
-    glow: { enabled: true, color: "@glow", strength: 20 },
-  },
-  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 }, shadow: { enabled: true, color: "@shadow", blur: 12, offsetY: 3, opacity: 0.5 } },
-  plateShape: "rect",
-  scene: () => {
-    // Jewel panels leaded with a thick dark came. Deep tones at the centre keep
-    // the copy legible; brighter jewels ring the edges.
-    const came = { border: { enabled: true, color: "@background", width: 6, radius: 0 }, glow: { enabled: true, color: "@glow", strength: 10 } };
-    const panels: Array<{ x: number; y: number; w: number; h: number; s: ShapeKind; c: string; o: number; r?: number }> = [
-      { x: -40, y: -40, w: 520, h: 620, s: "hexagon", c: "@primary", o: 0.55 },
-      { x: 440, y: -60, w: 520, h: 420, s: "triangle", c: "@secondary", o: 0.5, r: 180 },
-      { x: 1000, y: -40, w: 520, h: 560, s: "hexagon", c: "@accent", o: 0.5 },
-      { x: 1440, y: -20, w: 560, h: 640, s: "triangle", c: "@primary", o: 0.5 },
-      { x: -60, y: 560, w: 560, h: 580, s: "triangle", c: "@accent", o: 0.5, r: 180 },
-      { x: 420, y: 640, w: 560, h: 520, s: "hexagon", c: "@primary", o: 0.5 },
-      { x: 1020, y: 620, w: 540, h: 540, s: "triangle", c: "@secondary", o: 0.5 },
-      { x: 1480, y: 560, w: 520, h: 580, s: "hexagon", c: "@accent", o: 0.5 },
-    ];
-    return [
-      shape("Backdrop", FULL, { background: true, fill: "@background" }),
-      // Backlight blooming through the glass.
-      shape("Backlight", { x: 360, y: 240, width: 1200, height: 640 }, {
-        shape: "ellipse", fill: "@glow", opacity: 0.28, effects: { blur: { enabled: true, amount: 120 } },
-        animation: anim("pulse", { duration: 6000, intensity: 0.5 }),
-      }),
-      ...panels.map((p, i) =>
-        shape(`Panel ${i}`, { x: p.x, y: p.y, width: p.w, height: p.h }, {
-          shape: p.s,
-          fill: p.c,
-          opacity: p.o,
-          rotation: p.r ?? 0,
-          effects: came,
-          animation: anim("shimmer", { duration: 7000 + i * 400 }),
-        }),
-      ),
-    ];
-  },
-  overlayDecor: () => [],
-  contentOffsetY: 0,
-};
-
 /** Papercut: layered paper craft — stacked cut-paper hills with soft drop
     shadows for depth and a paper sun, warm and tactile. Reads in light or
     dark; colour follows the palette. */
@@ -5407,6 +5348,36 @@ const PAPERCUT: FamilyStyle = {
   },
   overlayDecor: () => [],
   contentOffsetY: 0,
+};
+
+/** Papercut Pride: the layered paper hills in the flag's colours — the flag
+    laid as wavy cut-paper bands under a paper sun. Expands across the pride
+    palettes so every flag gets a papercut. */
+const PAPERCUT_PRIDE: FamilyStyle = {
+  ...PAPERCUT,
+  id: "papercutpride",
+  name: "Papercut Pride",
+  collection: "pride",
+  tags: ["RGB", "Cozy", "Minimal"],
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@surface" }),
+    shape("Sun", { x: 1360, y: 150, width: 280, height: 280 }, {
+      shape: "ellipse",
+      fill: "@text",
+      opacity: 0.85,
+      effects: { shadow: { enabled: true, color: "@shadow", blur: 20, offsetY: 8, opacity: 0.25 } },
+      animation: anim("float", { duration: 9000, intensity: 0.3 }),
+    }),
+    // The flag laid as wavy cut-paper hills (buildVariant fills the stripes).
+    shape("Flag hills", { x: -160, y: 540, width: 2240, height: 620 }, {
+      shape: "flagwave",
+      facetColors: PRIDE_RAIN_FLAG,
+      cornerRadius: 44,
+      effects: { shadow: { enabled: true, color: "@shadow", blur: 26, offsetY: -14, opacity: 0.3 } },
+      animation: anim("sway", { duration: 10000, intensity: 0.3 }),
+    }),
+  ],
+  overlayDecor: () => [],
 };
 
 /** Pulse: a music-visualiser — a row of glowing equaliser bars dancing along
@@ -5569,7 +5540,6 @@ const NEW_FAMILIES: FamilyStyle[] = [
   SMOLDER,
   TERMINAL,
   ART_DECO,
-  STAINED_GLASS,
   PAPERCUT,
   PULSE,
   SAKURA,
@@ -6947,10 +6917,10 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
       if (layer.type === "particle" && layer.facetColors && palette.flag) {
         layer.facetColors = palette.flag;
       }
-      // A glass sheet / plasma waves take the palette's flag colours.
+      // A glass sheet / plasma waves / flag bands take the palette's flag colours.
       if (
         layer.type === "shape" &&
-        (layer.shape === "glasssheet" || layer.shape === "flagwaves") &&
+        (layer.shape === "glasssheet" || layer.shape === "flagwaves" || layer.shape === "flagwave") &&
         palette.flag
       ) {
         layer.facetColors = palette.flag;
@@ -6985,7 +6955,7 @@ export const TEMPLATES: Template[] = [
   ...expand(GENERATED_FAMILY_TEMPLATES, CORE_PALETTES),
   ...expand(GOTHIC_TEMPLATES, GOTHIC_PALETTES),
   ...expand(PRIDE_TEMPLATES, PRIDE_PALETTES),
-  ...expand([...familyScreens(RAIN_PRIDE), ...familyScreens(METEOR_PRIDE)], PRIDE_PALETTES),
+  ...expand([...familyScreens(RAIN_PRIDE), ...familyScreens(METEOR_PRIDE), ...familyScreens(PAPERCUT_PRIDE)], PRIDE_PALETTES),
   ...expand(PRISM_PRIDE_TEMPLATES, PRISM_PALETTES),
   ...ABSTRACT_TEMPLATES,
   ...CUSTOM_TEMPLATES,
