@@ -2008,6 +2008,7 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   cyberpill: ["glitch", 0],
   vanguard: ["shards", 0],
   vanguardglow: ["shards", 0],
+  vanguardwave: ["shards", 0],
   radar: ["iris", 0],
   contour: ["wave", 0],
   chevron: ["shards", 0],
@@ -4443,6 +4444,55 @@ const VANGUARD_GLOW: FamilyStyle = {
   overlayDecor: () => [...skewStrips("tl", true), ...skewStrips("br", true)],
 };
 
+/** The Vanguard strips as flowing waves: three flush parallel S-curve ribbons
+    (white / accent / white) crossing a corner, each casting a soft drop shadow
+    (or blooming, in the glow pack). Same two-corner, lean-toward-each-other. */
+function waveStrips(corner: "tl" | "br", glow = false): LayerSpec[] {
+  const angle = -30;
+  const rad = (angle * Math.PI) / 180;
+  const dx = Math.cos(rad);
+  const dy = Math.sin(rad);
+  const px = -dy;
+  const py = dx;
+  const bx = corner === "tl" ? 250 : 1670;
+  const by = corner === "tl" ? 180 : 900;
+  const dir = corner === "tl" ? 1 : -1;
+  const cols = ["@text", "@accent", "@text"];
+  const thick = 82;
+  const waveH = thick / 0.34; // the wave stroke is 0.34× the box height
+  const len = 2100;
+  const strips: LayerSpec[] = [];
+  for (let i = 0; i < cols.length; i++) {
+    const perp = (i * thick + thick / 2) * dir;
+    const cx = bx + px * perp;
+    const cy = by + py * perp;
+    strips.push(shape(`Wave ${corner} ${i}`, { x: cx - len / 2, y: cy - waveH / 2, width: len, height: waveH }, {
+      shape: "wave",
+      fill: cols[i],
+      rotation: angle,
+      // A clean edge sheen (strong in the glow pack, faint in the flat one) —
+      // the heavy drop shadow just muddied the waves.
+      effects: { glow: { enabled: true, color: glow ? cols[i] : "@glow", strength: glow ? 30 : 10 } },
+      animation: anim("glow", { duration: 3200, delay: i * 420, intensity: glow ? 1 : 0.7 }),
+    }));
+  }
+  return strips;
+}
+
+/** Vanguard Wave: the same charcoal broadcast look, but the corner strips flow
+    as waves instead of straight diagonals. */
+const VANGUARD_WAVE: FamilyStyle = {
+  ...VANGUARD,
+  id: "vanguardwave",
+  name: "Vanguard Wave",
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    ...waveStrips("tl"),
+    ...waveStrips("br"),
+  ],
+  overlayDecor: () => [...waveStrips("tl"), ...waveStrips("br")],
+};
+
 /** Concentric ring outlines centred on a corner, so only the in-frame quarter
     shows — radar arcs radiating from the corner. A staggered glow pulse sends a
     wave of light sweeping outward. */
@@ -4769,7 +4819,7 @@ const VANGUARD_PALETTES = [
   ...ABSTRACT_PALETTES.filter((p) => p.id.includes("vanguard")),
 ];
 const ABSTRACT_TEMPLATES: Template[] = [
-  ...expand([...familyScreens(VANGUARD), ...familyScreens(VANGUARD_GLOW)], VANGUARD_PALETTES),
+  ...expand([...familyScreens(VANGUARD), ...familyScreens(VANGUARD_GLOW), ...familyScreens(VANGUARD_WAVE)], VANGUARD_PALETTES),
   ...expand(familyScreens(RISO_CONCRETE), RISO_CONCRETE_PALETTES),
   ...expand([...familyScreens(AURORA_SILK), ...familyScreens(AURORA_SILK_NEON)], AURORA_SILK_PALETTES),
 ];
