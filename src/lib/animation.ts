@@ -365,6 +365,15 @@ function atProgress(anim: Animation, raw: number): AnimationSample {
  * or a stinger) then loops seamlessly — it eases in, rests, eases back out —
  * instead of hard-cutting from its end pose to its start.
  */
+/** The cover→reveal presets a stinger is built from. Only these should drive a
+    ping-pong preview loop; a normal scene plays its entrance once and lets its
+    ambient motion carry the loop, so headline text never blinks in and out. */
+const STINGER_PRESETS = new Set<Animation["preset"]>(["sweep", "sweepScale", "flash"]);
+
+export function isStingerMotion(anims: Animation[]): boolean {
+  return anims.some((a) => STINGER_PRESETS.has(a.preset));
+}
+
 export function previewClock(elapsed: number, period: number): number {
   if (period <= 0) return elapsed;
   const hold = 450;

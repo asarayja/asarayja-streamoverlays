@@ -3488,6 +3488,9 @@ const SILK: FamilyStyle = {
         gradientStroke: { enabled: true, from: "@primary", to: "@accent", angle: 90, width: 30 },
         glow: { enabled: true, color: "@glow", strength: 22 },
       },
+      // The silk drifts — a slow float and gentle sway so the ribbon reads as
+      // flowing fabric rather than a static band.
+      animation: anim("float", { duration: 6400, intensity: 1.1 }),
     }),
     shape("Silk — two", { x: -200, y: 520, width: 2320, height: 380 }, {
       shape: "wave",
@@ -3496,6 +3499,7 @@ const SILK: FamilyStyle = {
         gradientStroke: { enabled: true, from: "@secondary", to: "@accent", angle: 90, width: 30 },
         glow: { enabled: true, color: "@glow", strength: 18 },
       },
+      animation: anim("sway", { duration: 8200, intensity: 0.6, delay: 500 }),
     }),
     particles("Decor — Sparkle", { kind: "stars", count: 44, size: 2.4, speed: 0.15, color: "@accent", opacity: 0.7 }),
     particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 7, speed: 0.3, color: "@accent", opacity: 0.3 }),
@@ -4079,29 +4083,35 @@ const SPLASH: FamilyStyle = {
       effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 135 } },
     }),
     // Matte aerosol haze behind the paint.
-    shape("Spray — A", { x: 80, y: 60, width: 1000, height: 900 }, { shape: "paintSpray", fill: "@primary", opacity: 0.18 }),
-    shape("Spray — B", { x: 900, y: 280, width: 1000, height: 820 }, { shape: "paintSpray", fill: "@secondary", opacity: 0.16 }),
+    // The aerosol haze breathes; the splats bloom and pulse with the glow so
+    // the whole backdrop is alive rather than a frozen splatter.
+    shape("Spray — A", { x: 80, y: 60, width: 1000, height: 900 }, { shape: "paintSpray", fill: "@primary", opacity: 0.18, animation: anim("breathe", { duration: 6800 }) }),
+    shape("Spray — B", { x: 900, y: 280, width: 1000, height: 820 }, { shape: "paintSpray", fill: "@secondary", opacity: 0.16, animation: anim("breathe", { duration: 7600, delay: 600 }) }),
     // Four hard-edged paint splats hugging the corners, thin tendrils inward,
     // each blooming with the Plasma glow. Centre lane stays clear for the copy.
     shape("Splat A", { x: -40, y: -80, width: 860, height: 800 }, {
       shape: "paintSplat",
       fill: "@primary/85",
       effects: { glow: { enabled: true, color: "@primary", strength: 54 } },
+      animation: anim("pulse", { duration: 5200, intensity: 0.7 }),
     }),
     shape("Splat B", { x: 1120, y: 400, width: 900, height: 820 }, {
       shape: "paintSplat",
       fill: "@secondary/82",
       effects: { glow: { enabled: true, color: "@secondary", strength: 50 } },
+      animation: anim("pulse", { duration: 6000, intensity: 0.7, delay: 700 }),
     }),
     shape("Splat C", { x: 1360, y: -60, width: 560, height: 520 }, {
       shape: "paintSplat",
       fill: "@accent/85",
       effects: { glow: { enabled: true, color: "@accent", strength: 44 } },
+      animation: anim("pulse", { duration: 4600, intensity: 0.8, delay: 300 }),
     }),
     shape("Splat D", { x: 60, y: 640, width: 560, height: 520 }, {
       shape: "paintSplat",
       fill: "@accent",
       effects: { glow: { enabled: true, color: "@accent", strength: 44 } },
+      animation: anim("pulse", { duration: 5600, intensity: 0.8, delay: 1000 }),
     }),
     // Thin runny paint off the top edge.
     shape("Drip — L", { x: 300, y: -70, width: 90, height: 260 }, {

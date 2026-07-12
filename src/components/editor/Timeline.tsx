@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { isContinuous, previewClock, timelineDuration } from "@/lib/animation";
+import { isContinuous, isStingerMotion, previewClock, timelineDuration } from "@/lib/animation";
 import { cx } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { useEditorStore } from "@/store/editor";
@@ -27,16 +27,13 @@ export function Timeline() {
   const frameRef = useRef(0);
   const originRef = useRef(0);
 
-  // Loop smoothly whatever animations the designer picked, with nothing to set
-  // up. A design with continuous ambient motion (glow, drifting particles) runs
-  // on an UNBOUNDED clock — it is already periodic, and wrapping it would make
-  // particles jump. Otherwise the preview ping-pongs over the timeline (in →
-  // settle → out → start), so any one-shot — a fade/slide-in, or a stinger —
-  // loops seamlessly instead of hard-cutting back to its start pose.
+  // Play loops smoothly with nothing to set up. A stinger ping-pongs over its
+  // timeline (its motif eases in and out); every other design runs UNBOUNDED —
+  // the entrance plays once and the ambient motion carries the loop — so
+  // headline text never blinks in and out.
   const loopPeriod = useMemo(() => {
     const anims = (project?.layers ?? []).map((l) => l.animation);
-    if (!anims.length || anims.some((a) => isContinuous(a.preset))) return 0;
-    return timelineDuration(anims);
+    return isStingerMotion(anims) ? timelineDuration(anims) : 0;
   }, [project?.layers]);
 
   useEffect(() => {

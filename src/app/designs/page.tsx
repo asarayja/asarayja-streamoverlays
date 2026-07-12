@@ -12,7 +12,7 @@ import { Chip, TextInput, cx } from "@/components/ui";
 import { getPalette } from "@/data/palettes";
 import { useElementSize, useInView, useOnScreen, usePrefersReducedMotion } from "@/lib/useElementSize";
 import { useClock } from "@/lib/useClock";
-import { isContinuous, previewClock, settledTime, timelineDuration } from "@/lib/animation";
+import { isStingerMotion, previewClock, settledTime, timelineDuration } from "@/lib/animation";
 import { useRenderProfile } from "@/store/profile";
 import { useT } from "@/lib/i18n";
 import type { Collection } from "@/lib/types";
@@ -108,14 +108,12 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
   const theme = getPalette(design.coverPalette).theme;
   const hasBackdrop = design.cover.layers.some((l) => l.type === "background");
 
-  // Autoplay the cover's motion while the card is on screen. Continuous ambient
-  // motion flows unbounded; anything else ping-pongs so its one-shot loops
-  // smoothly (in → settle → out) instead of hard-cutting back to the start.
+  // Only a stinger ping-pongs; every other cover flows unbounded (entrance once,
+  // ambient carries the loop) so headline text never blinks.
   const play = onScreen && !reduceMotion;
   const loopPeriod = useMemo(() => {
     const anims = design.cover.layers.map((l) => l.animation);
-    if (anims.some((a) => isContinuous(a.preset))) return 0;
-    return timelineDuration(anims);
+    return isStingerMotion(anims) ? timelineDuration(anims) : 0;
   }, [design.cover.layers]);
   const clock = useClock(play);
   const time = play ? previewClock(clock, loopPeriod) : settledTime(design.cover.category, SETTLED);
