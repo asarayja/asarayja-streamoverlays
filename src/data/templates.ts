@@ -455,17 +455,26 @@ function particles(
  */
 const FULL: Box = { x: 0, y: 0, width: 1920, height: 1080 };
 
-// The full-screen idle screens. On these the slogan and social bar rarely suit
-// the card, so they're dropped by default and become opt-in (add them from the
-// editor's Add panel). Functional screens — gameplay, the dedicated social bar,
-// intermission — keep theirs. Declared early: expand()/buildVariant run during
-// module init, so this must be initialised before the first expansion.
-const IDLE_MESSAGE = new Set<TemplateCategory>([
+// Screens where the slogan / social bar are dropped by default and become
+// opt-in (add them from the editor's Add panel). The slogan goes on the idle
+// message screens; the social bar goes there AND on gameplay (it rarely suits
+// a live overlay). Intermission, the dedicated Social Bar screen and the rest
+// keep theirs. Declared early: expand()/buildVariant run during module init, so
+// these must be initialised before the first expansion.
+const NO_SLOGAN = new Set<TemplateCategory>([
   "Starting Soon",
   "BRB",
   "Stream Ending",
   "Pause",
   "Offline",
+]);
+const NO_SOCIAL = new Set<TemplateCategory>([
+  "Starting Soon",
+  "BRB",
+  "Stream Ending",
+  "Pause",
+  "Offline",
+  "Gameplay",
 ]);
 
 /**
@@ -6917,10 +6926,15 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
     paletteId: palette.id,
     layers: base.layers
       .filter((spec) => {
-        // Idle message screens stay clean: slogan and social bar are opt-in.
-        if (!IDLE_MESSAGE.has(base.category)) return true;
-        if (spec.type === "social") return false;
-        if (spec.type === "text" && (spec as { text?: string }).text === "{{SLOGAN}}") return false;
+        // Slogan and social bar are opt-in on the screens where they clutter.
+        if (spec.type === "social" && NO_SOCIAL.has(base.category)) return false;
+        if (
+          spec.type === "text" &&
+          (spec as { text?: string }).text === "{{SLOGAN}}" &&
+          NO_SLOGAN.has(base.category)
+        ) {
+          return false;
+        }
         return true;
       })
       .map((spec, i) => {
