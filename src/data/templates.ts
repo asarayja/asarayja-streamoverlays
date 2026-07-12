@@ -4358,24 +4358,34 @@ function neonBar(
   });
 }
 
-/** A cluster of parallel diagonal neon bars fanning through one side of the
-    frame — varying lengths, scattered, some with a nested inner tube. */
-function neonBarCluster(prefix: string, color: string, originX: number, seed: number): LayerSpec[] {
-  const angle = -58;
-  const N = 9;
+/** A neon fan sticking out from one corner: five parallel diagonal capsule
+    outlines, alternating thick and thin, poking into the frame, tied together
+    by a perpendicular connector line at the corner. Left and right corners
+    mirror their angle so the two sides lean toward each other. */
+function neonFan(prefix: string, color: string, side: "L" | "R", vpos: "T" | "B", seed: number): LayerSpec[] {
+  const N = 5;
+  const angle = side === "L" ? 56 : -56; // left leans one way, right mirrors it
+  const ox = side === "L" ? 250 : 1670;
+  const oy = vpos === "T" ? 230 : 850;
+  const rad = (angle * Math.PI) / 180;
+  const dx = Math.cos(rad);
+  const dy = Math.sin(rad);
+  const px = -dy; // perpendicular to the bar direction — the fan spread
+  const py = dx;
+  const gap = 80;
   const bars: LayerSpec[] = [];
   for (let i = 0; i < N; i++) {
-    const n = noise(seed + i * 3.1);
-    const n2 = noise(seed + i * 5.7);
-    const len = 300 + n * 660;
-    const thick = 40 + n2 * 26;
-    const cx = originX + (i / (N - 1) - 0.5) * 560 + (n2 - 0.5) * 130;
-    const cy = 150 + i * 88 + (n - 0.5) * 150;
-    bars.push(neonBar(`${prefix} ${i}`, cx, cy, len, thick, color, angle, i * 180));
-    if (n > 0.52) {
-      bars.push(neonBar(`${prefix} ${i} inner`, cx, cy, len - thick * 2.6, thick * 0.42, color, angle, i * 180 + 120));
-    }
+    const thick = i % 2 === 0 ? 58 : 22; // alternate thick / thin
+    const len = 360 + noise(seed + i * 4.3) * 480;
+    const perp = (i - (N - 1) / 2) * gap;
+    const along = 70; // push the fan out from the corner along the bars
+    const cx = ox + px * perp + dx * along;
+    const cy = oy + py * perp + dy * along;
+    bars.push(neonBar(`${prefix} ${i}`, cx, cy, len, thick, color, angle, i * 150));
   }
+  // A thin connector line across the fan, perpendicular to the bars, tying them
+  // together at the corner.
+  bars.push(neonBar(`${prefix} tie`, ox, oy, (N - 1) * gap + 60, 8, color, angle + 90, 0));
   return bars;
 }
 
@@ -4403,21 +4413,25 @@ const NEON_BARS: FamilyStyle = {
   plateShape: "rect",
   scene: () => [
     shape("Backdrop", FULL, { background: true, fill: "@background" }),
-    ...neonBarCluster("Bar L", "@secondary", 360, 3),
-    ...neonBarCluster("Bar R", "@accent", 1560, 50),
+    // Five bars poke out of each corner; the two left corners are @secondary,
+    // the two right corners @accent, mirrored so the sides lean toward each other.
+    ...neonFan("Fan TL", "@secondary", "L", "T", 3),
+    ...neonFan("Fan BL", "@secondary", "L", "B", 17),
+    ...neonFan("Fan TR", "@accent", "R", "T", 31),
+    ...neonFan("Fan BR", "@accent", "R", "B", 45),
     // A soft dark pool keeps the centre lane legible for the copy.
-    shape("Centre dim", { x: 360, y: 280, width: 1200, height: 520 }, {
+    shape("Centre dim", { x: 360, y: 300, width: 1200, height: 500 }, {
       shape: "ellipse",
       fill: "@background",
-      opacity: 0.55,
+      opacity: 0.6,
       effects: { blur: { enabled: true, amount: 60 } },
     }),
     particles("Decor — Dust", { kind: "dots", count: 40, size: 2.4, speed: 0.4, color: "@glow", opacity: 0.4 }),
   ],
-  // Over gameplay/webcam: just a couple of bars in each corner, no full field.
+  // Over gameplay/webcam: one fan in each corner, thinned so the play area stays clear.
   overlayDecor: () => [
-    ...neonBarCluster("Bar edge L", "@secondary", 120, 3).slice(0, 3),
-    ...neonBarCluster("Bar edge R", "@accent", 1800, 50).slice(0, 3),
+    ...neonFan("Edge TL", "@secondary", "L", "T", 3).slice(0, 3),
+    ...neonFan("Edge BR", "@accent", "R", "B", 45).slice(0, 3),
   ],
   contentOffsetY: 0,
 };
