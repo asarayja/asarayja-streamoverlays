@@ -2011,6 +2011,7 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   radar: ["iris", 0],
   contour: ["wave", 0],
   chevron: ["shards", 0],
+  circuit: ["glitch", 0],
   // Crystal / glass — facets.
   holo: ["prism", 8],
   frost: ["prism", -6],
@@ -4637,10 +4638,92 @@ const CHEVRON: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** A circuit trace: right-angle segments through a list of points, with a
+    glowing node at every vertex that pulses like data on the line. */
+function circuitTrace(prefix: string, pts: [number, number][], color: string, delay: number): LayerSpec[] {
+  const thick = 5;
+  const out: LayerSpec[] = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i];
+    const [x1, y1] = pts[i + 1];
+    if (y0 === y1) {
+      out.push(shape(`${prefix} s${i}`, { x: Math.min(x0, x1), y: y0 - thick / 2, width: Math.abs(x1 - x0), height: thick }, {
+        shape: "rect",
+        fill: color,
+        effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+      }));
+    } else {
+      out.push(shape(`${prefix} s${i}`, { x: x0 - thick / 2, y: Math.min(y0, y1), width: thick, height: Math.abs(y1 - y0) }, {
+        shape: "rect",
+        fill: color,
+        effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+      }));
+    }
+  }
+  pts.forEach(([x, y], j) => {
+    out.push(shape(`${prefix} n${j}`, { x: x - 10, y: y - 10, width: 20, height: 20 }, {
+      shape: "ellipse",
+      fill: color,
+      effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+      animation: anim("glow", { duration: 2600, delay: delay + j * 220, intensity: 1 }),
+    }));
+  });
+  return out;
+}
+
+/** Circuit traces routed around the edges, centre left clear for the copy. */
+function circuitField(): LayerSpec[] {
+  const traces: Array<{ pts: [number, number][]; color: string }> = [
+    { pts: [[0, 180], [300, 180], [300, 60]], color: "@secondary" },
+    { pts: [[0, 330], [200, 330], [200, 520], [430, 520]], color: "@accent" },
+    { pts: [[80, 1080], [80, 820], [380, 820]], color: "@secondary" },
+    { pts: [[1920, 900], [1620, 900], [1620, 1020]], color: "@secondary" },
+    { pts: [[1920, 760], [1720, 760], [1720, 560], [1490, 560]], color: "@accent" },
+    { pts: [[1840, 120], [1840, 360], [1560, 360]], color: "@accent" },
+  ];
+  return traces.flatMap((t, i) => circuitTrace(`Trace ${i}`, t.pts, t.color, i * 260));
+}
+
+/** Circuit: glowing right-angle traces and pulsing nodes route around the edges
+    like a circuit board. Colour follows the palette. */
+const CIRCUIT: FamilyStyle = {
+  id: "circuit",
+  name: "Circuit",
+  tags: ["Sci-Fi", "Neon", "Esports"],
+  display: "Rajdhani",
+  displayWeight: 700,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 6,
+  frameRadius: 8,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/16", angle: 135 } },
+    }),
+    shape("Decor — Hex mesh", FULL, { shape: "hexmesh", fill: "@secondary/10" }),
+    ...circuitField(),
+    particles("Decor — Dust", { kind: "dots", count: 30, size: 2, speed: 0.4, color: "@glow", opacity: 0.35 }),
+  ],
+  overlayDecor: () => circuitField(),
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   RADAR,
   CONTOUR,
   CHEVRON,
+  CIRCUIT,
   HALLOWED_NIGHT,
   ASTRAL_DECK,
   PIXEL_WINDOWS,
