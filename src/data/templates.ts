@@ -4344,25 +4344,21 @@ function skewStrips(corner: "tl" | "br"): LayerSpec[] {
   const bx = corner === "tl" ? 250 : 1670;
   const by = corner === "tl" ? 150 : 930;
   const dir = corner === "tl" ? 1 : -1;
-  const specs: Array<{ color: string; thick: number }> = [
-    { color: "@text", thick: 40 },
-    { color: "@accent", thick: 86 },
-    { color: "@text", thick: 24 },
-  ];
-  const len = 1600;
+  // Three equally-thick strips, white / accent / white, flush against each other.
+  const cols = ["@text", "@accent", "@text"];
+  const thick = 56;
+  const len = 1700;
   const strips: LayerSpec[] = [];
-  let off = 0;
-  for (let i = 0; i < specs.length; i++) {
-    const s = specs[i];
-    const perp = (off + s.thick / 2) * dir;
-    off += s.thick + 26;
+  for (let i = 0; i < cols.length; i++) {
+    // Flush: each strip's centre is one full thickness from the last.
+    const perp = (i * thick + thick / 2) * dir;
     const cx = bx + px * perp;
     const cy = by + py * perp;
-    strips.push(shape(`Strip ${corner} ${i}`, { x: cx - len / 2, y: cy - s.thick / 2, width: len, height: s.thick }, {
+    strips.push(shape(`Strip ${corner} ${i}`, { x: cx - len / 2, y: cy - thick / 2, width: len, height: thick }, {
       shape: "rect",
-      fill: s.color,
+      fill: cols[i],
       rotation: angle,
-      effects: { shadow: { enabled: true, color: "#000000", blur: 34, opacity: 0.5, offsetX: 0, offsetY: 20 } },
+      effects: { shadow: { enabled: true, color: "#000000", blur: 30, opacity: 0.5, offsetX: 0, offsetY: 18 } },
     }));
   }
   return strips;
@@ -4375,7 +4371,7 @@ function skewStrips(corner: "tl" | "br"): LayerSpec[] {
 const VANGUARD: FamilyStyle = {
   id: "vanguard",
   name: "Vanguard",
-  tags: ["Esports", "Minimal", "Dark"],
+  tags: ["Esports", "Red", "Dark"],
   display: "Bebas Neue",
   displayWeight: 400,
   displayTracking: 5,
@@ -4392,23 +4388,19 @@ const VANGUARD: FamilyStyle = {
   headlineEffects: { shadow: { enabled: true, color: "#000000", blur: 18, opacity: 0.5, offsetX: 0, offsetY: 6 } },
   plateShape: "rect",
   scene: () => [
-    // A charcoal ground — not near-black.
-    shape("Backdrop", FULL, {
-      background: true,
-      fill: "@surface",
-      effects: { gradient: { enabled: true, from: "@surface", to: "@background", angle: 135 } },
-    }),
+    // A flat charcoal ground (#353535 on the Vanguard palette) — not near-black.
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
     ...skewStrips("tl"),
     ...skewStrips("br"),
     // The big centre box that holds the copy.
     shape("Centre box", { x: 340, y: 300, width: 1240, height: 520 }, {
       shape: "rect",
-      fill: "@background",
-      opacity: 0.5,
+      fill: "@surface",
+      opacity: 0.9,
       cornerRadius: 8,
       effects: {
         border: { enabled: true, color: "@accent", width: 2, radius: 8 },
-        shadow: { enabled: true, color: "#000000", blur: 44, opacity: 0.45, offsetX: 0, offsetY: 12 },
+        shadow: { enabled: true, color: "#000000", blur: 44, opacity: 0.5, offsetX: 0, offsetY: 12 },
       },
     }),
   ],
@@ -4417,7 +4409,6 @@ const VANGUARD: FamilyStyle = {
 };
 
 const NEW_FAMILIES: FamilyStyle[] = [
-  VANGUARD,
   HALLOWED_NIGHT,
   ASTRAL_DECK,
   PIXEL_WINDOWS,
@@ -4455,7 +4446,11 @@ const AURORA_PALETTES = ABSTRACT_PALETTES.filter((p) => p.id.includes("aurora"))
 // it comes in every colour like the other families, not just one.
 const AURORA_SILK_PALETTES = [...CORE_PALETTES, ...AURORA_PALETTES];
 const RISO_CONCRETE_PALETTES = [...CORE_PALETTES, ...RISO_PALETTES];
+// Vanguard is a fixed identity (charcoal / accent / white), so it only flies its
+// own signature palettes — red is the reference, plus a purple and a blue.
+const VANGUARD_PALETTES = ABSTRACT_PALETTES.filter((p) => p.id.includes("vanguard"));
 const ABSTRACT_TEMPLATES: Template[] = [
+  ...expand(familyScreens(VANGUARD), VANGUARD_PALETTES),
   ...expand(familyScreens(RISO_CONCRETE), RISO_CONCRETE_PALETTES),
   ...expand([...familyScreens(AURORA_SILK), ...familyScreens(AURORA_SILK_NEON)], AURORA_SILK_PALETTES),
 ];
