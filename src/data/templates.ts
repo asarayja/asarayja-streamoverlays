@@ -3369,23 +3369,28 @@ const AURORA: FamilyStyle = {
       effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 165 } },
     }),
     particles("Decor — Stars", { kind: "stars", count: 84, size: 2.2, speed: 0.12, color: "@text", opacity: 0.75 }),
+    // The aurora curtains drift and undulate — each on its own slow rhythm so
+    // the sky flows rather than sitting still.
     shape("Aurora — accent", { x: -180, y: 60, width: 2280, height: 460 }, {
       shape: "wave",
       fill: "@accent/26",
       opacity: 0.6,
       effects: { glow: { enabled: true, color: "@glow", strength: 66 } },
+      animation: anim("wave", { duration: 7000, intensity: 1.2 }),
     }),
     shape("Aurora — primary", { x: -180, y: 150, width: 2280, height: 540 }, {
       shape: "wave",
       fill: "@primary/40",
       opacity: 0.8,
       effects: { glow: { enabled: true, color: "@glow", strength: 82 } },
+      animation: anim("float", { duration: 8600, intensity: 1.4, delay: 400 }),
     }),
     shape("Aurora — secondary", { x: -180, y: 300, width: 2280, height: 480 }, {
       shape: "wave",
       fill: "@secondary/36",
       opacity: 0.72,
       effects: { glow: { enabled: true, color: "@glow", strength: 74 } },
+      animation: anim("sway", { duration: 9200, intensity: 0.7, delay: 800 }),
     }),
     particles("Decor — Bokeh", { kind: "bokeh", count: 8, size: 6, speed: 0.32, color: "@accent", opacity: 0.32 }),
   ],
