@@ -5598,11 +5598,6 @@ function voltageScene(hex: boolean): LayerSpec[] {
           }),
         ]
       : []),
-    shape("Streak 1", { x: 320, y: -120, width: 5, height: 760 }, {
-      fill: "@accent", opacity: 0.22, rotation: 20,
-      effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
-    }),
-    shape("Streak 2", { x: 560, y: -60, width: 3, height: 560 }, { fill: "@glow", opacity: 0.16, rotation: 20 }),
     shape("Panel", { x: 1080, y: 0, width: 840, height: 1080 }, {
       shape: "boltpanel",
       fill: "@accent",
@@ -5612,12 +5607,14 @@ function voltageScene(hex: boolean): LayerSpec[] {
       },
       animation: anim("glow", { duration: 5200, intensity: 0.5 }),
     }),
+    // The lightning takes the palette's bright glow colour and pulses like a
+    // live current, with a hot glowing aura.
     shape("Bolt", { x: 1080, y: 0, width: 840, height: 1080 }, {
       shape: "bolt",
-      fill: "@background",
-      cornerRadius: 54,
-      effects: { glow: { enabled: true, color: "@glow", strength: 42 } },
-      animation: anim("glow", { duration: 4000, intensity: 0.7 }),
+      fill: "@glow",
+      cornerRadius: 46,
+      effects: { glow: { enabled: true, color: "@glow", strength: 48 } },
+      animation: anim("glow", { duration: 2400, intensity: 1 }),
     }),
     particles("Decor — Sparks", { kind: "bokeh", count: 10, size: 8, speed: 0.4, color: "@accent", opacity: 0.4 }),
     particles("Decor — Dust", { kind: "dots", count: 20, size: 2, speed: 0.5, color: "@glow", opacity: 0.4 }),
