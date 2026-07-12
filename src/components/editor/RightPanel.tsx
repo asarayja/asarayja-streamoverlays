@@ -485,9 +485,12 @@ function RunnerControl({
   const t = useT();
   const isCamera = layer.type === "camera";
   const on = layer.runner ?? isCamera;
-  const colors = layer.runnerColors;
-  const isFlag = !!colors && colors.length > 1;
-  const single = colors && colors.length === 1 ? colors[0] : "@accent";
+  const colors = layer.runnerColors ?? [];
+  const setColor = (index: number, value: string, discrete: boolean) => {
+    const next = colors.slice();
+    next[index] = value;
+    (discrete ? commit : live)({ runnerColors: next } as LayerPatch);
+  };
   return (
     <>
       <Toggle
@@ -495,19 +498,48 @@ function RunnerControl({
         checked={on}
         onChange={(v) => commit({ runner: v } as LayerPatch)}
       />
-      {on && isFlag && (
-        <p className="text-[11px] leading-relaxed text-zinc-600">
-          {t("Flies the flag's colours on pride palettes.")}
-        </p>
-      )}
-      {on && !isFlag && (
-        <ColorField
-          label={t("Edge light colour")}
-          theme={theme}
-          value={single}
-          onChange={(c) => live({ runnerColors: [c] } as LayerPatch)}
-          onCommit={(c) => commit({ runnerColors: [c] } as LayerPatch)}
-        />
+      {on && (
+        <>
+          {/* One colour → a solid light; several → the light is a gradient of
+              them (a pride palette seeds the flag here). Empty → the accent. */}
+          <Field
+            label={t("Edge light colours")}
+            hint={colors.length ? t("{n} colours", { n: colors.length }) : t("Accent")}
+          >
+            {colors.length > 0 && (
+              <div className="space-y-1.5">
+                {colors.map((c, index) => (
+                  <div key={index} className="flex items-center gap-1.5">
+                    <ColorInput
+                      value={c}
+                      resolved={resolveColor(c, theme)}
+                      onChange={(value) => setColor(index, value, false)}
+                      onCommit={(value) => setColor(index, value, true)}
+                    />
+                    <button
+                      title={t("Remove colour")}
+                      onClick={() => commit({ runnerColors: colors.filter((_, i) => i !== index) } as LayerPatch)}
+                      className="shrink-0 rounded p-1 text-zinc-600 transition-colors hover:bg-white/10 hover:text-red-400"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Field>
+          <button
+            onClick={() => commit({ runnerColors: [...colors, colors.at(-1) ?? "@accent"] } as LayerPatch)}
+            className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-white/20"
+          >
+            {t("+ Add colour")}
+          </button>
+          {colors.length === 0 && (
+            <p className="text-[11px] leading-relaxed text-zinc-600">
+              {t("Using the accent colour — add one or more to customise the light.")}
+            </p>
+          )}
+        </>
       )}
     </>
   );
