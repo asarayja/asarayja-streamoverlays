@@ -1896,6 +1896,12 @@ interface FamilyStyle {
    * bottom half; the answer is to move the words, not to crop the sky.
    */
   contentOffsetY?: number;
+  /**
+   * Where the Offline screen's social bar sits (its Y). Defaults to 880
+   * (bottom-centre). Override on families with heavy bottom decor so the
+   * handles don't collide — e.g. below the equaliser bars, not over them.
+   */
+  offlineSocials?: number;
 }
 
 const HEADLINE_BOX: Box = { x: 210, y: 430, width: 1500, height: 140 };
@@ -2358,7 +2364,16 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     // No logo by default — add your picture from the Add panel if you want one.
     scene("ending", "Stream Ending", "Stream Ending", "THANKS FOR WATCHING"),
     scene("pause", "Pause", "Pause", "STREAM ON PAUSE"),
-    scene("offline", "Offline", "Offline", "OFFLINE"),
+    // Offline keeps its handles, placed per family so they clear the scene's big
+    // elements (below the equaliser bars, off the paper hills, …).
+    base("offline", "Offline", "Offline", [
+      ...f.scene(),
+      ...(stripesBehind ? glassSheet() : []),
+      headline("OFFLINE"),
+      channelName(600),
+      socials(f.offlineSocials ?? 880),
+      ...(stripesBehind ? [] : glassSheet()),
+    ]),
 
     // Intermission: camera and chat side by side over the family ground.
     base("intermission", "Intermission", "Intermission", [
@@ -5019,6 +5034,8 @@ const RETROWAVE: FamilyStyle = {
   ],
   overlayDecor: () => [],
   contentOffsetY: 0,
+  // Below the sun so the offline handles don't sit over it.
+  offlineSocials: 1000,
 };
 
 /** Terrazzo: a calm flat design — a solid ground scattered with speckle chips
@@ -5452,6 +5469,8 @@ const PULSE: FamilyStyle = {
   },
   overlayDecor: () => [],
   contentOffsetY: 0,
+  // Sit the offline handles below the equaliser bars, not over them.
+  offlineSocials: 1004,
 };
 
 /** Sakura: soft cherry-blossom — petals drifting down over a gentle ground,
