@@ -2976,7 +2976,7 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
           marks a live webcam. A single bright dash marching along the border via
           an animated dashOffset: motion, never a blink. Drawn on top so the
           hole-punch doesn't clip it, in every mode (it's part of the look). */}
-      {isCamera && <CameraRunner layer={layer} ctx={ctx} accent={accent} />}
+      {(isCamera || layer.runner) && <CameraRunner layer={layer} ctx={ctx} accent={accent} />}
     </Group>
   );
 }

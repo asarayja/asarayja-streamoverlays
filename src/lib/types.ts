@@ -641,6 +641,10 @@ export interface FrameLayer extends LayerBase {
   cornerRadius: number;
   /** Small accent notches in the corners — the "esports" look. */
   corners: boolean;
+  /** A glowing light travels around the frame edge. Always on for cameras;
+      opt-in here so a decorative container (e.g. a goals box) can carry the
+      same moving line while its contents stay still. */
+  runner?: boolean;
 }
 
 export interface ChatBoxLayer extends LayerBase {

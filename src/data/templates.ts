@@ -151,6 +151,7 @@ function frame(
     strokeWidth?: number;
     cornerRadius?: number;
     corners?: boolean;
+    runner?: boolean;
   } = {},
 ): LayerSpec {
   return {
@@ -163,6 +164,7 @@ function frame(
     strokeWidth: o.strokeWidth ?? 4,
     cornerRadius: o.cornerRadius ?? 16,
     corners: o.corners ?? false,
+    runner: o.runner,
   };
 }
 
@@ -2282,6 +2284,17 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
   // decor: a goals overlay sits over live gameplay, so it stays clean. Each
   // goal is its own layer, free to rearrange into a row or a stack.
   const goalsScreen = base("goals", "Goals", "Goals", [
+    // A container box holds the whole widget still while a single glowing line
+    // travels around its edge — the motion lives on the frame, never on the
+    // numbers (which must stay readable). Same runner as the webcam frame.
+    frame("Goals box", { x: 108, y: 268, width: 1254, height: 512 }, {
+      strokeColor: "@accent/55",
+      strokeWidth: 3,
+      cornerRadius: f.radius + 6,
+      fill: "@surface/22",
+      runner: true,
+      effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+    }),
     ...flagBar({ x: 150, y: 300, width: 1170, height: 20 }),
     goal("Follower goal", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
       goalStyle: "ring",
@@ -2291,7 +2304,6 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       valueColor: "@text",
       labelColor: "@accent",
       effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
-      animation: anim("zoom", { duration: 900, easing: "backOut" }),
     }),
     goal("Sub goal", { x: 560, y: 430, width: 760, height: 150 }, "SUB GOAL", 62, 100, {
       goalStyle: "bar",
@@ -2305,7 +2317,6 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         glow: { enabled: true, color: "@glow", strength: 22 },
         border: { enabled: true, color: "@border", width: 1, radius: f.radius },
       },
-      animation: anim("slide", { direction: "right", duration: 700 }),
     }),
     goal("Donation goal", { x: 560, y: 610, width: 760, height: 150 }, "DONATION GOAL", 340, 500, {
       goalStyle: "bar",
@@ -2319,7 +2330,6 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         glow: { enabled: true, color: "@glow", strength: 22 },
         border: { enabled: true, color: "@border", width: 1, radius: f.radius },
       },
-      animation: anim("slide", { direction: "right", duration: 700, delay: 160 }),
     }),
   ]);
 
