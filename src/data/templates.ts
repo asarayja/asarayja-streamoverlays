@@ -5607,13 +5607,14 @@ function voltageScene(hex: boolean): LayerSpec[] {
       },
       animation: anim("glow", { duration: 5200, intensity: 0.5 }),
     }),
-    // The lightning takes the palette's bright glow colour and pulses like a
-    // live current, with a hot glowing aura.
+    // A white-hot core with the palette's colour as its glow aura — a contrast
+    // colour that never clashes with the panel (which is the accent), pulsing
+    // like a live current.
     shape("Bolt", { x: 1080, y: 0, width: 840, height: 1080 }, {
       shape: "bolt",
-      fill: "@glow",
-      cornerRadius: 46,
-      effects: { glow: { enabled: true, color: "@glow", strength: 48 } },
+      fill: "@text",
+      cornerRadius: 40,
+      effects: { glow: { enabled: true, color: "@glow", strength: 52 } },
       animation: anim("glow", { duration: 2400, intensity: 1 }),
     }),
     particles("Decor — Sparks", { kind: "bokeh", count: 10, size: 8, speed: 0.4, color: "@accent", opacity: 0.4 }),
