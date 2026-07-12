@@ -4145,19 +4145,6 @@ const SPLASH: FamilyStyle = {
       effects: { glow: { enabled: true, color: "@accent", strength: 44 } },
       animation: anim("pulse", { duration: 5600, intensity: 0.8, delay: 1000 }),
     }),
-    // Thin runny paint off the top edge.
-    shape("Drip — L", { x: 300, y: -70, width: 90, height: 260 }, {
-      shape: "drip",
-      fill: "@primary",
-      cornerRadius: 16,
-      effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
-    }),
-    shape("Drip — R", { x: 1520, y: -80, width: 110, height: 300 }, {
-      shape: "drip",
-      fill: "@secondary",
-      cornerRadius: 18,
-      effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
-    }),
     // Sparse flung droplets.
     particles("Decor — Flecks", { kind: "confetti", count: 22, size: 5, speed: 0.6, color: "@accent", opacity: 0.7 }),
   ],
