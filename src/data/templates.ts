@@ -6208,7 +6208,196 @@ const WIREFRAME: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/* --------------------------- Sixth proposal set --------------------------- */
+
+/** Autumn: falling leaves drift across a warm gradient — cosy and seasonal.
+    Follows the palette. */
+const AUTUMN: FamilyStyle = {
+  id: "autumn",
+  name: "Autumn",
+  tags: ["Cozy", "Orange", "Nordic"],
+  display: "Bitter",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "uppercase",
+  body: "Nunito",
+  radius: 14,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 16 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@primary/26", to: "@background", angle: 120 } },
+    }),
+    particles("Decor — Leaves", { kind: "petals", count: 34, size: 16, speed: 0.6, color: "@accent", opacity: 0.85 }),
+    particles("Decor — Leaves 2", { kind: "petals", count: 22, size: 12, speed: 0.9, color: "@secondary", opacity: 0.7 }),
+    particles("Decor — Motes", { kind: "dots", count: 16, size: 3, speed: 0.3, color: "@glow", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Constellation: a night star map — bright stars linked by faint lines over a
+    deep sky, with a drifting shooting star. Follows the palette. */
+const CONSTELLATION: FamilyStyle = {
+  id: "constellation",
+  name: "Constellation",
+  tags: ["Sci-Fi", "Purple", "Dark"],
+  display: "Cinzel",
+  displayWeight: 600,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Jost",
+  radius: 6,
+  frameRadius: 8,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  plateShape: "rect",
+  scene: () => {
+    const lines = [
+      { x: 160, y: 150, w: 320, r: 26 },
+      { x: 380, y: 260, w: 240, r: -34 },
+      { x: 1360, y: 180, w: 300, r: 18 },
+      { x: 1500, y: 300, w: 260, r: -48 },
+      { x: 300, y: 820, w: 280, r: -20 },
+      { x: 1300, y: 800, w: 320, r: 24 },
+    ];
+    const stars = [
+      { x: 160, y: 150 }, { x: 470, y: 300 }, { x: 380, y: 260 }, { x: 1360, y: 180 },
+      { x: 1640, y: 270 }, { x: 300, y: 820 }, { x: 560, y: 720 }, { x: 1300, y: 800 }, { x: 1600, y: 900 },
+    ];
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 150 } },
+      }),
+      particles("Decor — Stars", { kind: "stars", count: 150, size: 2, speed: 0.08, color: "@text", opacity: 0.8 }),
+      ...lines.map((l, i) =>
+        shape(`Link ${i}`, { x: l.x, y: l.y, width: l.w, height: 2 }, {
+          fill: "@accent", opacity: 0.35, rotation: l.r,
+          effects: { glow: { enabled: true, color: "@glow", strength: 6 } },
+        }),
+      ),
+      ...stars.map((s, i) =>
+        shape(`Star ${i}`, { x: s.x - 7, y: s.y - 7, width: 14, height: 14 }, {
+          shape: "ellipse", fill: "@glow",
+          effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+          animation: anim("pulse", { duration: 3400 + i * 300, intensity: 0.7 }),
+        }),
+      ),
+      particles("Decor — Shooting", { kind: "shootingStars", count: 3, size: 6, speed: 1, color: "@text" }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Storm: a thunderstorm — drifting clouds, driving rain and a lightning bolt
+    that flashes now and then. Moody; follows the palette. */
+const STORM: FamilyStyle = {
+  id: "storm",
+  name: "Storm",
+  tags: ["Dark", "Blue", "Sci-Fi"],
+  display: "Oswald",
+  displayWeight: 600,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Saira",
+  radius: 6,
+  frameRadius: 8,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 24 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@primary/24", to: "@background", angle: 90 } },
+    }),
+    particles("Decor — Clouds", { kind: "clouds", count: 5, size: 220, speed: 0.25, color: "@secondary", opacity: 0.32 }),
+    // A lightning bolt that flashes on and off like distant strikes.
+    shape("Lightning", { x: 1180, y: -20, width: 420, height: 1100 }, {
+      shape: "bolt", fill: "@text", cornerRadius: 26,
+      effects: { glow: { enabled: true, color: "@glow", strength: 50 } },
+      animation: anim("blink", { duration: 3200 }),
+    }),
+    particles("Decor — Rain", { kind: "rain", count: 80, size: 2, speed: 1.6, color: "@glow", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Ripple: a calm water surface — concentric ripples spreading from a drop with
+    a soft caustic light and drifting motes. Serene; follows the palette. */
+const RIPPLE: FamilyStyle = {
+  id: "ripple",
+  name: "Ripple",
+  tags: ["Nordic", "Blue", "Cozy"],
+  display: "Jost",
+  displayWeight: 500,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 16,
+  frameRadius: 18,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 18 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  plateShape: "rect",
+  scene: () => {
+    // Concentric rings spreading from a drop low-centre, each breathing outward
+    // on its own beat — a still pond disturbed.
+    const cx = 960, cy = 1120;
+    const rings = [320, 620, 940, 1280, 1640].map((d, i) =>
+      shape(`Ripple ${i}`, { x: cx - d / 2, y: cy - d / 2, width: d, height: d }, {
+        shape: "ellipse", fill: "transparent", opacity: 0.3 - i * 0.03,
+        effects: { border: { enabled: true, color: "@accent", width: 2, radius: 0 }, glow: { enabled: true, color: "@glow", strength: 10 } },
+        animation: anim("pulse", { duration: 4600 + i * 700, intensity: 0.35, delay: i * 500 }),
+      }),
+    );
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@primary/26", to: "@background", angle: 90 } },
+      }),
+      ...rings,
+      particles("Decor — Motes", { kind: "dots", count: 20, size: 2.4, speed: 0.25, color: "@glow", opacity: 0.4 }),
+      particles("Decor — Bubbles", { kind: "bubbles", count: 16, size: 6, speed: 0.5, color: "@accent", opacity: 0.4 }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  AUTUMN,
+  CONSTELLATION,
+  STORM,
+  RIPPLE,
   SNOWFALL,
   CONFETTI,
   TOXIC,
