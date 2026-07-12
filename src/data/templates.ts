@@ -5199,46 +5199,212 @@ const SMOLDER: FamilyStyle = {
 
 /* -------------------------- Second proposal set --------------------------- */
 
-/** Comic Pop: bold pop-art — a ben-day halftone field, action rays and flung
-    pop bits, with a chunky comic face outlined and hard-shadowed. Loud and
-    playful; colour follows the palette. */
-const COMIC_POP: FamilyStyle = {
-  id: "comicpop",
-  name: "Comic Pop",
-  tags: ["Anime", "RGB", "Neon"],
-  display: "Bangers",
-  displayWeight: 400,
+/** Terminal: a hacker CRT — digital rain streaming down a near-black screen
+    under fine scanlines, with faint code lines and a blinking cursor, all in
+    monospace. Colour follows the palette (phosphor green by default). */
+const TERMINAL: FamilyStyle = {
+  id: "terminal",
+  name: "Terminal",
+  tags: ["Cyberpunk", "Neon", "Green"],
+  display: "JetBrains Mono",
+  displayWeight: 700,
   displayTracking: 2,
   displayTransform: "uppercase",
-  body: "Nunito",
-  radius: 14,
-  frameRadius: 16,
-  corners: false,
-  strokeWidth: 4,
+  body: "Fira Code",
+  radius: 2,
+  frameRadius: 3,
+  corners: true,
+  strokeWidth: 1.5,
   frameEffects: {
-    border: { enabled: true, color: "@text", width: 4, radius: 16 },
-    glow: { enabled: true, color: "@glow", strength: 10 },
+    border: { enabled: true, color: "@accent", width: 1.5, radius: 3 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
   },
-  // The classic comic title: a hard offset colour shadow behind an outlined
-  // fill — no blur, so it reads like ink on newsprint.
-  headlineEffects: {
-    border: { enabled: true, color: "@background", width: 5 },
-    shadow: { enabled: true, color: "@accent", blur: 0, offsetX: 7, offsetY: 7, opacity: 1 },
-  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
   plateShape: "rect",
   scene: () => [
-    shape("Backdrop", FULL, { background: true, fill: "@surface" }),
-    // Halftone lives in two opposite corners, leaving the centre diagonal clean
-    // for the copy — a pop-art poster, not a wall of dots.
-    shape("Halftone TL", { x: -60, y: -60, width: 900, height: 660 }, {
-      shape: "halftoneField", fill: "@accent", opacity: 0.42, animation: anim("shimmer", { duration: 6000 }),
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    // Streaming digital rain, then CRT scanlines over the top.
+    particles("Decor — Rain A", { kind: "rain", count: 60, size: 2, speed: 1.3, color: "@accent", opacity: 0.55 }),
+    particles("Decor — Rain B", { kind: "rain", count: 34, size: 3, speed: 0.9, color: "@glow", opacity: 0.4 }),
+    shape("Scanlines", FULL, { shape: "scanlines", fill: "@accent", opacity: 0.12 }),
+    // A few faint code lines top-left, like a scrolling log.
+    ...[0, 1, 2, 3, 4].map((i) =>
+      shape(`Code ${i}`, { x: 90, y: 120 + i * 40, width: 260 + ((i * 97) % 320), height: 10 }, {
+        fill: "@accent",
+        opacity: 0.22,
+      }),
+    ),
+    // Blinking prompt cursor.
+    shape("Cursor", { x: 90, y: 940, width: 26, height: 40 }, {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+      animation: anim("blink", { duration: 1100 }),
     }),
-    shape("Halftone BR", { x: 1080, y: 480, width: 900, height: 660 }, {
-      shape: "halftoneField", fill: "@primary", opacity: 0.34, animation: anim("shimmer", { duration: 6800, delay: 500 }),
-    }),
-    particles("Decor — Rays", { kind: "rays", count: 6, size: 10, speed: 0.35, color: "@secondary", opacity: 0.18 }),
-    particles("Decor — Pop", { kind: "confetti", count: 22, size: 11, speed: 0.4, color: "@secondary", opacity: 0.9 }),
   ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Art Deco: 1920s glamour — a fluted ground, a diamond medallion behind the
+    copy and stepped rule lines with lozenge motifs, in an engraved serif.
+    Elegant and symmetric; gold-on-black by default, follows the palette. */
+const ART_DECO: FamilyStyle = {
+  id: "artdeco",
+  name: "Art Deco",
+  tags: ["Minimal", "Fantasy", "Dark"],
+  display: "Cinzel",
+  displayWeight: 700,
+  displayTracking: 5,
+  displayTransform: "uppercase",
+  body: "Josefin Sans",
+  radius: 2,
+  frameRadius: 3,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 3 },
+    glow: { enabled: true, color: "@glow", strength: 10 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 90 } },
+    }),
+    // Vertical fluting — thin gilt lines spaced across the ground.
+    ...Array.from({ length: 15 }).map((_, i) =>
+      shape(`Flute ${i}`, { x: 120 + i * 120, y: 0, width: 2, height: 1080 }, { fill: "@accent", opacity: 0.1 }),
+    ),
+    // A diamond medallion behind the copy: two rotated square outlines.
+    shape("Medallion", { x: 660, y: 210, width: 600, height: 600 }, {
+      shape: "rect",
+      fill: "transparent",
+      rotation: 45,
+      effects: { border: { enabled: true, color: "@accent", width: 3, radius: 0 }, glow: { enabled: true, color: "@glow", strength: 16 } },
+      animation: anim("glow", { duration: 5000, intensity: 0.5 }),
+    }),
+    shape("Medallion inner", { x: 740, y: 290, width: 440, height: 440 }, {
+      shape: "rect",
+      fill: "transparent",
+      rotation: 45,
+      opacity: 0.6,
+      effects: { border: { enabled: true, color: "@secondary", width: 2, radius: 0 } },
+    }),
+    // Stepped rule lines with a lozenge, top and bottom.
+    ...[250, 830].flatMap((y, i) => [
+      shape(`Rule ${i} a`, { x: 360, y, width: 1200, height: 3 }, { fill: "@accent", opacity: 0.7 }),
+      shape(`Rule ${i} b`, { x: 420, y: y + (i === 0 ? 10 : -10), width: 1080, height: 2 }, { fill: "@accent", opacity: 0.4 }),
+      shape(`Lozenge ${i}`, { x: 936, y: y - 12, width: 28, height: 28 }, { shape: "rect", rotation: 45, fill: "@accent", effects: { glow: { enabled: true, color: "@glow", strength: 12 } } }),
+    ]),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Stained Glass: cathedral glass — jewel panels leaded with dark cames, lit
+    from behind, with an engraved serif. Rich and ornate; colour follows the
+    palette. */
+const STAINED_GLASS: FamilyStyle = {
+  id: "stainedglass",
+  name: "Stained Glass",
+  tags: ["Fantasy", "RGB", "Dark"],
+  display: "Cinzel",
+  displayWeight: 600,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "EB Garamond",
+  radius: 4,
+  frameRadius: 6,
+  corners: false,
+  strokeWidth: 3,
+  frameEffects: {
+    border: { enabled: true, color: "@background", width: 4, radius: 6 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 }, shadow: { enabled: true, color: "@shadow", blur: 12, offsetY: 3, opacity: 0.5 } },
+  plateShape: "rect",
+  scene: () => {
+    // Jewel panels leaded with a thick dark came. Deep tones at the centre keep
+    // the copy legible; brighter jewels ring the edges.
+    const came = { border: { enabled: true, color: "@background", width: 6, radius: 0 }, glow: { enabled: true, color: "@glow", strength: 10 } };
+    const panels: Array<{ x: number; y: number; w: number; h: number; s: ShapeKind; c: string; o: number; r?: number }> = [
+      { x: -40, y: -40, w: 520, h: 620, s: "hexagon", c: "@primary", o: 0.55 },
+      { x: 440, y: -60, w: 520, h: 420, s: "triangle", c: "@secondary", o: 0.5, r: 180 },
+      { x: 1000, y: -40, w: 520, h: 560, s: "hexagon", c: "@accent", o: 0.5 },
+      { x: 1440, y: -20, w: 560, h: 640, s: "triangle", c: "@primary", o: 0.5 },
+      { x: -60, y: 560, w: 560, h: 580, s: "triangle", c: "@accent", o: 0.5, r: 180 },
+      { x: 420, y: 640, w: 560, h: 520, s: "hexagon", c: "@primary", o: 0.5 },
+      { x: 1020, y: 620, w: 540, h: 540, s: "triangle", c: "@secondary", o: 0.5 },
+      { x: 1480, y: 560, w: 520, h: 580, s: "hexagon", c: "@accent", o: 0.5 },
+    ];
+    return [
+      shape("Backdrop", FULL, { background: true, fill: "@background" }),
+      // Backlight blooming through the glass.
+      shape("Backlight", { x: 360, y: 240, width: 1200, height: 640 }, {
+        shape: "ellipse", fill: "@glow", opacity: 0.28, effects: { blur: { enabled: true, amount: 120 } },
+        animation: anim("pulse", { duration: 6000, intensity: 0.5 }),
+      }),
+      ...panels.map((p, i) =>
+        shape(`Panel ${i}`, { x: p.x, y: p.y, width: p.w, height: p.h }, {
+          shape: p.s,
+          fill: p.c,
+          opacity: p.o,
+          rotation: p.r ?? 0,
+          effects: came,
+          animation: anim("shimmer", { duration: 7000 + i * 400 }),
+        }),
+      ),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Papercut: layered paper craft — stacked cut-paper hills with soft drop
+    shadows for depth and a paper sun, warm and tactile. Reads in light or
+    dark; colour follows the palette. */
+const PAPERCUT: FamilyStyle = {
+  id: "papercut",
+  name: "Papercut",
+  tags: ["Cozy", "Minimal", "Nordic"],
+  display: "Baloo 2",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 20,
+  frameRadius: 22,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 22 },
+  },
+  headlineEffects: { shadow: { enabled: true, color: "@shadow", blur: 8, offsetY: 3, opacity: 0.3 } },
+  plateShape: "rect",
+  scene: () => {
+    const layer = (name: string, y: number, fill: string, dur: number, delay: number) =>
+      shape(name, { x: -160, y, width: 2240, height: 620 }, {
+        shape: "wave",
+        fill,
+        effects: { shadow: { enabled: true, color: "@shadow", blur: 24, offsetY: -12, opacity: 0.35 } },
+        animation: anim("sway", { duration: dur, intensity: 0.35, delay }),
+      });
+    return [
+      shape("Backdrop", FULL, { background: true, fill: "@surface" }),
+      // Paper sun.
+      shape("Sun", { x: 1360, y: 150, width: 280, height: 280 }, {
+        shape: "ellipse", fill: "@accent", opacity: 0.9,
+        effects: { shadow: { enabled: true, color: "@shadow", blur: 20, offsetY: 8, opacity: 0.25 } },
+        animation: anim("float", { duration: 9000, intensity: 0.3 }),
+      }),
+      // Stacked cut-paper hills, back to front, each a different tint.
+      layer("Hill back", 560, "@primary/50", 9000, 0),
+      layer("Hill mid", 660, "@secondary/70", 9800, 500),
+      layer("Hill front", 780, "@primary", 10600, 1000),
+    ];
+  },
   overlayDecor: () => [],
   contentOffsetY: 0,
 };
@@ -5401,7 +5567,10 @@ const NEW_FAMILIES: FamilyStyle[] = [
   BLUEPRINT,
   INK_WASH,
   SMOLDER,
-  COMIC_POP,
+  TERMINAL,
+  ART_DECO,
+  STAINED_GLASS,
+  PAPERCUT,
   PULSE,
   SAKURA,
   LOW_POLY,
