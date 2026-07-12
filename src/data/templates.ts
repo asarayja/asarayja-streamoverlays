@@ -1599,10 +1599,12 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
   const flagBar = (box: Box): LayerSpec[] =>
     isFlagPack
       ? [
+          // A STATIC pride line: a steady glow, no shimmer. The pulsing sheen
+          // read as an up/down flicker on the still panels (and beside the other
+          // overlays), which clashed — a flag bar is a fixed design element.
           flag("Pride flag", box, {
             cornerRadius: 6,
             effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
-            animation: anim("shimmer", { duration: 3600 }),
           }),
         ]
       : [];
@@ -4419,7 +4421,10 @@ const AQUARIUM: FamilyStyle = {
   plateShape: "rect",
   scene: () => aquariumScene(),
   overlayDecor: () => [
-    particles("Decor — Bubbles", { kind: "bubbles", count: 18, size: 8, speed: 0.7, color: "@accent", opacity: 0.4 }),
+    // A visible sheet of rising bubbles so the webcam, chat and alert overlays
+    // read as animated too — not just the full scenes.
+    particles("Decor — Bubbles", { kind: "bubbles", count: 34, size: 10, speed: 0.8, color: "@accent", opacity: 0.5 }),
+    particles("Decor — Fine", { kind: "bubbles", count: 20, size: 5, speed: 1.1, color: "@glow", opacity: 0.4 }),
   ],
 };
 
@@ -4438,7 +4443,10 @@ const AQUARIUM_PRIDE: FamilyStyle = {
       front: { facetColors: PRIDE_RAIN_FLAG, opacity: 0.9 },
     }),
   overlayDecor: () => [
-    particles("Decor — Bubbles", { kind: "bubbles", count: 20, size: 9, speed: 0.8, facetColors: PRIDE_RAIN_FLAG, opacity: 0.85 }),
+    // A visible sheet of flag-coloured bubbles so the webcam, chat and alert
+    // overlays read as animated too — not just the full scenes.
+    particles("Decor — Bubbles", { kind: "bubbles", count: 34, size: 10, speed: 0.8, facetColors: PRIDE_RAIN_FLAG, opacity: 0.9 }),
+    particles("Decor — Fine", { kind: "bubbles", count: 20, size: 5, speed: 1.1, facetColors: PRIDE_RAIN_FLAG, opacity: 0.7 }),
   ],
 };
 
