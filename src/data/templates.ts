@@ -5874,16 +5874,12 @@ const MAGMA: FamilyStyle = {
       { x: 560, y: 60, w: 300, h: 4, r: 70 },
     ];
     return [
+      // A warm heat glow at the base via the ground gradient — no hard-edged
+      // oval, just a rising warmth from the bottom.
       shape("Backdrop", FULL, {
         background: true,
         fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 120 } },
-      }),
-      // Heat bloom rising from the base.
-      shape("Heat", { x: 260, y: 640, width: 1400, height: 760 }, {
-        shape: "ellipse", fill: "@glow", opacity: 0.26,
-        effects: { blur: { enabled: true, amount: 110 } },
-        animation: anim("pulse", { duration: 5200, intensity: 0.6 }),
+        effects: { gradient: { enabled: true, from: "@background", to: "@glow/26", angle: 90 } },
       }),
       ...cracks.map((c, i) =>
         shape(`Crack ${i}`, { x: c.x, y: c.y, width: c.w, height: c.h }, {
@@ -5959,11 +5955,6 @@ const FIREFLIES: FamilyStyle = {
       background: true,
       fill: "@background",
       effects: { gradient: { enabled: true, from: "@primary/22", to: "@background", angle: 90 } },
-    }),
-    shape("Ground glow", { x: 260, y: 700, width: 1400, height: 620 }, {
-      shape: "ellipse", fill: "@glow", opacity: 0.14,
-      effects: { blur: { enabled: true, amount: 120 } },
-      animation: anim("breathe", { duration: 9000, intensity: 0.5 }),
     }),
     particles("Decor — Fireflies", { kind: "bokeh", count: 26, size: 9, speed: 0.35, color: "@glow", opacity: 0.7 }),
     particles("Decor — Spark", { kind: "dots", count: 30, size: 3, speed: 0.4, color: "@accent", opacity: 0.6 }),
