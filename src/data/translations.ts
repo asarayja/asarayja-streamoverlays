@@ -609,6 +609,10 @@ export const NO: Record<string, string> = {
   "Stacked": "Stablet",
   "Star": "Stjerne",
   "Start from scratch": "Start fra bunnen av",
+  "Start from a starter": "Start fra en mal",
+  "Blank canvas": "Tomt lerret",
+  "Scenes like Starting Soon are quick to build on a blank canvas. For the fiddly pieces — a webcam frame, panels, a chat box — open a neutral scaffold and make it yours.":
+    "Scener som Starting Soon er raske å bygge på et tomt lerret. For de pirkete delene — en webcam-ramme, paneler, en chat-boks — åpne et nøytralt utgangspunkt og gjør det til ditt.",
   "Starting Soon": "Starter snart",
   "Status": "Status",
   "Step 1 of 2 · Set up your channel": "Steg 1 av 2 · Sett opp kanalen din",

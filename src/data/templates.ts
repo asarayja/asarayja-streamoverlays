@@ -5709,9 +5709,111 @@ export const BLANK_TEMPLATE: Template = {
   layers: [],
 };
 
+/**
+ * Starter scaffolds for "start from scratch". Scenes like Starting Soon are
+ * easy to build on a blank canvas, but the fiddly overlay pieces — a webcam
+ * frame, a panel set, a chat box, a social bar — are tedious from nothing, so
+ * we hand a neutral, palette-driven starting point to customise. Webcam frames
+ * are rectangular (round frames don't suit a 16:9 camera) in a range of styles.
+ */
+function starter(id: string, name: string, category: TemplateCategory, layers: LayerSpec[]): Template {
+  return {
+    id,
+    name,
+    category,
+    tags: ["Minimal"],
+    collection: "core",
+    paletteId: DEFAULT_PALETTE_ID,
+    layers: layers.map((l, i) => ({ ...l, id: `${id}-l${i}` }) as Layer),
+  };
+}
+
+function webcamStarter(
+  id: string,
+  name: string,
+  frameOpts: Parameters<typeof frame>[2],
+  extra: LayerSpec[] = [],
+): Template {
+  return starter(`starter-webcam-${id}`, name, "Webcam Frames", [
+    frame("Camera", { x: 320, y: 120, width: 1280, height: 720 }, {
+      camera: true,
+      strokeColor: "@accent",
+      strokeWidth: 4,
+      effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+      ...frameOpts,
+    }),
+    ...extra,
+    shape("Name plate", { x: 760, y: 858, width: 400, height: 66 }, {
+      fill: "@surface/88",
+      cornerRadius: 14,
+      effects: { border: { enabled: true, color: "@border", width: 1, radius: 14 } },
+    }),
+    text("Display name", { x: 760, y: 877, width: 400, height: 40 }, "{{DISPLAY_NAME}}", {
+      fontFamily: "Inter",
+      fontSize: 26,
+      fontWeight: 700,
+      align: "center",
+      fill: "@text",
+    }),
+  ]);
+}
+
+export const STARTERS: Template[] = [
+  webcamStarter("sharp", "Webcam — Sharp", { cornerRadius: 0, strokeWidth: 3 }),
+  webcamStarter("rounded", "Webcam — Rounded", { cornerRadius: 32 }),
+  webcamStarter("brackets", "Webcam — Brackets", { cornerRadius: 8, corners: true, strokeWidth: 2 }),
+  webcamStarter("hexcut", "Webcam — Hex Cut", { shape: "hexagon" }),
+  webcamStarter("double", "Webcam — Double Frame", { cornerRadius: 12 }, [
+    shape("Inner line", { x: 338, y: 138, width: 1244, height: 684 }, {
+      fill: "transparent",
+      effects: { border: { enabled: true, color: "@secondary", width: 2, radius: 8 } },
+    }),
+  ]),
+  starter(
+    "starter-panels",
+    "Panels — 6-up",
+    "Stream Panels",
+    ["ABOUT ME", "COMMANDS", "DONATE", "DISCORD", "LINKS", "MERCH"].flatMap((label, i) => {
+      const x = 160 + (i % 3) * 560;
+      const y = 300 + Math.floor(i / 3) * 260;
+      return [
+        shape(`Panel ${i + 1}`, { x, y, width: 480, height: 150 }, {
+          fill: "@surface/88",
+          cornerRadius: 16,
+          effects: {
+            border: { enabled: true, color: "@accent", width: 1.5, radius: 16 },
+            glow: { enabled: true, color: "@glow", strength: 10 },
+          },
+        }),
+        text(`Panel label ${i + 1}`, { x, y: y + 52, width: 480, height: 50 }, label, {
+          fontFamily: "Inter",
+          fontSize: 30,
+          fontWeight: 800,
+          align: "center",
+          fill: "@text",
+          letterSpacing: 3,
+        }),
+      ];
+    }),
+  ),
+  starter("starter-chatbox", "Chat Box", "Chat Boxes", [
+    chatbox("Chat", { x: 1380, y: 120, width: 470, height: 840 }, { rows: 10 }),
+  ]),
+  starter("starter-socialbar", "Social Bar", "Social Bars", [
+    social("Socials", { x: 460, y: 500, width: 1000, height: 64 }, {
+      platforms: ["twitch", "youtube", "discord", "instagram", "x"],
+      pill: true,
+      pillColor: "@surface/88",
+      gap: 22,
+    }),
+  ]),
+];
+
+const STARTER_BY_ID = new Map(STARTERS.map((s) => [s.id, s]));
+
 export function getTemplate(id: string): Template | undefined {
   if (id === BLANK_TEMPLATE.id) return BLANK_TEMPLATE;
-  return TEMPLATE_BY_ID.get(id);
+  return TEMPLATE_BY_ID.get(id) ?? STARTER_BY_ID.get(id);
 }
 
 /**

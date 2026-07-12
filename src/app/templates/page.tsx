@@ -3,8 +3,10 @@
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Palette, PenTool, Search, Upload, Wand2 } from "lucide-react";
-import { PALETTES } from "@/data/palettes";
-import { TEMPLATES } from "@/data/templates";
+import { PALETTES, getPalette } from "@/data/palettes";
+import { STARTERS, TEMPLATES } from "@/data/templates";
+import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
+import { useElementSize, useInView } from "@/lib/useElementSize";
 import { TemplateCard } from "@/components/gallery/TemplateCard";
 import { RecentProjects } from "@/components/gallery/RecentProjects";
 import { MyDesigns } from "@/components/gallery/MyDesigns";
@@ -261,6 +263,25 @@ export default function GalleryPage() {
           )}
         </div>
 
+        <section className="mb-8">
+          <h2 className="text-sm font-semibold text-zinc-200">{t("Start from a starter")}</h2>
+          <p className="mb-3 mt-0.5 text-xs text-zinc-500">
+            {t("Scenes like Starting Soon are quick to build on a blank canvas. For the fiddly pieces — a webcam frame, panels, a chat box — open a neutral scaffold and make it yours.")}
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <button
+              onClick={openBlank}
+              className="group flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 text-zinc-400 transition-colors hover:border-brand-400/50 hover:text-brand-300"
+            >
+              <PenTool className="size-5" />
+              <span className="text-xs font-semibold">{t("Blank canvas")}</span>
+            </button>
+            {STARTERS.map((s) => (
+              <StarterCard key={s.id} template={s} profile={profile} onOpen={open} />
+            ))}
+          </div>
+        </section>
+
         <p className="mb-5 text-xs text-zinc-500">
           {filtered.length} {filtered.length === 1 ? t("template") : t("templates")}
         </p>
@@ -295,5 +316,46 @@ export default function GalleryPage() {
         )}
       </main>
     </div>
+  );
+}
+
+function StarterCard({
+  template,
+  profile,
+  onOpen,
+}: {
+  template: Template;
+  profile: ReturnType<typeof useRenderProfile>;
+  onOpen: (t: Template) => void;
+}) {
+  const t = useT();
+  const [viewRef, inView] = useInView<HTMLButtonElement>();
+  const [sizeRef, size] = useElementSize<HTMLDivElement>();
+  const theme = getPalette(template.paletteId).theme;
+  const hasBackdrop = template.layers.some((l) => l.type === "background");
+  return (
+    <button
+      ref={viewRef}
+      onClick={() => onOpen(template)}
+      className="group block overflow-hidden rounded-xl border border-white/10 text-left transition-all hover:-translate-y-0.5 hover:border-brand-400/50"
+      title={t("Open in editor")}
+    >
+      <div
+        ref={sizeRef}
+        className={cx("relative aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}
+      >
+        {inView && size.width > 0 && (
+          <ClientOverlayStage
+            layers={template.layers}
+            theme={theme}
+            profile={profile}
+            time={6000}
+            mode="preview"
+            width={size.width}
+          />
+        )}
+      </div>
+      <p className="truncate px-2.5 py-2 text-xs font-medium text-zinc-300">{template.name}</p>
+    </button>
   );
 }
