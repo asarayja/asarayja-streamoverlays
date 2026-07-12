@@ -83,7 +83,9 @@ const DEFS: PaletteDef[] = [
       background: "#f5effb",
       surface: "#e7daf3",
       surfaceSecondary: "#d8bfd8",
-      text: "#1a0733",
+      // A deep indigo-violet, not near-black: it harmonises with the blue ribbon
+      // and violet accents in light mode while staying crisp on the lavender.
+      text: "#241a66",
       border: "#b9a3d6",
       glow: "#b799f5",
       shadow: "#8a7ba3",

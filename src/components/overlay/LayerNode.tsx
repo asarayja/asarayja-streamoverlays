@@ -3053,7 +3053,9 @@ function runnerProps(opts: {
 }) {
   const { perim, time, strokeWidth, accent, glow, w, h, colors } = opts;
   const flag = colors && colors.length > 1;
-  const seg = perim * (flag ? 0.44 : 0.16);
+  // A shorter lit band (was 0.44) leaves a clear dark gap, so the flag runner
+  // reads as a light travelling AROUND the frame — not a static rainbow border.
+  const seg = perim * (flag ? 0.3 : 0.16);
   const base = {
     strokeWidth: Math.max(2, strokeWidth),
     dash: [seg, perim - seg],
