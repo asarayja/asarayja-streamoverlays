@@ -264,6 +264,9 @@ export const NO: Record<string, string> = {
   "Drip panel": "Dryppanel",
   "Duplicate": "Dupliser",
   "Duration": "Varighet",
+  "Animation speed": "Animasjonsfart",
+  "Sets the speed for all {n} animated layers — slow a whole stinger at once.":
+    "Setter farten for alle {n} animerte lag — senk hele stingeren på én gang.",
   "e.g. MelissaGaming": "f.eks. MelissaGaming",
   "Easing": "Overgang",
   "editing": "redigerer",

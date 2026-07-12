@@ -40,7 +40,7 @@ export const IDENTITY: AnimationSample = {
  */
 export const STINGER_PEAK = 0.45;
 /** Total run of a stinger wipe (ms). Kept in sync with the templates. */
-export const STINGER_MS = 1160;
+export const STINGER_MS = 1700;
 
 /**
  * The frame a gallery card shows at rest. Normal screens hold their finished

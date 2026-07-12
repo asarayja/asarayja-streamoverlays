@@ -106,6 +106,7 @@ export function RightPanel() {
     return (
       <aside className="flex w-[320px] shrink-0 flex-col border-l border-white/[0.06] bg-ink-900">
         {selectedIds.length > 1 && <ArrangeControls />}
+        {selectedIds.length > 1 && <MultiAnimationSpeed />}
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
           <MousePointerSquareDashed className="size-8 text-zinc-700" />
           <p className="text-sm font-medium text-zinc-400">
@@ -1325,6 +1326,45 @@ function NumberField({
 
 /** The catalogue, drawn at a glance. Picking an icon by name alone is guesswork. */
 /** Align, distribute and group controls, shown while several layers are selected. */
+/** With several layers selected, set the animation duration for all of them at
+    once — the easy way to slow a whole stinger (or any multi-layer motion). */
+function MultiAnimationSpeed() {
+  const t = useT();
+  const layers = useEditorStore((s) => s.project?.layers);
+  const selectedIds = useEditorStore((s) => s.selectedIds);
+  const updateLayer = useEditorStore((s) => s.updateLayer);
+  const beginGesture = useEditorStore((s) => s.beginGesture);
+  const animated = (layers ?? []).filter(
+    (l) => selectedIds.includes(l.id) && l.animation.preset !== "none",
+  );
+  if (!animated.length) return null;
+  const dur = Math.max(...animated.map((l) => l.animation.duration));
+  const setAll = (duration: number) =>
+    animated.forEach((l) => updateLayer(l.id, { animation: { ...l.animation, duration } }, false));
+  return (
+    <div className="border-b border-white/[0.06] px-4 py-3.5">
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+        {t("Animation speed")}
+      </p>
+      <Slider
+        label={t("Duration")}
+        suffix=" ms"
+        min={100}
+        max={6000}
+        step={50}
+        value={dur}
+        onBegin={beginGesture}
+        onChange={setAll}
+      />
+      <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-600">
+        {t("Sets the speed for all {n} animated layers — slow a whole stinger at once.", {
+          n: animated.length,
+        })}
+      </p>
+    </div>
+  );
+}
+
 function ArrangeControls() {
   const t = useT();
   const alignSelected = useEditorStore((s) => s.alignSelected);

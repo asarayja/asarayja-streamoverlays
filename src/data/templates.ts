@@ -1681,21 +1681,21 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         fill: "@primary",
         rotation: 12,
         effects: { gradient: { enabled: true, from: "@primary", to: "@background", angle: 90 } },
-        animation: anim("sweep", { direction: "right", duration: 1160, easing: "linear" }),
+        animation: anim("sweep", { direction: "right", duration: 1700, easing: "linear" }),
       }),
       shape("Blade — accent", { x: -600, y: -540, width: 900, height: 2160 }, {
         fill: "@accent",
         rotation: 12,
         opacity: 0.92,
         effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
-        animation: anim("sweep", { direction: "right", duration: 1160, delay: 60, easing: "linear" }),
+        animation: anim("sweep", { direction: "right", duration: 1700, delay: 60, easing: "linear" }),
       }),
       shape("Blade — light", { x: 520, y: -540, width: 300, height: 2160 }, {
         fill: "@surface",
         rotation: 12,
         opacity: 0.96,
         effects: { border: { enabled: true, color: "@accent", width: 2, radius: 0 } },
-        animation: anim("sweep", { direction: "right", duration: 1160, delay: 120, easing: "linear" }),
+        animation: anim("sweep", { direction: "right", duration: 1700, delay: 120, easing: "linear" }),
       }),
     ],
   },
@@ -1884,7 +1884,7 @@ const STINGER_FULL: Box = { x: -520, y: -520, width: 2960, height: 2120 };
 /** The whole wipe runs this long; full cover (the OBS transition point) lands
     at STINGER_PEAK of it. Every stinger layer shares the duration so their
     peaks line up on one frame. */
-const ST_MS = 1160;
+const ST_MS = 1700;
 /** A full-frame band travels off one edge → dead-centre (covering) → off the
     opposite edge; `direction` is the exit side. Ends off-canvas (revealed). */
 const stSweep = (direction: Animation["direction"], delay = 0, k = 1) =>
@@ -4965,7 +4965,7 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
           glow: { enabled: true, color: "@glow", strength: 40 },
           border: { enabled: true, color: "@text", width: 4, radius: 0 },
         },
-        animation: anim("sweepScale", { duration: 1160, intensity: 2.4, easing: "linear" }),
+        animation: anim("sweepScale", { duration: 1700, intensity: 2.4, easing: "linear" }),
       }),
     ],
   },
@@ -5612,9 +5612,9 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
         shape: "heart",
         fill: "@accent",
         effects: { glow: { enabled: true, color: "@glow", strength: 40 }, border: { enabled: true, color: "@text", width: 5, radius: 0 } },
-        animation: anim("sweepScale", { duration: 1160, intensity: 3, easing: "linear" }),
+        animation: anim("sweepScale", { duration: 1700, intensity: 3, easing: "linear" }),
       }),
-      particles("Decor — Confetti", { kind: "confetti", count: 46, size: 6, speed: 1, color: "@accent", animation: anim("flash", { duration: 1160, easing: "linear" }) }),
+      particles("Decor — Confetti", { kind: "confetti", count: 46, size: 6, speed: 1, color: "@accent", animation: anim("flash", { duration: 1700, easing: "linear" }) }),
     ],
   },
 ];
