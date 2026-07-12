@@ -3832,8 +3832,12 @@ const PLASMA_FLAG: FamilyStyle = {
   },
   headlineEffects: {
     glow: { enabled: true, color: "@glow", strength: 34 },
-    // A dark halo keeps the letters legible over the bright rainbow flow.
+    // A soft halo AND a crisp dark keyline. The halo gives depth on dark bands;
+    // the outline is what keeps white letters legible where a light flag (the
+    // white/grey agender band) flows directly under them — white-on-white needs
+    // a hard edge, not just a blur.
     shadow: { enabled: true, color: "@shadow", blur: 22, offsetY: 4, opacity: 0.85 },
+    border: { enabled: true, color: "@shadow", width: 4, radius: 0 },
   },
   plateShape: "rect",
   scene: () => [
