@@ -499,6 +499,33 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "sinestrip") {
+    // A thick bar bent into a gentle sine wave: stroke it at half the box
+    // height, its centreline undulating a few times across the width.
+    const th = h * 0.5;
+    const amp = h * 0.2;
+    const humps = Math.max(2, Math.round(w / 520));
+    const stroke = fill ?? resolveColor(layer.fill, ctx.theme);
+    return (
+      <KonvaShape
+        stroke={stroke}
+        strokeWidth={th}
+        lineCap="round"
+        lineJoin="round"
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        sceneFunc={(c, shape) => {
+          c.beginPath();
+          const mid = h / 2;
+          c.moveTo(0, mid);
+          for (let x = 0; x <= w; x += 10) {
+            c.lineTo(x, mid + Math.sin((x / w) * Math.PI * 2 * humps) * amp);
+          }
+          c.strokeShape(shape);
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "graveyard") {
     return (
       <KonvaShape

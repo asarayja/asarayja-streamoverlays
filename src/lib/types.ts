@@ -479,7 +479,10 @@ export type ShapeKind =
       the gothic stinger motif that zooms up to cover the frame. */
   | "ghost"
   /** A heart — the pride stinger motif. */
-  | "heart";
+  | "heart"
+  /** A thick strip whose centreline is a gentle sine wave — a wavy version of a
+      straight bar. Stroke thickness ≈ half the box height. */
+  | "sinestrip";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape" | "background";

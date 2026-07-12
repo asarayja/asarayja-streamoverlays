@@ -4448,30 +4448,29 @@ const VANGUARD_GLOW: FamilyStyle = {
     (white / accent / white) crossing a corner, each casting a soft drop shadow
     (or blooming, in the glow pack). Same two-corner, lean-toward-each-other. */
 function waveStrips(corner: "tl" | "br", glow = false): LayerSpec[] {
-  const angle = -30;
+  const angle = -34; // the same diagonal as the straight Vanguard strips
   const rad = (angle * Math.PI) / 180;
   const dx = Math.cos(rad);
   const dy = Math.sin(rad);
   const px = -dy;
   const py = dx;
   const bx = corner === "tl" ? 250 : 1670;
-  const by = corner === "tl" ? 180 : 900;
+  const by = corner === "tl" ? 150 : 930;
   const dir = corner === "tl" ? 1 : -1;
   const cols = ["@text", "@accent", "@text"];
   const thick = 82;
-  const waveH = thick / 0.34; // the wave stroke is 0.34× the box height
-  const len = 2100;
+  const boxH = thick * 2; // sinestrip stroke = 0.5 × box height = thick
+  const len = 1800;
   const strips: LayerSpec[] = [];
   for (let i = 0; i < cols.length; i++) {
-    const perp = (i * thick + thick / 2) * dir;
+    // Flush centres, one strip-thickness apart.
+    const perp = (i + 0.5) * thick * dir;
     const cx = bx + px * perp;
     const cy = by + py * perp;
-    strips.push(shape(`Wave ${corner} ${i}`, { x: cx - len / 2, y: cy - waveH / 2, width: len, height: waveH }, {
-      shape: "wave",
+    strips.push(shape(`Wave ${corner} ${i}`, { x: cx - len / 2, y: cy - boxH / 2, width: len, height: boxH }, {
+      shape: "sinestrip",
       fill: cols[i],
       rotation: angle,
-      // A clean edge sheen (strong in the glow pack, faint in the flat one) —
-      // the heavy drop shadow just muddied the waves.
       effects: { glow: { enabled: true, color: glow ? cols[i] : "@glow", strength: glow ? 30 : 10 } },
       animation: anim("glow", { duration: 3200, delay: i * 420, intensity: glow ? 1 : 0.7 }),
     }));
