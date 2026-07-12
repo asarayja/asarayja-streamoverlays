@@ -3387,6 +3387,8 @@ const PLASMA: FamilyStyle = {
   // reflection. Chrome is colourless, so these are literal greys.
   headlineEffects: {
     gradient: { enabled: true, from: "#c4c4c4", via: "#ffffff", to: "#6b6b6b", angle: 90 },
+    // A dark keyline so the chrome reads on light palettes too (invisible on dark).
+    border: { enabled: true, color: "@shadow", width: 4, radius: 0 },
     glow: { enabled: true, color: "@glow", strength: 24 },
   },
   plateShape: "rect",
@@ -3515,6 +3517,7 @@ const NEBULA: FamilyStyle = {
   },
   headlineEffects: {
     gradient: { enabled: true, from: "#e6e6ff", via: "#ffffff", to: "#8a8ab0", angle: 90 },
+    border: { enabled: true, color: "@shadow", width: 4, radius: 0 },
     glow: { enabled: true, color: "@glow", strength: 26 },
   },
   plateShape: "rect",
@@ -5647,6 +5650,7 @@ const VOLTAGE: FamilyStyle = {
   // Chrome lettering with a blue glow — the metallic esports headline.
   headlineEffects: {
     gradient: { enabled: true, from: "#cdcdcd", via: "#ffffff", to: "#6b6b6b", angle: 90 },
+    border: { enabled: true, color: "@shadow", width: 4, radius: 0 },
     glow: { enabled: true, color: "@glow", strength: 26 },
   },
   plateShape: "chamfer",
