@@ -2945,8 +2945,37 @@ function FrameContent({ layer, ctx, glowBoost }: { layer: FrameLayer; ctx: Rende
           />
         </>
       )}
+      {/* A glowing light travels around the camera's edge — the moving line that
+          marks a live webcam. A single bright dash marching along the border via
+          an animated dashOffset: motion, never a blink. Drawn on top so the
+          hole-punch doesn't clip it, in every mode (it's part of the look). */}
+      {isCamera && <CameraRunner layer={layer} ctx={ctx} accent={accent} />}
     </Group>
   );
+}
+
+function CameraRunner({ layer, ctx, accent }: { layer: FrameLayer; ctx: RenderContext; accent: string }) {
+  const { width: w, height: h } = layer;
+  const perim = layer.frameShape === "ellipse" ? (Math.PI * (w + h)) / 2 : 2 * (w + h);
+  const seg = perim * 0.16;
+  const runner = {
+    stroke: accent,
+    strokeWidth: Math.max(2, layer.strokeWidth * 1.4),
+    dash: [seg, perim - seg],
+    dashOffset: -(((ctx.time / 1000) * perim * 0.3) % perim),
+    lineCap: "round" as const,
+    shadowColor: resolveColor("@glow", ctx.theme),
+    shadowBlur: 20,
+    shadowOpacity: 1,
+    listening: false,
+  };
+  if (layer.frameShape === "ellipse") {
+    return <Ellipse x={w / 2} y={h / 2} radiusX={w / 2} radiusY={h / 2} {...runner} />;
+  }
+  if (layer.frameShape === "hexagon") {
+    return <Line closed points={chamferPoints(w, h)} lineJoin="round" {...runner} />;
+  }
+  return <Rect width={w} height={h} cornerRadius={layer.cornerRadius} {...runner} />;
 }
 
 const CHAT_SAMPLE: Array<{ user: string; message: string }> = [

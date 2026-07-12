@@ -2053,7 +2053,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       letterSpacing: f.displayTracking,
       textTransform: f.displayTransform,
       effects: f.headlineEffects,
-      animation: anim("fade", { duration: 1100 }),
+      // No entrance on the copy — in the finished designs the motion lives on
+      // the scene and frames around it, not on the text.
     });
 
   const channelName = (y: number) =>
@@ -2066,7 +2067,6 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fill: "@accent",
       letterSpacing: Math.max(2, f.displayTracking * 0.5),
       textTransform: f.displayTransform,
-      animation: anim("fade", { duration: 900, delay: 400 }),
     });
 
   const slogan = (y: number) =>
@@ -2076,15 +2076,14 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fontWeight: 400,
       align: "center",
       fill: "@textSecondary",
-      animation: anim("fade", { duration: 900, delay: 700 }),
     });
 
-  const socials = (y: number, platforms?: SocialPlatform[], delay = 900) =>
+  // Social bars stay still — no entrance, no motion.
+  const socials = (y: number, platforms?: SocialPlatform[]) =>
     social("Socials", { x: 460, y: y + dy, width: 1000, height: 56 }, {
       platforms: platforms ?? ["twitch", "youtube", "discord", "instagram"],
       fontFamily: f.body,
       pillColor: f.socialPill ?? "@surface/90",
-      animation: anim("fade", { duration: 900, delay }),
     });
 
   /** The camera hole: a chrome window for Y2K, a bracketed frame elsewhere. */
@@ -2299,11 +2298,10 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         fontWeight: f.displayWeight,
         fill: "@accent",
         letterSpacing: Math.max(4, f.displayTracking),
-        animation: anim("fade", { duration: 900 }),
       }),
       camera("Webcam", { x: 120, y: 190, width: 1080, height: 608 }),
       chat("Chat", { x: 1260, y: 190, width: 540, height: 608 }, 8),
-      socials(880, ["twitch", "discord", "instagram"], 600),
+      socials(880, ["twitch", "discord", "instagram"]),
     ]),
 
     base("gameplay", "Gameplay", "Gameplay", [
@@ -2333,7 +2331,6 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         platforms: ["twitch", "discord", "instagram", "x"],
         fontFamily: f.body,
         pillColor: "@surface/90",
-        animation: anim("fade", { duration: 900, delay: 500 }),
       }),
     ]),
 
@@ -2360,7 +2357,6 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         platforms: ["twitch", "tiktok", "instagram", "discord"],
         fontFamily: f.body,
         pillColor: "@surface/90",
-        animation: anim("fade", { duration: 900, delay: 400 }),
       }),
     ]),
 
@@ -2403,7 +2399,6 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         gap: 20,
         fontSize: 22,
         fontFamily: f.body,
-        animation: anim("fade", { duration: 900 }),
       }),
     ]),
 
@@ -2416,7 +2411,6 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           cornerRadius: f.radius,
           split: f.chipSplit,
           effects: { border: { enabled: true, color: "@border", width: 1, radius: f.radius } },
-          animation: anim("slide", { direction: "left", duration: 700, delay: i * 120 }),
         }),
       ),
     ]),
@@ -5656,6 +5650,12 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
     paletteId: palette.id,
     layers: base.layers.map((spec, i) => {
       const layer = { ...spec, id: `${base.id}-l${i}` } as Layer;
+      // In the finished designs the text and social bars hold still — the motion
+      // belongs to the scene, the frames and the decor around them. Strip any
+      // entrance/loop from copy and social layers everywhere, in one place.
+      if ((layer.type === "text" || layer.type === "social") && layer.animation) {
+        layer.animation = { ...layer.animation, preset: "none" };
+      }
       // Flags fly the palette's authentic stripes, not the authored default.
       if (layer.type === "flag" && palette.flag) layer.stripes = palette.flag;
       if (layer.type === "text" && layer.fillStripes && palette.flag) {
