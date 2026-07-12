@@ -3576,7 +3576,12 @@ const SILK: FamilyStyle = {
     border: { enabled: true, color: "@accent", width: 2, radius: 22 },
     glow: { enabled: true, color: "@glow", strength: 16 },
   },
-  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+  headlineEffects: {
+    // A dark keyline so the pale headline reads on the bright gold ribbon
+    // (invisible on the dark grounds of the other palettes).
+    border: { enabled: true, color: "@shadow", width: 3, radius: 0 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
   plateShape: "rect",
   scene: () => [
     shape("Backdrop", FULL, {

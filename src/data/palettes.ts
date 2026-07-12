@@ -147,10 +147,10 @@ const DEFS: PaletteDef[] = [
       warning: "#fb923c",
       primary: "#d4af37",
       secondary: "#8b6f1f",
-      // A mid bronze-gold accent (was pale gold) so accent-coloured text reads
-      // both on the gold ribbons/panels and on the dark ground, instead of
-      // vanishing gold-on-gold.
-      accent: "#a3781a",
+      // A violet accent — the complement of gold — so accent-coloured text pops
+      // against the gold ribbons/panels (and reads on the dark ground) instead
+      // of vanishing gold-on-gold.
+      accent: "#7c3aed",
       background: "#120e05",
       text: "#fffbeb",
       border: "#574b21",
