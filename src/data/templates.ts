@@ -180,6 +180,7 @@ function chatbox(
     usernameColor?: string;
     messageColor?: string;
     rows?: number;
+    runner?: boolean;
   } = {},
 ): LayerSpec {
   return {
@@ -194,6 +195,9 @@ function chatbox(
     usernameColor: o.usernameColor ?? "@accent",
     messageColor: o.messageColor ?? "@text",
     rows: o.rows ?? 8,
+    // The box edge carries a travelling runner, like the webcam/goal runner —
+    // and on pride palettes it flies the flag (buildVariant sets runnerColors).
+    runner: o.runner ?? true,
   };
 }
 
@@ -7670,6 +7674,9 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
         }
         if (layer.type === "goal" && layer.runner) {
           layer.runnerColors = palette.flag;
+        }
+        if (layer.type === "chatbox" && layer.runner) {
+          layer.runnerColors = palette.flag.map(liftForRain);
         }
       }
       return layer;

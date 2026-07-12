@@ -666,6 +666,10 @@ export interface ChatBoxLayer extends LayerBase {
   usernameColor: ColorValue;
   messageColor: ColorValue;
   rows: number;
+  /** A glowing line travels around the box edge (like the webcam/goal runner). */
+  runner?: boolean;
+  /** Pride palettes colour that runner with the flag instead of a flat accent. */
+  runnerColors?: string[];
 }
 
 export interface AlertLayer extends LayerBase {

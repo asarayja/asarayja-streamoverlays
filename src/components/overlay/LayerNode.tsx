@@ -3221,6 +3221,23 @@ function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: R
           ctx={ctx}
         />
       </Group>
+      {layer.runner && (() => {
+        const run = runnerProps({
+          perim: 2 * (w + h),
+          time: ctx.time,
+          strokeWidth: 3,
+          accent: resolveColor("@accent", ctx.theme),
+          glow: resolveColor("@glow", ctx.theme),
+          w,
+          h,
+          colors: layer.runnerColors,
+        });
+        return coffin ? (
+          <KonvaShape {...run} sceneFunc={(c, s) => { coffinPath(c, w, h); c.strokeShape(s); }} />
+        ) : (
+          <Rect width={w} height={h} cornerRadius={layer.cornerRadius} {...run} />
+        );
+      })()}
     </Group>
   );
 }
