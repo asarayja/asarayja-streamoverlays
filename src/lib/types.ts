@@ -426,6 +426,9 @@ export type ShapeKind =
   /** A vertical lightning bolt stroked down the box — an esports seam. Thickness
       from cornerRadius; fill is the stroke colour, effects glow the edge. */
   | "bolt"
+  /** A colour block filling to the RIGHT of the bolt centreline — its left edge
+      is the lightning, so the fill butts against the seam. Pair with `bolt`. */
+  | "boltpanel"
   /** Flag stripes bent into parallel arcs — a curved pride band. Colours from
       `facetColors`, arc bend from `cornerRadius`. */
   | "flagarc"

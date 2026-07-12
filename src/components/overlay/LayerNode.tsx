@@ -274,6 +274,15 @@ function heartPath(c: Konva.Context, w: number, h: number) {
 }
 
 /** Rect with its four corners cut — the "hex cut" webcam frame. */
+// The lightning-bolt centreline (normalised to the box), shared by the `bolt`
+// stroke and the `boltpanel` fill so the colour block's edge is exactly the seam.
+const BOLT_PTS: Array<[number, number]> = [
+  [0.58, -0.04],
+  [0.4, 0.34],
+  [0.64, 0.44],
+  [0.42, 1.04],
+];
+
 function chamferPoints(w: number, h: number): number[] {
   const c = Math.min(w, h) * 0.12;
   return [c, 0, w - c, 0, w, c, w, h - c, w - c, h, c, h, 0, h - c, 0, c];
@@ -954,12 +963,6 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     // zigzagging left/right, thick with round joins, glowing at the edge.
     const th = layer.cornerRadius ?? 40;
     const col = resolveColor(layer.fill, ctx.theme);
-    const pts: Array<[number, number]> = [
-      [0.58, -0.04],
-      [0.4, 0.34],
-      [0.64, 0.44],
-      [0.42, 1.04],
-    ];
     return (
       <KonvaShape
         stroke={col}
@@ -969,10 +972,31 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
         {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         sceneFunc={(c, s) => {
           c.beginPath();
-          pts.forEach(([px, py], i) =>
+          BOLT_PTS.forEach(([px, py], i) =>
             i ? c.lineTo(px * w, py * h) : c.moveTo(px * w, py * h),
           );
           c.strokeShape(s);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "boltpanel") {
+    // The colour block to the RIGHT of the lightning centreline — its left edge
+    // IS the bolt, so the fill butts right up against the seam (pair it with a
+    // `bolt` in the same box for the glowing edge).
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, s) => {
+          c.beginPath();
+          BOLT_PTS.forEach(([px, py], i) =>
+            i ? c.lineTo(px * w, py * h) : c.moveTo(px * w, py * h),
+          );
+          c.lineTo(w, h * 1.04);
+          c.lineTo(w, -0.04 * h);
+          c.closePath();
+          c.fillStrokeShape(s);
         }}
       />
     );

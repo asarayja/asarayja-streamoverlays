@@ -5622,18 +5622,20 @@ const VOLTAGE: FamilyStyle = {
       effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
     }),
     shape("Streak 2", { x: 560, y: -60, width: 3, height: 560 }, { fill: "@glow", opacity: 0.16, rotation: 20 }),
-    // The bright angled colour panel on the right.
-    shape("Panel", { x: 1480, y: -240, width: 960, height: 1560 }, {
+    // The colour block fills to the right of the bolt centreline — its left edge
+    // IS the lightning, so the colour butts right up against the seam. Same box
+    // as the bolt below so their edges line up exactly.
+    shape("Panel", { x: 1300, y: 0, width: 620, height: 1080 }, {
+      shape: "boltpanel",
       fill: "@accent",
-      rotation: -15,
       effects: {
         gradient: { enabled: true, from: "@glow", to: "@accent", angle: 20 },
-        glow: { enabled: true, color: "@glow", strength: 30 },
+        glow: { enabled: true, color: "@glow", strength: 26 },
       },
       animation: anim("glow", { duration: 5200, intensity: 0.5 }),
     }),
-    // The lightning-bolt seam: a black core with a blue glowing edge.
-    shape("Bolt", { x: 1360, y: 0, width: 400, height: 1080 }, {
+    // The lightning-bolt seam on that same edge: a black core, blue glowing rim.
+    shape("Bolt", { x: 1300, y: 0, width: 620, height: 1080 }, {
       shape: "bolt",
       fill: "@background",
       cornerRadius: 54,
