@@ -111,9 +111,9 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
 function PaletteDot({ theme, name }: { theme: Theme; name: string }) {
   return (
     <span title={name} className="mt-0.5 flex shrink-0 -space-x-1.5">
-      {[theme.primary, theme.accent, theme.secondary].map((color) => (
+      {[theme.primary, theme.accent, theme.secondary].map((color, i) => (
         <span
-          key={color}
+          key={i}
           className="size-3.5 rounded-full ring-2 ring-ink-950"
           style={{ background: color }}
         />

@@ -2100,6 +2100,11 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fill: "@accent",
       letterSpacing: Math.max(2, f.displayTracking * 0.5),
       textTransform: f.displayTransform,
+      // The accent-coloured name reads fine on the usual dark grounds, but the
+      // light-flag prism families (and the pale palettes) paint a light band
+      // right under it, where a light accent would vanish. A tight dark halo
+      // separates the glyphs on light grounds and is invisible on dark ones.
+      effects: { shadow: { enabled: true, color: "@shadow", blur: 12, offsetY: 2, opacity: 0.55 } },
     });
 
   const slogan = (y: number) =>
