@@ -1896,6 +1896,8 @@ interface FamilyStyle {
    * bottom half; the answer is to move the words, not to crop the sky.
    */
   contentOffsetY?: number;
+  /** Shift the scene copy sideways — e.g. left, to clear a panel on the right. */
+  contentOffsetX?: number;
   /**
    * Where the Offline screen's social bar sits (its Y). Defaults to 880
    * (bottom-centre). Override on families with heavy bottom decor so the
@@ -2106,9 +2108,10 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
   });
 
   const dy = f.contentOffsetY ?? 0;
+  const dx = f.contentOffsetX ?? 0;
 
   const headline = (copy: string, y = 430) =>
-    text("Headline", { ...HEADLINE_BOX, y: y + dy }, copy, {
+    text("Headline", { ...HEADLINE_BOX, x: HEADLINE_BOX.x + dx, y: y + dy }, copy, {
       fontFamily: f.display,
       fontSize: 96,
       fontWeight: f.displayWeight,
@@ -2123,7 +2126,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     });
 
   const channelName = (y: number) =>
-    text("Channel name", { x: 310, y: y + dy, width: 1300, height: 76 }, "{{CHANNEL_NAME}}", {
+    text("Channel name", { x: 310 + dx, y: y + dy, width: 1300, height: 76 }, "{{CHANNEL_NAME}}", {
       fontFamily: f.display,
       fontSize: 48,
       fontWeight: f.displayWeight,
@@ -2140,7 +2143,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     });
 
   const slogan = (y: number) =>
-    text("Slogan", { x: 360, y: y + dy, width: 1200, height: 40 }, "{{SLOGAN}}", {
+    text("Slogan", { x: 360 + dx, y: y + dy, width: 1200, height: 40 }, "{{SLOGAN}}", {
       fontFamily: f.body,
       fontSize: 24,
       fontWeight: 400,
@@ -5575,9 +5578,55 @@ const LOW_POLY: FamilyStyle = {
   contentOffsetY: 0,
 };
 
-/** Voltage: an esports lightning overlay — a honeycomb dark field on the left, a
-    bright angled colour panel on the right, split by a glowing lightning-bolt
-    seam, under a chrome italic headline. Blue by default; follows the palette. */
+/** The Voltage scene: a dark field on the left (honeycomb optional), a bright
+    colour panel on the right whose left edge IS a glowing lightning-bolt seam.
+    The panel and the bolt share one box so the colour butts against the seam. */
+function voltageScene(hex: boolean): LayerSpec[] {
+  return [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 120 } },
+    }),
+    ...(hex
+      ? [
+          shape("Hexmesh", { x: -40, y: -40, width: 1560, height: 1160 }, {
+            shape: "hexmesh",
+            fill: "@primary",
+            opacity: 0.2,
+            effects: { glow: { enabled: true, color: "@glow", strength: 6 } },
+          }),
+        ]
+      : []),
+    shape("Streak 1", { x: 320, y: -120, width: 5, height: 760 }, {
+      fill: "@accent", opacity: 0.22, rotation: 20,
+      effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+    }),
+    shape("Streak 2", { x: 560, y: -60, width: 3, height: 560 }, { fill: "@glow", opacity: 0.16, rotation: 20 }),
+    shape("Panel", { x: 1080, y: 0, width: 840, height: 1080 }, {
+      shape: "boltpanel",
+      fill: "@accent",
+      effects: {
+        gradient: { enabled: true, from: "@glow", to: "@accent", angle: 20 },
+        glow: { enabled: true, color: "@glow", strength: 26 },
+      },
+      animation: anim("glow", { duration: 5200, intensity: 0.5 }),
+    }),
+    shape("Bolt", { x: 1080, y: 0, width: 840, height: 1080 }, {
+      shape: "bolt",
+      fill: "@background",
+      cornerRadius: 54,
+      effects: { glow: { enabled: true, color: "@glow", strength: 42 } },
+      animation: anim("glow", { duration: 4000, intensity: 0.7 }),
+    }),
+    particles("Decor — Sparks", { kind: "bokeh", count: 10, size: 8, speed: 0.4, color: "@accent", opacity: 0.4 }),
+    particles("Decor — Dust", { kind: "dots", count: 20, size: 2, speed: 0.5, color: "@glow", opacity: 0.4 }),
+  ];
+}
+
+/** Voltage: an esports lightning overlay — honeycomb dark field, a bright colour
+    panel split off by a glowing lightning-bolt seam, chrome italic headline
+    shifted left of the panel. Follows the palette across the core set. */
 const VOLTAGE: FamilyStyle = {
   id: "voltage",
   name: "Voltage",
@@ -5603,55 +5652,24 @@ const VOLTAGE: FamilyStyle = {
     glow: { enabled: true, color: "@glow", strength: 26 },
   },
   plateShape: "chamfer",
-  scene: () => [
-    shape("Backdrop", FULL, {
-      background: true,
-      fill: "@background",
-      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 120 } },
-    }),
-    // Honeycomb mesh over the dark left field.
-    shape("Hexmesh", { x: -40, y: -40, width: 1560, height: 1160 }, {
-      shape: "hexmesh",
-      fill: "@primary",
-      opacity: 0.2,
-      effects: { glow: { enabled: true, color: "@glow", strength: 6 } },
-    }),
-    // Thin light streaks in the dark.
-    shape("Streak 1", { x: 320, y: -120, width: 5, height: 760 }, {
-      fill: "@accent", opacity: 0.22, rotation: 20,
-      effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
-    }),
-    shape("Streak 2", { x: 560, y: -60, width: 3, height: 560 }, { fill: "@glow", opacity: 0.16, rotation: 20 }),
-    // The colour block fills to the right of the bolt centreline — its left edge
-    // IS the lightning, so the colour butts right up against the seam. Same box
-    // as the bolt below so their edges line up exactly.
-    shape("Panel", { x: 1300, y: 0, width: 620, height: 1080 }, {
-      shape: "boltpanel",
-      fill: "@accent",
-      effects: {
-        gradient: { enabled: true, from: "@glow", to: "@accent", angle: 20 },
-        glow: { enabled: true, color: "@glow", strength: 26 },
-      },
-      animation: anim("glow", { duration: 5200, intensity: 0.5 }),
-    }),
-    // The lightning-bolt seam on that same edge: a black core, blue glowing rim.
-    shape("Bolt", { x: 1300, y: 0, width: 620, height: 1080 }, {
-      shape: "bolt",
-      fill: "@background",
-      cornerRadius: 54,
-      effects: { glow: { enabled: true, color: "@glow", strength: 42 } },
-      animation: anim("glow", { duration: 4000, intensity: 0.7 }),
-    }),
-    // Blue sparks drifting off the seam.
-    particles("Decor — Sparks", { kind: "bokeh", count: 10, size: 8, speed: 0.4, color: "@accent", opacity: 0.4 }),
-    particles("Decor — Dust", { kind: "dots", count: 20, size: 2, speed: 0.5, color: "@glow", opacity: 0.4 }),
-  ],
+  scene: () => voltageScene(true),
   overlayDecor: () => [],
   contentOffsetY: 0,
+  contentOffsetX: -300,
+};
+
+/** Voltage Flat: the same overlay without the honeycomb mesh — a clean dark
+    field beside the colour panel. */
+const VOLTAGE_FLAT: FamilyStyle = {
+  ...VOLTAGE,
+  id: "voltageflat",
+  name: "Voltage Flat",
+  scene: () => voltageScene(false),
 };
 
 const NEW_FAMILIES: FamilyStyle[] = [
   VOLTAGE,
+  VOLTAGE_FLAT,
   RETROWAVE,
   TERRAZZO,
   BLUEPRINT,
