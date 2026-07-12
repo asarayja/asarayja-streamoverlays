@@ -5575,7 +5575,81 @@ const LOW_POLY: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/** Voltage: an esports lightning overlay — a honeycomb dark field on the left, a
+    bright angled colour panel on the right, split by a glowing lightning-bolt
+    seam, under a chrome italic headline. Blue by default; follows the palette. */
+const VOLTAGE: FamilyStyle = {
+  id: "voltage",
+  name: "Voltage",
+  tags: ["Esports", "Neon", "Blue"],
+  display: "Kanit",
+  displayWeight: 800,
+  displayTracking: 1,
+  displayTransform: "uppercase",
+  displayItalic: true,
+  body: "Saira",
+  radius: 4,
+  frameRadius: 6,
+  corners: true,
+  strokeWidth: 3,
+  frameShape: "hexagon",
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 3, radius: 6 },
+    glow: { enabled: true, color: "@glow", strength: 30 },
+  },
+  // Chrome lettering with a blue glow — the metallic esports headline.
+  headlineEffects: {
+    gradient: { enabled: true, from: "#cdcdcd", via: "#ffffff", to: "#6b6b6b", angle: 90 },
+    glow: { enabled: true, color: "@glow", strength: 26 },
+  },
+  plateShape: "chamfer",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 120 } },
+    }),
+    // Honeycomb mesh over the dark left field.
+    shape("Hexmesh", { x: -40, y: -40, width: 1560, height: 1160 }, {
+      shape: "hexmesh",
+      fill: "@primary",
+      opacity: 0.2,
+      effects: { glow: { enabled: true, color: "@glow", strength: 6 } },
+    }),
+    // Thin light streaks in the dark.
+    shape("Streak 1", { x: 320, y: -120, width: 5, height: 760 }, {
+      fill: "@accent", opacity: 0.22, rotation: 20,
+      effects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+    }),
+    shape("Streak 2", { x: 560, y: -60, width: 3, height: 560 }, { fill: "@glow", opacity: 0.16, rotation: 20 }),
+    // The bright angled colour panel on the right.
+    shape("Panel", { x: 1480, y: -240, width: 960, height: 1560 }, {
+      fill: "@accent",
+      rotation: -15,
+      effects: {
+        gradient: { enabled: true, from: "@glow", to: "@accent", angle: 20 },
+        glow: { enabled: true, color: "@glow", strength: 30 },
+      },
+      animation: anim("glow", { duration: 5200, intensity: 0.5 }),
+    }),
+    // The lightning-bolt seam: a black core with a blue glowing edge.
+    shape("Bolt", { x: 1360, y: 0, width: 400, height: 1080 }, {
+      shape: "bolt",
+      fill: "@background",
+      cornerRadius: 54,
+      effects: { glow: { enabled: true, color: "@glow", strength: 42 } },
+      animation: anim("glow", { duration: 4000, intensity: 0.7 }),
+    }),
+    // Blue sparks drifting off the seam.
+    particles("Decor — Sparks", { kind: "bokeh", count: 10, size: 8, speed: 0.4, color: "@accent", opacity: 0.4 }),
+    particles("Decor — Dust", { kind: "dots", count: 20, size: 2, speed: 0.5, color: "@glow", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  VOLTAGE,
   RETROWAVE,
   TERRAZZO,
   BLUEPRINT,

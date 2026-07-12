@@ -949,6 +949,35 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "bolt") {
+    // A vertical lightning bolt stroked down the box: a jagged centreline
+    // zigzagging left/right, thick with round joins, glowing at the edge.
+    const th = layer.cornerRadius ?? 40;
+    const col = resolveColor(layer.fill, ctx.theme);
+    const pts: Array<[number, number]> = [
+      [0.58, -0.04],
+      [0.4, 0.34],
+      [0.64, 0.44],
+      [0.42, 1.04],
+    ];
+    return (
+      <KonvaShape
+        stroke={col}
+        strokeWidth={th}
+        lineJoin="round"
+        lineCap="round"
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+        sceneFunc={(c, s) => {
+          c.beginPath();
+          pts.forEach(([px, py], i) =>
+            i ? c.lineTo(px * w, py * h) : c.moveTo(px * w, py * h),
+          );
+          c.strokeShape(s);
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "flagarc") {
     // Flag stripes bent into parallel arcs — a curved pride band, any direction
     // via the layer's rotation.

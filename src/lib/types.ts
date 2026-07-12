@@ -423,6 +423,9 @@ export type ShapeKind =
   | "diagonalsplit"
   /** A colour block below a zigzag edge — a jagged divider. */
   | "zigzagsplit"
+  /** A vertical lightning bolt stroked down the box — an esports seam. Thickness
+      from cornerRadius; fill is the stroke colour, effects glow the edge. */
+  | "bolt"
   /** Flag stripes bent into parallel arcs — a curved pride band. Colours from
       `facetColors`, arc bend from `cornerRadius`. */
   | "flagarc"
