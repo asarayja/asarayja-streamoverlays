@@ -35,7 +35,7 @@ import {
   Wind,
 } from "lucide-react";
 import { FONTS } from "@/data/fonts";
-import { TEMPLATES } from "@/data/templates";
+import { STARTERS, TEMPLATES } from "@/data/templates";
 import { ICONS, ICON_GROUPS } from "@/data/icons";
 import type { IconName } from "@/data/icons";
 import { getPalette } from "@/data/palettes";
@@ -672,6 +672,7 @@ function NBandGenerator() {
 function AddTab() {
   const addLayer = useEditorStore((s) => s.addLayer);
   const insertLayer = useEditorStore((s) => s.insertLayer);
+  const insertStarter = useEditorStore((s) => s.insertStarter);
   const t = useT();
   const imgInput = useRef<HTMLInputElement>(null);
 
@@ -707,6 +708,25 @@ function AddTab() {
   return (
     <div>
       <PanelHeader title={t("Add layer")} subtitle={t("New layers land in the middle of the canvas.")} />
+
+      <div className="border-b border-white/[0.06] px-4 py-4">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Ready pieces")}</p>
+        <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
+          {t("Drop a ready-made scaffold onto the canvas — a webcam frame, panels, a chat box or a social bar — then make it yours.")}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {STARTERS.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => insertStarter(s.id)}
+              className="rounded-xl border border-white/[0.06] bg-white/[0.02] py-2.5 text-[11px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-2 p-4 pb-2">
         {ADDABLE.map((type) => {
           const Icon = LAYER_ICONS[type];

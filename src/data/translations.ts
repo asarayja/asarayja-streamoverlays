@@ -614,6 +614,8 @@ export const NO: Record<string, string> = {
   "Start from scratch": "Start fra bunnen av",
   "Start from a starter": "Start fra en mal",
   "Start something new": "Start noe nytt",
+  "Ready pieces": "Ferdige biter",
+  "Drop a ready-made scaffold onto the canvas — a webcam frame, panels, a chat box or a social bar — then make it yours.": "Slipp et ferdig oppsett på lerretet — en webcam-ramme, paneler, en chatboks eller en social bar — og gjør det til ditt.",
   "Build from a blank canvas, open a ready scaffold — a webcam frame, panels, a chat box — or import a design file.": "Bygg fra et blankt lerret, åpne et ferdig oppsett — en webcam-ramme, paneler, en chatboks — eller importer en design-fil.",
   "Or browse a finished look": "Eller bla gjennom et ferdig design",
   "Each card shows one colour — open a design to try every colour it comes in, and switch dark or light.": "Hvert kort viser én farge — åpne et design for å prøve alle fargene det finnes i, og bytte mellom lys og mørk.",

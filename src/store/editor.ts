@@ -131,6 +131,9 @@ interface EditorState {
 
   addLayer: (type: LayerType, partial?: Partial<Layer>) => void;
   insertLayer: (layer: Layer) => void;
+  /** Drop a ready-made scaffold (webcam frame, panels, chat, socials) into the
+      canvas as fresh layers — the starter pieces, now inside the editor. */
+  insertStarter: (templateId: string) => void;
   /** Insert a drawing just below the first camera layer so the webcam hole cuts
       through it (draw around, never over, the camera). Appends if no camera. */
   insertDrawing: (layer: Layer) => void;
@@ -498,6 +501,17 @@ export const useEditorStore = create<EditorState>()((set, get) => {
       pushHistory();
       mapLayers((layers) => [...layers, layer]);
       set({ selectedIds: [layer.id] });
+    },
+
+    insertStarter: (templateId) => {
+      const template = getTemplate(templateId);
+      if (!template) return;
+      pushHistory();
+      // Fresh ids so the same starter can be dropped more than once, and never
+      // collides with layers already on the canvas.
+      const added = cloneLayers(template.layers).map((l) => ({ ...l, id: uid() }));
+      mapLayers((layers) => [...layers, ...added]);
+      set({ selectedIds: added.map((l) => l.id) });
     },
 
     insertDrawing: (layer) => {
