@@ -5,7 +5,7 @@ import { Sparkles } from "lucide-react";
 import { getPalette } from "@/data/palettes";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { useClock } from "@/lib/useClock";
-import { isContinuous, settledTime, timelineDuration } from "@/lib/animation";
+import { isContinuous, previewClock, settledTime, timelineDuration } from "@/lib/animation";
 import { useElementSize, useInView, useOnScreen, usePrefersReducedMotion } from "@/lib/useElementSize";
 import { cx } from "@/components/ui";
 import { useT } from "@/lib/i18n";
@@ -37,17 +37,17 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
   // Only while the card is actually on screen (or hovered), so a long gallery
   // isn't driving dozens of clocks; honours prefers-reduced-motion.
   const play = hovered || (onScreen && !reduceMotion);
-  // Scenes with continuous ambient motion (glow, drifting particles) run on an
-  // unbounded clock: the entrance plays once, then the ambient loops forever
-  // and smoothly — no jarring restart. Pure one-shots (stingers) have nothing
-  // continuous, so they loop over their timeline plus a short settle to replay.
-  const loopAfter = useMemo(() => {
+  // Scenes with continuous ambient motion (glow, drifting particles) flow on an
+  // unbounded clock. Anything else ping-pongs over its timeline so whatever
+  // one-shot the design uses loops smoothly (in → settle → out) rather than
+  // hard-cutting back to the start.
+  const loopPeriod = useMemo(() => {
     const anims = template.layers.map((l) => l.animation);
     if (anims.some((a) => isContinuous(a.preset))) return 0;
-    return timelineDuration(anims) + 650;
+    return timelineDuration(anims);
   }, [template.layers]);
-  const clock = useClock(play, loopAfter);
-  const time = play ? clock : settledTime(template.category, SETTLED);
+  const clock = useClock(play);
+  const time = play ? previewClock(clock, loopPeriod) : settledTime(template.category, SETTLED);
 
   const resolvedTheme = theme ?? getPalette(template.paletteId).theme;
   // Full-screen scenes carry their own background; partial overlays are meant to

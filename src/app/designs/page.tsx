@@ -12,7 +12,7 @@ import { Chip, TextInput, cx } from "@/components/ui";
 import { getPalette } from "@/data/palettes";
 import { useElementSize, useInView, useOnScreen, usePrefersReducedMotion } from "@/lib/useElementSize";
 import { useClock } from "@/lib/useClock";
-import { isContinuous, settledTime, timelineDuration } from "@/lib/animation";
+import { isContinuous, previewClock, settledTime, timelineDuration } from "@/lib/animation";
 import { useRenderProfile } from "@/store/profile";
 import { useT } from "@/lib/i18n";
 import type { Collection } from "@/lib/types";
@@ -109,16 +109,16 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
   const hasBackdrop = design.cover.layers.some((l) => l.type === "background");
 
   // Autoplay the cover's motion while the card is on screen. Continuous ambient
-  // motion runs unbounded (entrance once, then loops smoothly); pure one-shots
-  // loop over their timeline plus a short settle.
+  // motion flows unbounded; anything else ping-pongs so its one-shot loops
+  // smoothly (in → settle → out) instead of hard-cutting back to the start.
   const play = onScreen && !reduceMotion;
-  const loopAfter = useMemo(() => {
+  const loopPeriod = useMemo(() => {
     const anims = design.cover.layers.map((l) => l.animation);
     if (anims.some((a) => isContinuous(a.preset))) return 0;
-    return timelineDuration(anims) + 650;
+    return timelineDuration(anims);
   }, [design.cover.layers]);
-  const clock = useClock(play, loopAfter);
-  const time = play ? clock : settledTime(design.cover.category, SETTLED);
+  const clock = useClock(play);
+  const time = play ? previewClock(clock, loopPeriod) : settledTime(design.cover.category, SETTLED);
 
   return (
     <Link

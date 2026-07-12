@@ -352,6 +352,30 @@ function atProgress(anim: Animation, raw: number): AnimationSample {
   }
 }
 
+/**
+ * Map a monotonic clock to a *preview* time that loops smoothly for any
+ * animation, so a designer never has to think about loop points.
+ *
+ * `period <= 0` → pass the clock straight through (unbounded). Use this when a
+ * design has continuous ambient motion: it is already periodic, and wrapping it
+ * would make particles jump.
+ *
+ * `period > 0` → ping-pong: play forward 0→period, hold at the settled pose,
+ * play back period→0, hold at the start, repeat. Any one-shot (a fade/slide-in,
+ * or a stinger) then loops seamlessly — it eases in, rests, eases back out —
+ * instead of hard-cutting from its end pose to its start.
+ */
+export function previewClock(elapsed: number, period: number): number {
+  if (period <= 0) return elapsed;
+  const hold = 450;
+  const seg = period + hold;
+  const c = elapsed % (2 * seg);
+  if (c < period) return c; // forward
+  if (c < seg) return period; // hold at the settled pose
+  if (c < seg + period) return period - (c - seg); // reverse
+  return 0; // hold at the start
+}
+
 /** Longest time any layer keeps changing — the natural export duration. */
 export function timelineDuration(anims: Animation[]): number {
   let max = 1000;
