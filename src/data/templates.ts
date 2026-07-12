@@ -4344,6 +4344,7 @@ function neonBar(
   color: string,
   angle: number,
   delay: number,
+  glowFill = false,
 ): LayerSpec {
   return shape(name, { x: cx - len / 2, y: cy - thick / 2, width: len, height: thick }, {
     shape: "rect",
@@ -4351,6 +4352,11 @@ function neonBar(
     rotation: angle,
     cornerRadius: thick / 2,
     effects: {
+      // A soft inner glow, strongest at the base and fading to nothing toward
+      // the tip — the light pooling inside the tube.
+      ...(glowFill
+        ? { gradient: { enabled: true, from: `${color}/38`, to: `${color}/0`, angle: 0 } }
+        : {}),
       border: { enabled: true, color, width: 3, radius: thick / 2 },
       glow: { enabled: true, color: "@glow", strength: 22 },
     },
@@ -4358,47 +4364,42 @@ function neonBar(
   });
 }
 
-/** A neon fan sticking out from one corner: five parallel diagonal capsule
-    outlines, alternating thick and thin, poking into the frame, tied together
-    by a perpendicular connector line at the corner. Left and right corners
-    mirror their angle so the two sides lean toward each other. */
-function neonFan(prefix: string, color: string, side: "L" | "R", vpos: "T" | "B", seed: number): LayerSpec[] {
-  const N = 5;
-  const angle = side === "L" ? 56 : -56; // left leans one way, right mirrors it
-  const ox = side === "L" ? 250 : 1670;
-  const oy = vpos === "T" ? 230 : 850;
+/** The signature: exactly five long diagonal neon capsules sweeping from one
+    side of the frame to the other. Some are wider than others; each has a
+    fading inner glow and a nested inner tube; the near ends line up on a
+    baseline with a single connector line just outside them (never crossing a
+    box). The first bars are @secondary, the rest @accent — the two-tone split. */
+function neonBand(): LayerSpec[] {
+  const angle = -30;
   const rad = (angle * Math.PI) / 180;
   const dx = Math.cos(rad);
   const dy = Math.sin(rad);
-  const px = -dy; // perpendicular to the bar direction — the fan spread
+  const px = -dy; // perpendicular (the stack direction)
   const py = dx;
-  const gap = 110;
-  const along0 = 48; // where the bars' near ends line up, out from the anchor
+  const N = 5;
+  const gap = 156;
+  const baseX = 250;
+  const baseY = 730; // near-end anchor of the middle bar
+  const widths = [66, 30, 56, 30, 66]; // some wider than others
+  const lens = [1240, 980, 1360, 1010, 1180];
   const bars: LayerSpec[] = [];
   for (let i = 0; i < N; i++) {
-    const thick = i % 2 === 0 ? 62 : 26; // alternate thick / thin
-    const len = 400 + noise(seed + i * 4.3) * 470;
+    const color = i <= 1 ? "@secondary" : "@accent";
+    const thick = widths[i];
+    const len = lens[i];
     const perp = (i - (N - 1) / 2) * gap;
-    // Near ends aligned on a baseline; each bar runs outward from there.
-    const nx = ox + px * perp + dx * along0;
-    const ny = oy + py * perp + dy * along0;
+    const nx = baseX + px * perp;
+    const ny = baseY + py * perp;
     const cx = nx + dx * (len / 2);
     const cy = ny + dy * (len / 2);
-    bars.push(neonBar(`${prefix} ${i}`, cx, cy, len, thick, color, angle, i * 150));
-    // The thick bars carry a short inner tube near their base — the detail
-    // inside the box; the thin ones stay single-line.
-    if (i % 2 === 0) {
-      const innerLen = len * 0.4;
-      const iCx = nx + dx * (innerLen / 2 + thick * 0.95);
-      const iCy = ny + dy * (innerLen / 2 + thick * 0.95);
-      bars.push(neonBar(`${prefix} ${i} inner`, iCx, iCy, innerLen, thick * 0.36, color, angle, i * 150 + 90));
-    }
+    bars.push(neonBar(`Bar ${i}`, cx, cy, len, thick, color, angle, i * 150, true));
+    // A nested inner tube running most of the length — the line inside the box.
+    bars.push(neonBar(`Bar ${i} inner`, cx, cy, len - thick * 1.9, thick * 0.4, color, angle, i * 150 + 90, false));
   }
-  // The connector sits just BEFORE the near ends (toward the corner), so it ties
-  // the bars together from OUTSIDE and never crosses a box interior.
-  const conCx = ox + dx * (along0 - 44);
-  const conCy = oy + dy * (along0 - 44);
-  bars.push(neonBar(`${prefix} tie`, conCx, conCy, (N - 1) * gap + 72, 10, color, angle + 90, 0));
+  // One connector just outside the aligned near ends, perpendicular to the bars.
+  const conX = baseX - dx * 42;
+  const conY = baseY - dy * 42;
+  bars.push(neonBar("Bar tie", conX, conY, (N - 1) * gap + 80, 10, "@secondary", angle + 90, 0, false));
   return bars;
 }
 
@@ -4426,26 +4427,18 @@ const NEON_BARS: FamilyStyle = {
   plateShape: "rect",
   scene: () => [
     shape("Backdrop", FULL, { background: true, fill: "@background" }),
-    // Five bars poke out of each corner; the two left corners are @secondary,
-    // the two right corners @accent, mirrored so the sides lean toward each other.
-    ...neonFan("Fan TL", "@secondary", "L", "T", 3),
-    ...neonFan("Fan BL", "@secondary", "L", "B", 17),
-    ...neonFan("Fan TR", "@accent", "R", "T", 31),
-    ...neonFan("Fan BR", "@accent", "R", "B", 45),
-    // A soft dark pool keeps the centre lane legible for the copy.
-    shape("Centre dim", { x: 360, y: 300, width: 1200, height: 500 }, {
+    ...neonBand(),
+    // A dark pool behind the copy keeps it legible where a bar crosses.
+    shape("Centre dim", { x: 300, y: 320, width: 1320, height: 460 }, {
       shape: "ellipse",
       fill: "@background",
-      opacity: 0.6,
-      effects: { blur: { enabled: true, amount: 60 } },
+      opacity: 0.72,
+      effects: { blur: { enabled: true, amount: 70 } },
     }),
-    particles("Decor — Dust", { kind: "dots", count: 40, size: 2.4, speed: 0.4, color: "@glow", opacity: 0.4 }),
+    particles("Decor — Dust", { kind: "dots", count: 36, size: 2.4, speed: 0.4, color: "@glow", opacity: 0.35 }),
   ],
-  // Over gameplay/webcam: one fan in each corner, thinned so the play area stays clear.
-  overlayDecor: () => [
-    ...neonFan("Edge TL", "@secondary", "L", "T", 3).slice(0, 3),
-    ...neonFan("Edge BR", "@accent", "R", "B", 45).slice(0, 3),
-  ],
+  // Over gameplay/webcam: the same band, thinned so the play area stays clear.
+  overlayDecor: () => neonBand().slice(0, 4),
   contentOffsetY: 0,
 };
 
