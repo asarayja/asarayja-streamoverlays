@@ -2008,6 +2008,7 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   cyberpill: ["glitch", 0],
   vanguard: ["shards", 0],
   vanguardglow: ["shards", 0],
+  radar: ["iris", 0],
   // Crystal / glass — facets.
   holo: ["prism", 8],
   frost: ["prism", -6],
@@ -4439,7 +4440,73 @@ const VANGUARD_GLOW: FamilyStyle = {
   overlayDecor: () => [...skewStrips("tl", true), ...skewStrips("br", true)],
 };
 
+/** Concentric ring outlines centred on a corner, so only the in-frame quarter
+    shows — radar arcs radiating from the corner. A staggered glow pulse sends a
+    wave of light sweeping outward. */
+function radarArcs(corner: "tl" | "br", color: string): LayerSpec[] {
+  const cx = corner === "tl" ? 0 : 1920;
+  const cy = corner === "tl" ? 0 : 1080;
+  const N = 6;
+  const arcs: LayerSpec[] = [];
+  for (let i = 0; i < N; i++) {
+    const r = 240 + i * 190;
+    arcs.push(shape(`Arc ${corner} ${i}`, { x: cx - r, y: cy - r, width: 2 * r, height: 2 * r }, {
+      shape: "ellipse",
+      fill: "transparent",
+      effects: {
+        border: { enabled: true, color, width: i % 2 === 0 ? 5 : 2, radius: r },
+        glow: { enabled: true, color: "@glow", strength: 16 },
+      },
+      animation: anim("glow", { duration: 3000, delay: i * 260, intensity: 1 }),
+    }));
+  }
+  return arcs;
+}
+
+/** Radar: concentric neon arcs sweep out of two opposite corners over a dark
+    ground — a radar / sound-wave pulse. Colour follows the palette. */
+const RADAR: FamilyStyle = {
+  id: "radar",
+  name: "Radar",
+  tags: ["Esports", "Sci-Fi", "Neon"],
+  display: "Exo 2",
+  displayWeight: 800,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 8,
+  frameRadius: 10,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 10 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/18", angle: 150 } },
+    }),
+    ...radarArcs("tl", "@secondary"),
+    ...radarArcs("br", "@accent"),
+    // A dark pool keeps the centre lane legible for the copy.
+    shape("Centre dim", { x: 360, y: 320, width: 1200, height: 460 }, {
+      shape: "ellipse",
+      fill: "@background",
+      opacity: 0.6,
+      effects: { blur: { enabled: true, amount: 70 } },
+    }),
+    particles("Decor — Dust", { kind: "dots", count: 36, size: 2.4, speed: 0.4, color: "@glow", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [...radarArcs("tl", "@secondary").slice(0, 4), ...radarArcs("br", "@accent").slice(0, 4)],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  RADAR,
   HALLOWED_NIGHT,
   ASTRAL_DECK,
   PIXEL_WINDOWS,
