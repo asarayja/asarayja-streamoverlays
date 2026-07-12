@@ -5839,7 +5839,203 @@ const CHALKBOARD: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/* --------------------------- Fourth proposal set -------------------------- */
+
+/** Magma: molten rock — glowing cracks branching across a dark cracked ground,
+    a heat bloom rising from below and drifting embers. Follows the palette. */
+const MAGMA: FamilyStyle = {
+  id: "magma",
+  name: "Magma",
+  tags: ["Horror", "Red", "Neon"],
+  display: "Anton",
+  displayWeight: 400,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Oswald",
+  radius: 4,
+  frameRadius: 6,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 6 },
+    glow: { enabled: true, color: "@glow", strength: 34 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 34 } },
+  plateShape: "rect",
+  scene: () => {
+    const cracks: Array<{ x: number; y: number; w: number; h: number; r: number }> = [
+      { x: 120, y: 120, w: 620, h: 6, r: 24 },
+      { x: 460, y: 260, w: 420, h: 5, r: -38 },
+      { x: 1180, y: 90, w: 560, h: 6, r: 34 },
+      { x: 1420, y: 300, w: 380, h: 5, r: -20 },
+      { x: 80, y: 780, w: 520, h: 5, r: -28 },
+      { x: 1260, y: 800, w: 560, h: 6, r: 22 },
+      { x: 700, y: 900, w: 520, h: 5, r: -14 },
+      { x: 560, y: 60, w: 300, h: 4, r: 70 },
+    ];
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 120 } },
+      }),
+      // Heat bloom rising from the base.
+      shape("Heat", { x: 260, y: 640, width: 1400, height: 760 }, {
+        shape: "ellipse", fill: "@glow", opacity: 0.26,
+        effects: { blur: { enabled: true, amount: 110 } },
+        animation: anim("pulse", { duration: 5200, intensity: 0.6 }),
+      }),
+      ...cracks.map((c, i) =>
+        shape(`Crack ${i}`, { x: c.x, y: c.y, width: c.w, height: c.h }, {
+          fill: "@glow",
+          rotation: c.r,
+          effects: { glow: { enabled: true, color: "@accent", strength: 26 } },
+          animation: anim("glow", { duration: 3000 + i * 280, intensity: 0.9 }),
+        }),
+      ),
+      particles("Decor — Embers", { kind: "embers", count: 48, size: 4, speed: 0.9, color: "@accent", opacity: 0.85 }),
+      particles("Decor — Sparks", { kind: "embers", count: 18, size: 2, speed: 1.3, color: "@glow", opacity: 0.7 }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Watercolor: soft colour washes bleeding across a paper ground, gently
+    drifting. Airy and artful; reads light or dark, follows the palette. */
+const WATERCOLOR: FamilyStyle = {
+  id: "watercolor",
+  name: "Watercolor",
+  tags: ["Minimal", "Cozy", "Light"],
+  display: "Comfortaa",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 20,
+  frameRadius: 22,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 22 },
+  },
+  headlineEffects: { shadow: { enabled: true, color: "@shadow", blur: 8, offsetY: 2, opacity: 0.22 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@surface" }),
+    shape("Wash A", { x: -180, y: -160, width: 1100, height: 900 }, { shape: "paintSpray", fill: "@primary", opacity: 0.5, effects: { blur: { enabled: true, amount: 32 } }, animation: anim("breathe", { duration: 8000, intensity: 0.5 }) }),
+    shape("Wash B", { x: 1000, y: -120, width: 1000, height: 860 }, { shape: "paintSpray", fill: "@secondary", opacity: 0.46, effects: { blur: { enabled: true, amount: 34 } }, animation: anim("breathe", { duration: 9200, intensity: 0.5, delay: 600 }) }),
+    shape("Wash C", { x: 420, y: 420, width: 1100, height: 860 }, { shape: "paintSpray", fill: "@accent", opacity: 0.42, effects: { blur: { enabled: true, amount: 36 } }, animation: anim("breathe", { duration: 10400, intensity: 0.5, delay: 1100 }) }),
+    shape("Wash D", { x: 120, y: 360, width: 760, height: 640 }, { shape: "paintSplat", fill: "@primary", opacity: 0.28, effects: { blur: { enabled: true, amount: 26 } }, animation: anim("breathe", { duration: 11000, intensity: 0.5, delay: 400 }) }),
+    particles("Decor — Specks", { kind: "dots", count: 16, size: 3, speed: 0.2, color: "@accent", opacity: 0.4 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Fireflies: a warm night meadow — glowing fireflies drifting over a deep
+    ground with a soft glow. Cosy and magical; follows the palette. */
+const FIREFLIES: FamilyStyle = {
+  id: "fireflies",
+  name: "Fireflies",
+  tags: ["Cozy", "Fantasy", "Green"],
+  display: "Josefin Sans",
+  displayWeight: 600,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Nunito",
+  radius: 16,
+  frameRadius: 18,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 18 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@primary/22", to: "@background", angle: 90 } },
+    }),
+    shape("Ground glow", { x: 260, y: 700, width: 1400, height: 620 }, {
+      shape: "ellipse", fill: "@glow", opacity: 0.14,
+      effects: { blur: { enabled: true, amount: 120 } },
+      animation: anim("breathe", { duration: 9000, intensity: 0.5 }),
+    }),
+    particles("Decor — Fireflies", { kind: "bokeh", count: 26, size: 9, speed: 0.35, color: "@glow", opacity: 0.7 }),
+    particles("Decor — Spark", { kind: "dots", count: 30, size: 3, speed: 0.4, color: "@accent", opacity: 0.6 }),
+    particles("Decor — Mist", { kind: "fog", count: 4, size: 5, speed: 0.25, color: "@secondary", opacity: 0.25 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Neon City: a cyberpunk skyline — building silhouettes lit by a neon glow
+    under light rain and a hazy moon. Follows the palette. */
+const NEON_CITY: FamilyStyle = {
+  id: "neoncity",
+  name: "Neon City",
+  tags: ["Cyberpunk", "Neon", "Blue"],
+  display: "Michroma",
+  displayWeight: 400,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Saira",
+  radius: 3,
+  frameRadius: 5,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 5 },
+    glow: { enabled: true, color: "@glow", strength: 26 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+  plateShape: "rect",
+  scene: () => {
+    const heights = [230, 340, 180, 300, 420, 260, 360, 210, 320, 400, 250, 300, 190, 360];
+    const bw = 1920 / heights.length;
+    const buildings = heights.flatMap((h, i) => {
+      const x = i * bw;
+      return [
+        shape(`Building ${i}`, { x: x + 6, y: 1080 - h, width: bw - 12, height: h + 20 }, {
+          fill: "@surface",
+          effects: { border: { enabled: true, color: "@background", width: 2, radius: 0 } },
+        }),
+        // Neon roofline.
+        shape(`Roof ${i}`, { x: x + 6, y: 1080 - h, width: bw - 12, height: 4 }, {
+          fill: "@accent",
+          effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+          animation: anim("glow", { duration: 3200 + (i % 5) * 300, intensity: 0.8 }),
+        }),
+      ];
+    });
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@primary/28", to: "@background", angle: 90 } },
+      }),
+      shape("Moon", { x: 1480, y: 120, width: 240, height: 240 }, {
+        shape: "ellipse", fill: "@glow", opacity: 0.5,
+        effects: { glow: { enabled: true, color: "@glow", strength: 46 } },
+        animation: anim("breathe", { duration: 8000, intensity: 0.4 }),
+      }),
+      ...buildings,
+      particles("Decor — Rain", { kind: "rain", count: 60, size: 2, speed: 1.4, color: "@glow", opacity: 0.35 }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  MAGMA,
+  WATERCOLOR,
+  FIREFLIES,
+  NEON_CITY,
   ABYSS,
   MARBLE,
   VHS,
