@@ -37,12 +37,14 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
   // Only while the card is actually on screen (or hovered), so a long gallery
   // isn't driving dozens of clocks; honours prefers-reduced-motion.
   const play = hovered || (onScreen && !reduceMotion);
-  // Only a stinger ping-pongs (its cover→reveal motif eases in and out). Every
-  // other design flows on an unbounded clock: the entrance plays once and the
-  // ambient motion carries the loop, so headline text never blinks.
+  // Stingers and alerts ping-pong (they arrive and leave — a stinger's motif, an
+  // alert popping in on a new sub/follower), so the motion is visible on repeat.
+  // Every other design flows on an unbounded clock: the entrance plays once and
+  // the ambient motion carries the loop, so headline text never blinks.
   const loopPeriod = useMemo(() => {
     const anims = template.layers.map((l) => l.animation);
-    return isStingerMotion(anims) ? timelineDuration(anims) : 0;
+    const loop = isStingerMotion(anims) || template.layers.some((l) => l.type === "alert");
+    return loop ? timelineDuration(anims) : 0;
   }, [template.layers]);
   const clock = useClock(play);
   const time = play ? previewClock(clock, loopPeriod) : settledTime(template.category, SETTLED);

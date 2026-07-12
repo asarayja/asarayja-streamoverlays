@@ -113,7 +113,8 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
   const play = onScreen && !reduceMotion;
   const loopPeriod = useMemo(() => {
     const anims = design.cover.layers.map((l) => l.animation);
-    return isStingerMotion(anims) ? timelineDuration(anims) : 0;
+    const loop = isStingerMotion(anims) || design.cover.layers.some((l) => l.type === "alert");
+    return loop ? timelineDuration(anims) : 0;
   }, [design.cover.layers]);
   const clock = useClock(play);
   const time = play ? previewClock(clock, loopPeriod) : settledTime(design.cover.category, SETTLED);

@@ -32,8 +32,10 @@ export function Timeline() {
   // the entrance plays once and the ambient motion carries the loop — so
   // headline text never blinks in and out.
   const loopPeriod = useMemo(() => {
-    const anims = (project?.layers ?? []).map((l) => l.animation);
-    return isStingerMotion(anims) ? timelineDuration(anims) : 0;
+    const ls = project?.layers ?? [];
+    const anims = ls.map((l) => l.animation);
+    const loop = isStingerMotion(anims) || ls.some((l) => l.type === "alert");
+    return loop ? timelineDuration(anims) : 0;
   }, [project?.layers]);
 
   useEffect(() => {
