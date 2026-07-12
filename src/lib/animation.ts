@@ -328,13 +328,16 @@ function atProgress(anim: Animation, raw: number): AnimationSample {
       return { ...IDENTITY, dx: vx * span * phase, dy: vy * span * phase };
     }
     case "sweepScale": {
-      // Grows from nothing to fully covering at the peak, then shrinks away.
+      // Comes in small and accelerates to fully cover at the peak (rushing at
+      // the camera), then shrinks away fast. Opacity stays solid the whole way,
+      // only fading at the very start and end so it pops in and clears cleanly.
       const s =
         raw <= STINGER_PEAK
-          ? EASING_FNS.easeOut(raw / STINGER_PEAK)
+          ? EASING_FNS.easeIn(raw / STINGER_PEAK)
           : 1 - EASING_FNS.easeIn((raw - STINGER_PEAK) / (1 - STINGER_PEAK));
       const scale = Math.max(0.02, s * (k || 1));
-      return { ...IDENTITY, scaleX: scale, scaleY: scale, opacity: Math.min(1, s * 4) };
+      const opacity = Math.min(1, Math.min(raw, 1 - raw) * 12);
+      return { ...IDENTITY, scaleX: scale, scaleY: scale, opacity };
     }
     case "flash": {
       // Fades/pops in for the cover peak, then fades out — for the wordmark or
