@@ -6022,7 +6022,206 @@ const NEON_CITY: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/* --------------------------- Fifth proposal set --------------------------- */
+
+/** Snowfall: a calm winter night — falling snow over pine silhouettes and a cool
+    gradient sky. Cosy and quiet; follows the palette. */
+const SNOWFALL: FamilyStyle = {
+  id: "snowfall",
+  name: "Snowfall",
+  tags: ["Nordic", "Cozy", "Blue"],
+  display: "Josefin Sans",
+  displayWeight: 600,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Nunito",
+  radius: 14,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 16 },
+    glow: { enabled: true, color: "@glow", strength: 20 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  plateShape: "rect",
+  scene: () => {
+    const trees = [
+      { x: 60, w: 260, h: 340 },
+      { x: 300, w: 200, h: 260 },
+      { x: 520, w: 300, h: 400 },
+      { x: 1180, w: 240, h: 300 },
+      { x: 1400, w: 320, h: 420 },
+      { x: 1680, w: 220, h: 280 },
+    ];
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@primary/28", to: "@background", angle: 90 } },
+      }),
+      ...trees.map((t, i) =>
+        shape(`Pine ${i}`, { x: t.x, y: 1080 - t.h, width: t.w, height: t.h + 20 }, {
+          shape: "triangle", fill: "@surface", opacity: 0.9,
+          effects: { glow: { enabled: true, color: "@glow", strength: 6 } },
+        }),
+      ),
+      particles("Decor — Snow", { kind: "snow", count: 90, size: 5, speed: 0.7, color: "@text", opacity: 0.75 }),
+      particles("Decor — Flurry", { kind: "snow", count: 50, size: 8, speed: 1, color: "@glow", opacity: 0.5 }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Confetti: a celebration — falling confetti and hanging streamers over a
+    festive ground. Bright and cheerful; follows the palette. */
+const CONFETTI: FamilyStyle = {
+  id: "confetti",
+  name: "Confetti",
+  tags: ["Cozy", "RGB", "Pink"],
+  display: "Fredoka",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 22,
+  frameRadius: 24,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 24 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { shadow: { enabled: true, color: "@shadow", blur: 6, offsetY: 2, opacity: 0.22 } },
+  plateShape: "rect",
+  scene: () => {
+    const streamers = [
+      { x: 120, c: "@primary", r: 14 },
+      { x: 480, c: "@secondary", r: -12 },
+      { x: 1360, c: "@accent", r: 12 },
+      { x: 1720, c: "@primary", r: -16 },
+    ];
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@surface",
+        effects: { gradient: { enabled: true, from: "@surface", to: "@primary/12", angle: 130 } },
+      }),
+      ...streamers.map((s, i) =>
+        shape(`Streamer ${i}`, { x: s.x, y: -160, width: 14, height: 600 }, {
+          shape: "rect", fill: s.c, opacity: 0.55, rotation: s.r,
+          effects: { glow: { enabled: true, color: "@glow", strength: 8 } },
+          animation: anim("sway", { duration: 5200 + i * 400, intensity: 0.6 }),
+        }),
+      ),
+      particles("Decor — Confetti A", { kind: "confetti", count: 46, size: 11, speed: 0.9, color: "@accent", opacity: 0.9 }),
+      particles("Decor — Confetti B", { kind: "confetti", count: 34, size: 9, speed: 1.2, color: "@primary", opacity: 0.85 }),
+      particles("Decor — Confetti C", { kind: "confetti", count: 28, size: 8, speed: 1.4, color: "@secondary", opacity: 0.8 }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Toxic: biohazard — a toxic ooze dripping from above, rising bubbles and a
+    radioactive glow from below. Edgy; follows the palette. */
+const TOXIC: FamilyStyle = {
+  id: "toxic",
+  name: "Toxic",
+  tags: ["Horror", "Green", "Neon"],
+  display: "Black Ops One",
+  displayWeight: 400,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Oswald",
+  radius: 4,
+  frameRadius: 6,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 6 },
+    glow: { enabled: true, color: "@glow", strength: 32 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 32 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/26", angle: 90 } },
+    }),
+    // Ooze dripping from the top edge (a drip panel flipped so it hangs down).
+    shape("Ooze", { x: -60, y: -540, width: 2040, height: 760 }, {
+      shape: "drip", fill: "@accent", opacity: 0.85, rotation: 180,
+      effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+      animation: anim("sway", { duration: 6000, intensity: 0.3 }),
+    }),
+    particles("Decor — Bubbles", { kind: "bubbles", count: 34, size: 9, speed: 0.7, color: "@glow", opacity: 0.6 }),
+    particles("Decor — Spores", { kind: "dots", count: 26, size: 3, speed: 0.5, color: "@accent", opacity: 0.55 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Wireframe: a sci-fi perspective grid — glowing lines and rings receding to a
+    corner vanishing point over a dark ground. Follows the palette. */
+const WIREFRAME: FamilyStyle = {
+  id: "wireframe",
+  name: "Wireframe",
+  tags: ["Cyberpunk", "Neon", "Sci-Fi"],
+  display: "Michroma",
+  displayWeight: 400,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Saira",
+  radius: 3,
+  frameRadius: 5,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 5 },
+    glow: { enabled: true, color: "@glow", strength: 24 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+  plateShape: "rect",
+  scene: () => {
+    // Vanishing point in the top-right; a fan of lines and concentric rings.
+    const vpx = 1620, vpy = 300;
+    const lines = Array.from({ length: 16 }).map((_, i) => {
+      const a = 90 + i * (180 / 15); // sweep across the lower-left half
+      return shape(`Ray ${i}`, { x: vpx - 1300, y: vpy - 2, width: 2600, height: 3 }, {
+        fill: "@accent", opacity: 0.16, rotation: a,
+        effects: { glow: { enabled: true, color: "@glow", strength: 8 } },
+      });
+    });
+    const rings = [420, 720, 1040, 1380].map((d, i) =>
+      shape(`Ring ${i}`, { x: vpx - d / 2, y: vpy - d / 2, width: d, height: d }, {
+        shape: "ellipse", fill: "transparent", opacity: 0.3,
+        effects: { border: { enabled: true, color: "@accent", width: 2, radius: 0 }, glow: { enabled: true, color: "@glow", strength: 12 } },
+        animation: anim("pulse", { duration: 4200 + i * 500, intensity: 0.5 }),
+      }),
+    );
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/18", angle: 140 } },
+      }),
+      ...lines,
+      ...rings,
+      particles("Decor — Nodes", { kind: "dots", count: 24, size: 3, speed: 0.35, color: "@glow", opacity: 0.5 }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  SNOWFALL,
+  CONFETTI,
+  TOXIC,
+  WIREFRAME,
   MAGMA,
   WATERCOLOR,
   FIREFLIES,
