@@ -7567,6 +7567,42 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
  * different `paletteId` — no per-variant artwork, and adding a palette adds a
  * full set of templates for free.
  */
+/** Lift a flag colour's lightness so it reads as a rain/meteor streak on a dark
+    ground — a flag's dark stripes (deep red, near-black, grey) otherwise vanish.
+    Hue and saturation are kept, so a colour just gets brighter, never re-hued. */
+function liftForRain(hex: string): string {
+  const n = hex.replace("#", "");
+  if (n.length < 6) return hex;
+  const r = parseInt(n.slice(0, 2), 16) / 255;
+  const g = parseInt(n.slice(2, 4), 16) / 255;
+  const b = parseInt(n.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h /= 6;
+  }
+  const nl = Math.max(l, 0.62);
+  const hue2rgb = (p: number, q: number, t: number) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  const q = nl < 0.5 ? nl * (1 + s) : nl + s - nl * s;
+  const p = 2 * nl - q;
+  const toHex = (x: number) => Math.round(x * 255).toString(16).padStart(2, "0");
+  return "#" + toHex(hue2rgb(p, q, h + 1 / 3)) + toHex(hue2rgb(p, q, h)) + toHex(hue2rgb(p, q, h - 1 / 3));
+}
+
 function buildVariant(base: BaseTemplate, palette: Palette): Template {
   const tags = new Set<StyleTag>([...base.tags, ...paletteTags(palette.id)]);
   // Pack naming: themed collections compose the palette in ("Midnight
@@ -7612,9 +7648,10 @@ function buildVariant(base: BaseTemplate, palette: Palette): Template {
       if (layer.type === "text" && layer.fillStripes && palette.flag) {
         layer.fillStripes = palette.flag;
       }
-      // Flag-coloured particles (pride rain / meteor) fly the palette's stripes.
+      // Flag-coloured particles (pride rain / meteor) fly the palette's stripes,
+      // brightened so a flag's dark stripes still read as streaks on the ground.
       if (layer.type === "particle" && layer.facetColors && palette.flag) {
-        layer.facetColors = palette.flag;
+        layer.facetColors = palette.flag.map(liftForRain);
       }
       // A glass sheet / plasma waves / flag bands take the palette's flag colours.
       if (
