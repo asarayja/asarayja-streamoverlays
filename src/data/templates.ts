@@ -5665,7 +5665,180 @@ const VOLTAGE_FLAT: FamilyStyle = {
   scene: () => voltageScene(false),
 };
 
+/* --------------------------- Third proposal set --------------------------- */
+
+/** Abyss: deep-sea — rising bubbles and drifting motes under a soft caustic
+    light from the surface, on a dark blue gradient. Follows the palette. */
+const ABYSS: FamilyStyle = {
+  id: "abyss",
+  name: "Abyss",
+  tags: ["Nordic", "Blue", "Cozy"],
+  display: "Jost",
+  displayWeight: 600,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 14,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 16 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@primary/35", to: "@background", angle: 90 } },
+    }),
+    // Caustic light from the surface.
+    shape("Light shaft", { x: 460, y: -320, width: 1000, height: 900 }, {
+      shape: "ellipse", fill: "@glow", opacity: 0.16,
+      effects: { blur: { enabled: true, amount: 130 } },
+      animation: anim("breathe", { duration: 8000, intensity: 0.5 }),
+    }),
+    particles("Decor — Murk", { kind: "fog", count: 5, size: 5, speed: 0.3, color: "@secondary", opacity: 0.3 }),
+    particles("Decor — Bubbles", { kind: "bubbles", count: 40, size: 8, speed: 0.7, color: "@glow", opacity: 0.55 }),
+    particles("Decor — Fine", { kind: "bubbles", count: 24, size: 4, speed: 1, color: "@accent", opacity: 0.4 }),
+    particles("Decor — Motes", { kind: "dots", count: 22, size: 2, speed: 0.3, color: "@glow", opacity: 0.35 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Marble: stone luxury — a veined marble ground with soft cloudy figuring and
+    fine gold veins, under an engraved serif. Reads light or dark; follows the
+    palette. */
+const MARBLE: FamilyStyle = {
+  id: "marble",
+  name: "Marble",
+  tags: ["Minimal", "Fantasy", "Light"],
+  display: "Playfair Display",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Cormorant Garamond",
+  radius: 4,
+  frameRadius: 6,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 6 },
+  },
+  headlineEffects: { shadow: { enabled: true, color: "@shadow", blur: 8, offsetY: 2, opacity: 0.25 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@surface",
+      effects: { gradient: { enabled: true, from: "@surface", to: "@background", angle: 130 } },
+    }),
+    // Cloudy stone figuring.
+    shape("Figuring A", { x: -160, y: -120, width: 1200, height: 900 }, { shape: "paintSpray", fill: "@primary", opacity: 0.1, animation: anim("breathe", { duration: 9000 }) }),
+    shape("Figuring B", { x: 900, y: 320, width: 1200, height: 900 }, { shape: "paintSpray", fill: "@secondary", opacity: 0.08, animation: anim("breathe", { duration: 10200, delay: 700 }) }),
+    // Fine gold veins branching across the slab.
+    shape("Vein 1", { x: -120, y: 180, width: 2200, height: 200 }, { shape: "wave", fill: "@accent", opacity: 0.5, animation: anim("sway", { duration: 12000, intensity: 0.2 }) }),
+    shape("Vein 2", { x: -120, y: 520, width: 2200, height: 260 }, { shape: "wave", fill: "@accent", opacity: 0.28, animation: anim("sway", { duration: 13000, intensity: 0.2, delay: 500 }) }),
+    shape("Vein 3", { x: -120, y: 800, width: 2200, height: 180 }, { shape: "wave", fill: "@primary", opacity: 0.35, animation: anim("sway", { duration: 14000, intensity: 0.2, delay: 900 }) }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** VHS: retro broadcast — a colour-bar header, CRT scanlines and a rolling
+    tracking glitch, in a mono face. Follows the palette. */
+const VHS: FamilyStyle = {
+  id: "vhs",
+  name: "VHS",
+  tags: ["Cyberpunk", "Neon", "Dark"],
+  display: "Space Mono",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "uppercase",
+  body: "Space Mono",
+  radius: 2,
+  frameRadius: 3,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 3 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+  plateShape: "rect",
+  scene: () => {
+    const cols = ["@primary", "@secondary", "@accent", "@glow", "@text", "@secondary", "@accent"];
+    const bw = 1920 / cols.length;
+    const bars = cols.map((c, i) =>
+      shape(`Bar ${i}`, { x: i * bw, y: 0, width: bw + 1, height: 150 }, { fill: c, opacity: 0.8 }),
+    );
+    return [
+      shape("Backdrop", FULL, { background: true, fill: "@background" }),
+      ...bars,
+      // Rolling tracking glitch — a bright band that drifts down the frame.
+      shape("Tracking", { x: 0, y: 300, width: 1920, height: 26 }, {
+        fill: "@glow", opacity: 0.5,
+        effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+        animation: anim("float", { duration: 3600, intensity: 3 }),
+      }),
+      shape("Scanlines", FULL, { shape: "scanlines", fill: "@accent", opacity: 0.14 }),
+      particles("Decor — Snow", { kind: "dots", count: 60, size: 2, speed: 0.9, color: "@text", opacity: 0.25 }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Chalkboard: hand-drawn — chalk lettering, a rough chalk frame and dust on a
+    dark board (a whiteboard in light palettes). Cosy and casual; follows the
+    palette. */
+const CHALKBOARD: FamilyStyle = {
+  id: "chalkboard",
+  name: "Chalkboard",
+  tags: ["Cozy", "Minimal", "Green"],
+  display: "Caveat",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Kalam",
+  radius: 8,
+  frameRadius: 10,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@text/60", width: 2, radius: 10 },
+  },
+  headlineEffects: {},
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 120 } },
+    }),
+    // A rough chalk frame just inside the edges.
+    shape("Chalk frame", { x: 70, y: 60, width: 1780, height: 960 }, {
+      shape: "rect", fill: "transparent",
+      effects: { border: { enabled: true, color: "@text/45", width: 3, radius: 8 } },
+    }),
+    // Two chalk rules under the copy area.
+    shape("Rule 1", { x: 360, y: 604, width: 1200, height: 4 }, { fill: "@accent", opacity: 0.7 }),
+    shape("Rule 2", { x: 460, y: 620, width: 1000, height: 3 }, { fill: "@text/45" }),
+    particles("Decor — Dust", { kind: "dots", count: 28, size: 2.5, speed: 0.25, color: "@text", opacity: 0.3 }),
+    particles("Decor — Sparkle", { kind: "stars", count: 30, size: 2, speed: 0.15, color: "@accent", opacity: 0.5 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  ABYSS,
+  MARBLE,
+  VHS,
+  CHALKBOARD,
   VOLTAGE,
   VOLTAGE_FLAT,
   RETROWAVE,
