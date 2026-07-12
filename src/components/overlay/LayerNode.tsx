@@ -246,7 +246,7 @@ function ghostPath(c: Konva.Context, w: number, h: number) {
   c.beginPath();
   c.moveTo(0, shoulder);
   c.lineTo(0, r);
-  c.arc(r, r, r, Math.PI, 0, true); // dome over the top
+  c.arc(r, r, r, Math.PI, 0, false); // dome over the top (clockwise, y-down canvas)
   c.lineTo(w, shoulder);
   // Scalloped hem back to the left — downward bumps.
   const bumps = 4;

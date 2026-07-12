@@ -1697,17 +1697,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
         effects: { border: { enabled: true, color: "@accent", width: 2, radius: 0 } },
         animation: anim("sweep", { direction: "right", duration: 1160, delay: 120, easing: "linear" }),
       }),
-      text("Channel name", { x: 210, y: 470, width: 1500, height: 130 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Orbitron",
-        fontSize: 92,
-        fontWeight: 900,
-        align: "center",
-        fill: "@text",
-        letterSpacing: 4,
-        textTransform: "uppercase",
-        effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
-        animation: anim("flash", { duration: 1160, easing: "linear" }),
-      }),
     ],
   },
 
@@ -1932,95 +1921,58 @@ function stingerName(f: FamilyStyle, dy: number, plate = false): LayerSpec[] {
 }
 
 /**
- * A stinger is a themed motif that rushes at the camera: it grows from nothing
- * to fully cover the frame at the peak (the OBS transition point), then shrinks
- * away to reveal the next scene. A colour cover scales just behind it so the
- * frame is 100% opaque at the peak even where the motif's silhouette doesn't
- * reach the corners.
+ * A stinger is a themed motif over a TRANSPARENT background: it comes in small,
+ * grows to its peak (the OBS transition point) — some swelling to fully cover
+ * the frame, some only to about half — then shrinks away and vanishes so the
+ * next scene shows through. No colour cover and no text: just the motif and a
+ * little decor, the way stinger clips usually look.
  */
-function stingerZoom(
-  f: FamilyStyle,
-  dy: number,
-  o: {
-    motif: ShapeKind;
-    motifFill?: string;
-    cover?: string;
-    coverShape?: ShapeKind;
-    grow?: number;
-    decor?: ParticleKind;
-    decorColor?: string;
-    plate?: boolean;
-  },
-): LayerSpec[] {
+function stingerZoom(o: {
+  motif: ShapeKind;
+  motifFill?: string;
+  borderColor?: string;
+  grow?: number;
+  glow?: number;
+  decor?: ParticleKind;
+  decorColor?: string;
+}): LayerSpec[] {
   return [
-    // A flat near-black cover seals the whole frame at the peak, so the vivid
-    // motif reads at full contrast against it (no colour clash).
-    shape("Cover", { x: -960, y: -1140, width: 3840, height: 3360 }, {
-      shape: o.coverShape ?? "ellipse",
-      fill: "@background",
-      animation: stScale(80, 1.05),
-    }),
-    // A soft pool of the theme colour behind the motif for depth.
-    shape("Halo", { x: 460, y: 40, width: 1000, height: 1000 }, {
-      shape: "ellipse",
-      fill: o.cover ?? "@primary",
-      opacity: 0.6,
-      effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
-      animation: stScale(20, 1.8),
-    }),
-    // A clear, glowing emblem centred on the dark cover — reads as a shape, not
-    // a colour field. It still fills enough to feel like a full-screen hit.
-    shape("Motif", { x: 660, y: 240, width: 600, height: 600 }, {
+    shape("Motif", { x: 610, y: 190, width: 700, height: 700 }, {
       shape: o.motif,
       fill: o.motifFill ?? "@accent",
       effects: {
-        glow: { enabled: true, color: "@glow", strength: 60 },
-        border: { enabled: true, color: "@text", width: 4, radius: 0 },
+        glow: { enabled: true, color: "@glow", strength: o.glow ?? 46 },
+        border: { enabled: true, color: o.borderColor ?? "@text", width: 4, radius: 0 },
       },
-      animation: stScale(0, o.grow ?? 1.7),
+      animation: stScale(0, o.grow ?? 3),
     }),
     ...(o.decor
       ? [particles("Decor", { kind: o.decor, count: 16, size: 7, speed: 1, color: o.decorColor ?? "@accent", opacity: 0.85, animation: stFlash() })]
       : []),
-    ...stingerName(f, dy, o.plate ?? true),
   ];
 }
 
 const STINGER_FORMS: Record<StingerKind, (f: FamilyStyle, dy: number) => LayerSpec[]> = {
-  // A pale ghost swells up over the dark frame, then shrinks away.
-  veil: (f, dy) => stingerZoom(f, dy, { motif: "ghost", motifFill: "#EDEAF7", cover: "@primary", grow: 2.2, decor: "bats", decorColor: "@secondary" }),
-  // A tech hexagon punches in.
-  shards: (f, dy) => stingerZoom(f, dy, { motif: "hexagon", motifFill: "@accent", cover: "@primary", coverShape: "rect", grow: 4, decor: "embers" }),
-  // A glitched diamond slams to full then clears.
-  glitch: (f, dy) => stingerZoom(f, dy, { motif: "diamond", motifFill: "@accent", cover: "@primary", coverShape: "rect", grow: 4.4, decor: "dots", decorColor: "@glow" }),
-  // Pride: the flag floods the frame with a heart bursting over it.
-  ribbon: (f, dy) => [
-    flag("Flag cover", { x: -960, y: -1140, width: 3840, height: 3360 }, {
-      stackDirection: "vertical",
-      cornerRadius: 0,
-      animation: stScale(60, 1.05),
-    }),
-    shape("Heart", { x: 660, y: 240, width: 600, height: 600 }, {
-      shape: "heart",
-      fill: "#FFFFFF",
-      effects: { glow: { enabled: true, color: "@glow", strength: 44 }, border: { enabled: true, color: "@accent", width: 5, radius: 0 } },
-      animation: stScale(0, 2),
-    }),
-    particles("Decor — Confetti", { kind: "confetti", count: 40, size: 6, speed: 1, color: "@accent", animation: stFlash() }),
-    ...stingerName(f, dy, true),
-  ],
-  // A cut gem blooms to cover.
-  prism: (f, dy) => stingerZoom(f, dy, { motif: "gem", motifFill: "@accent", cover: "@primary", grow: 4, decor: "stars" }),
-  // A riso ink blot floods.
-  bars: (f, dy) => stingerZoom(f, dy, { motif: "ellipse", motifFill: "@accent", cover: "@secondary", grow: 4.2, decor: "dots" }),
-  // A lightning bolt cracks in and blows out.
-  burst: (f, dy) => stingerZoom(f, dy, { motif: "bolt", motifFill: "@accent", cover: "@primary", grow: 4.4, decor: "embers" }),
-  // An ink drop floods up and drains.
-  liquid: (f, dy) => stingerZoom(f, dy, { motif: "ellipse", motifFill: "@accent", cover: "@accent", grow: 4.4, decor: "bubbles" }),
-  // A star blooms across a silk night.
-  wave: (f, dy) => stingerZoom(f, dy, { motif: "star", motifFill: "@accent", cover: "@primary", grow: 4, decor: "stars" }),
-  // A moon irises up to cover, then closes.
-  iris: (f, dy) => stingerZoom(f, dy, { motif: "moon", motifFill: "@accent", cover: "@primary", grow: 4, decor: "bokeh", decorColor: "@glow" }),
+  // A themed ghost swells in, whole silhouette on show, then vanishes.
+  veil: () => stingerZoom({ motif: "ghost", motifFill: "@accent", borderColor: "@text", grow: 2.4, glow: 40, decor: "bats", decorColor: "@secondary" }),
+  // Half cover: a tech hexagon punches in.
+  shards: () => stingerZoom({ motif: "hexagon", motifFill: "@accent", grow: 1.8, glow: 44, decor: "embers" }),
+  // Half cover: a glitched diamond slams in.
+  glitch: () => stingerZoom({ motif: "diamond", motifFill: "@accent", grow: 1.8, glow: 44, decor: "dots", decorColor: "@glow" }),
+  // Full cover: a heart blooms over the frame.
+  ribbon: () => stingerZoom({ motif: "heart", motifFill: "@accent", grow: 3, glow: 40, decor: "confetti" }),
+  // Half cover: a cut gem blooms in.
+  prism: () => stingerZoom({ motif: "gem", motifFill: "@accent", grow: 1.9, glow: 40, decor: "stars" }),
+  // Full cover: a riso ink blot floods.
+  bars: () => stingerZoom({ motif: "ellipse", motifFill: "@accent", grow: 3, glow: 30, decor: "dots" }),
+  // Half cover: a lightning bolt cracks in.
+  burst: () => stingerZoom({ motif: "bolt", motifFill: "@accent", grow: 1.9, glow: 50, decor: "embers" }),
+  // Full cover: an ink drop floods up.
+  liquid: () => stingerZoom({ motif: "ellipse", motifFill: "@accent", grow: 3.2, glow: 40, decor: "bubbles" }),
+  // Full cover: a star blooms across.
+  wave: () => stingerZoom({ motif: "star", motifFill: "@accent", grow: 3, glow: 40, decor: "stars" }),
+  // Full cover: a moon irises up.
+  iris: () => stingerZoom({ motif: "moon", motifFill: "@accent", grow: 3, glow: 40, decor: "bokeh", decorColor: "@glow" }),
 };
 
 /** Which form each family wears, and the tilt that keeps same-form families
@@ -4998,44 +4950,20 @@ const GOTHIC_TEMPLATES: BaseTemplate[] = [
     category: "Stinger Transitions",
     tags: ["Fantasy", "Dark"],
     collection: "gothic",
-    // A ghost rushes at the camera: it swells from nothing to fill the frame at
-    // the mid peak (the OBS transition point), then shrinks away to reveal the
-    // next scene. A dark cover scales behind it to seal the corners.
+    // Over a transparent background a ghost comes in small, swells to fill the
+    // frame at the mid peak (the OBS transition point), then shrinks away and
+    // vanishes so the next scene shows through. No cover, no text.
     layers: [
-      shape("Cover", { x: -960, y: -1140, width: 3840, height: 3360 }, {
-        shape: "ellipse",
-        fill: "@background",
-        animation: anim("sweepScale", { duration: 1160, delay: 80, intensity: 1.05, easing: "linear" }),
-      }),
-      shape("Halo", { x: 460, y: 40, width: 1000, height: 1000 }, {
-        shape: "ellipse",
-        fill: "@primary",
-        opacity: 0.6,
-        effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
-        animation: anim("sweepScale", { duration: 1160, delay: 20, intensity: 1.8, easing: "linear" }),
-      }),
-      shape("Ghost", { x: 660, y: 240, width: 600, height: 600 }, {
+      shape("Ghost", { x: 610, y: 190, width: 700, height: 700 }, {
         shape: "ghost",
-        fill: "#EDEAF7",
-        effects: { glow: { enabled: true, color: "@glow", strength: 70 } },
-        animation: anim("sweepScale", { duration: 1160, intensity: 2.2, easing: "linear" }),
+        fill: "@accent",
+        effects: {
+          glow: { enabled: true, color: "@glow", strength: 40 },
+          border: { enabled: true, color: "@text", width: 4, radius: 0 },
+        },
+        animation: anim("sweepScale", { duration: 1160, intensity: 2.4, easing: "linear" }),
       }),
       particles("Decor — Bats", { kind: "bats", count: 16, size: 7, speed: 1.1, color: "@secondary", opacity: 0.9, animation: anim("flash", { duration: 1160, easing: "linear" }) }),
-      shape("Name plate", { x: 360, y: 462, width: 1200, height: 150 }, {
-        fill: "@background",
-        opacity: 0.6,
-        cornerRadius: 16,
-        animation: anim("flash", { duration: 1160, easing: "linear" }),
-      }),
-      text("Channel name", { x: 210, y: 470, width: 1500, height: 130 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "UnifrakturMaguntia",
-        fontSize: 96,
-        fontWeight: 400,
-        align: "center",
-        fill: "@text",
-        effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
-        animation: anim("flash", { duration: 1160, easing: "linear" }),
-      }),
     ],
   },
 ];
@@ -5674,37 +5602,16 @@ const PRIDE_TEMPLATES: BaseTemplate[] = [
     category: "Stinger Transitions",
     tags: ["Cozy", "RGB"],
     collection: "pride",
-    // The flag floods the frame from nothing to full cover at the mid peak while
-    // a heart bursts over it, then both recede to reveal the next scene.
+    // Over a transparent background a heart comes in small, swells to fill the
+    // frame at the mid peak, then shrinks away and vanishes. No cover, no text.
     layers: [
-      flag("Flag cover", { x: -960, y: -1140, width: 3840, height: 3360 }, {
-        stackDirection: "vertical",
-        cornerRadius: 0,
-        animation: anim("sweepScale", { duration: 1160, delay: 60, intensity: 1.05, easing: "linear" }),
-      }),
-      shape("Heart", { x: 660, y: 240, width: 600, height: 600 }, {
+      shape("Heart", { x: 610, y: 190, width: 700, height: 700 }, {
         shape: "heart",
-        fill: "#FFFFFF",
-        effects: { glow: { enabled: true, color: "@glow", strength: 44 }, border: { enabled: true, color: "@accent", width: 5, radius: 0 } },
-        animation: anim("sweepScale", { duration: 1160, intensity: 2, easing: "linear" }),
+        fill: "@accent",
+        effects: { glow: { enabled: true, color: "@glow", strength: 40 }, border: { enabled: true, color: "@text", width: 5, radius: 0 } },
+        animation: anim("sweepScale", { duration: 1160, intensity: 3, easing: "linear" }),
       }),
       particles("Decor — Confetti", { kind: "confetti", count: 46, size: 6, speed: 1, color: "@accent", animation: anim("flash", { duration: 1160, easing: "linear" }) }),
-      shape("Name plate", { x: 360, y: 462, width: 1200, height: 150 }, {
-        fill: "@background",
-        opacity: 0.6,
-        cornerRadius: 16,
-        animation: anim("flash", { duration: 1160, easing: "linear" }),
-      }),
-      text("Channel name", { x: 210, y: 470, width: 1500, height: 130 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Poppins",
-        fontSize: 94,
-        fontWeight: 800,
-        align: "center",
-        fill: "@text",
-        letterSpacing: 2,
-        effects: { glow: { enabled: true, color: "@glow", strength: 20 } },
-        animation: anim("flash", { duration: 1160, easing: "linear" }),
-      }),
     ],
   },
 ];
