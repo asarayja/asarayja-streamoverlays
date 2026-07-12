@@ -5197,12 +5197,207 @@ const SMOLDER: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/* -------------------------- Second proposal set --------------------------- */
+
+/** Comic Pop: bold pop-art — a ben-day halftone field, action rays and flung
+    pop bits, with a chunky comic face outlined and hard-shadowed. Loud and
+    playful; colour follows the palette. */
+const COMIC_POP: FamilyStyle = {
+  id: "comicpop",
+  name: "Comic Pop",
+  tags: ["Anime", "RGB", "Neon"],
+  display: "Bangers",
+  displayWeight: 400,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Nunito",
+  radius: 14,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 4,
+  frameEffects: {
+    border: { enabled: true, color: "@text", width: 4, radius: 16 },
+    glow: { enabled: true, color: "@glow", strength: 10 },
+  },
+  // The classic comic title: a hard offset colour shadow behind an outlined
+  // fill — no blur, so it reads like ink on newsprint.
+  headlineEffects: {
+    border: { enabled: true, color: "@background", width: 5 },
+    shadow: { enabled: true, color: "@accent", blur: 0, offsetX: 7, offsetY: 7, opacity: 1 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@surface" }),
+    shape("Halftone", FULL, { shape: "halftoneField", fill: "@accent", opacity: 0.3, animation: anim("shimmer", { duration: 6000 }) }),
+    particles("Decor — Rays", { kind: "rays", count: 7, size: 10, speed: 0.4, color: "@primary", opacity: 0.24 }),
+    particles("Decor — Pop", { kind: "confetti", count: 28, size: 11, speed: 0.4, color: "@secondary", opacity: 0.9 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Pulse: a music-visualiser — a row of glowing equaliser bars dancing along
+    the base, each on its own beat, over a dark ground. Colour follows the
+    palette. */
+const PULSE: FamilyStyle = {
+  id: "pulse",
+  name: "Pulse",
+  tags: ["Neon", "Dark", "Esports"],
+  display: "Kanit",
+  displayWeight: 700,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Barlow",
+  radius: 6,
+  frameRadius: 8,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 26 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  plateShape: "rect",
+  scene: () => {
+    const N = 24;
+    const slot = 1920 / N;
+    const bars = Array.from({ length: N }).map((_, i) => {
+      const h = 70 + ((i * 53) % 220) + (i % 4) * 40;
+      return shape(`Bar ${i}`, { x: slot * i + slot * 0.18, y: 1080 - h - 96, width: slot * 0.64, height: h }, {
+        fill: i % 3 === 0 ? "@accent" : "@secondary",
+        cornerRadius: 5,
+        opacity: 0.9,
+        effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+        animation: anim("pulse", { duration: 1300 + (i % 6) * 240, intensity: 0.9, delay: (i % 8) * 110 }),
+      });
+    });
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 90 } },
+      }),
+      ...bars,
+      shape("Baseline", { x: 0, y: 984, width: 1920, height: 3 }, { fill: "@glow", opacity: 0.6, effects: { glow: { enabled: true, color: "@glow", strength: 30 } } }),
+      particles("Decor — Motes", { kind: "dots", count: 26, size: 2.4, speed: 0.4, color: "@glow", opacity: 0.35 }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Sakura: soft cherry-blossom — petals drifting down over a gentle ground,
+    with a warm blossom glow. Cosy and light; colour follows the palette. */
+const SAKURA: FamilyStyle = {
+  id: "sakura",
+  name: "Sakura",
+  tags: ["Cozy", "Pink", "Anime"],
+  display: "Quicksand",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Nunito",
+  radius: 20,
+  frameRadius: 22,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 22 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { shadow: { enabled: true, color: "@shadow", blur: 10, offsetY: 3, opacity: 0.3 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/18", angle: 160 } },
+    }),
+    shape("Blossom glow A", { x: -160, y: -180, width: 760, height: 700 }, {
+      shape: "ellipse",
+      fill: "@primary",
+      opacity: 0.16,
+      animation: anim("breathe", { duration: 8000, intensity: 0.4 }),
+    }),
+    shape("Blossom glow B", { x: 1320, y: 560, width: 780, height: 720 }, {
+      shape: "ellipse",
+      fill: "@secondary",
+      opacity: 0.14,
+      animation: anim("breathe", { duration: 9000, intensity: 0.4, delay: 900 }),
+    }),
+    particles("Decor — Petals", { kind: "petals", count: 40, size: 12, speed: 0.5, color: "@accent", opacity: 0.85 }),
+    particles("Decor — Bokeh", { kind: "bokeh", count: 9, size: 7, speed: 0.3, color: "@glow", opacity: 0.3 }),
+  ],
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
+/** Low Poly: a faceted crystalline field — scattered translucent triangles
+    with hairline edges over a dark ground, drifting slowly. Sleek and
+    geometric; colour follows the palette. */
+const LOW_POLY: FamilyStyle = {
+  id: "lowpoly",
+  name: "Low Poly",
+  tags: ["Sci-Fi", "Minimal", "Esports"],
+  display: "Michroma",
+  displayWeight: 400,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Saira",
+  radius: 4,
+  frameRadius: 6,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 6 },
+    glow: { enabled: true, color: "@glow", strength: 18 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+  plateShape: "rect",
+  scene: () => {
+    const facets = [
+      { x: -120, y: -80, s: 520, c: "@primary", o: 0.22, r: 8 },
+      { x: 300, y: 120, s: 360, c: "@secondary", o: 0.18, r: -20 },
+      { x: 1360, y: -100, s: 560, c: "@secondary", o: 0.2, r: 24 },
+      { x: 1520, y: 380, s: 420, c: "@primary", o: 0.16, r: -12 },
+      { x: -80, y: 620, s: 480, c: "@accent", o: 0.16, r: 16 },
+      { x: 1380, y: 720, s: 440, c: "@accent", o: 0.14, r: -28 },
+      { x: 620, y: 760, s: 400, c: "@primary", o: 0.14, r: 12 },
+      { x: 860, y: -60, s: 300, c: "@accent", o: 0.16, r: -18 },
+    ];
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/16", angle: 140 } },
+      }),
+      ...facets.map((f, i) =>
+        shape(`Facet ${i}`, { x: f.x, y: f.y, width: f.s, height: f.s }, {
+          shape: "triangle",
+          fill: f.c,
+          opacity: f.o,
+          rotation: f.r,
+          effects: { border: { enabled: true, color: "@accent", width: 1.5, radius: 0 }, glow: { enabled: true, color: "@glow", strength: 8 } },
+          animation: anim("float", { duration: 8000 + i * 500, intensity: 0.35, delay: i * 260 }),
+        }),
+      ),
+      particles("Decor — Dust", { kind: "dots", count: 30, size: 2, speed: 0.3, color: "@glow", opacity: 0.35 }),
+    ];
+  },
+  overlayDecor: () => [],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   RETROWAVE,
   TERRAZZO,
   BLUEPRINT,
   INK_WASH,
   SMOLDER,
+  COMIC_POP,
+  PULSE,
+  SAKURA,
+  LOW_POLY,
   RADAR,
   CONTOUR,
   CHEVRON,
