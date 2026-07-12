@@ -2007,6 +2007,7 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   // Cyber — glitch.
   cyberpill: ["glitch", 0],
   vanguard: ["shards", 0],
+  vanguardglow: ["shards", 0],
   // Crystal / glass — facets.
   holo: ["prism", 8],
   frost: ["prism", -6],
@@ -4334,7 +4335,7 @@ const AURORA_SILK_NEON: FamilyStyle = {
 /** Three skewed diagonal strips (white / accent / white) crossing a corner,
     each with a soft drop shadow for the layered look. The top-left and
     bottom-right groups mirror so the two slants lean toward each other. */
-function skewStrips(corner: "tl" | "br"): LayerSpec[] {
+function skewStrips(corner: "tl" | "br", glow = false): LayerSpec[] {
   const angle = -34;
   const rad = (angle * Math.PI) / 180;
   const dx = Math.cos(rad);
@@ -4349,18 +4350,20 @@ function skewStrips(corner: "tl" | "br"): LayerSpec[] {
   const thick = 88;
   const len = 1800;
   const strips: LayerSpec[] = [];
-  // One shadow-caster the size of the whole group, drawn behind the strips and
+  // The flat pack casts a soft drop shadow; the glow pack blooms instead. One
+  // shadow-caster the size of the whole group, drawn behind the strips and
   // filled in the ground colour so it's invisible — only its drop shadow shows,
-  // giving BOTH corners the same soft shadow (the strips overlap and hide their
-  // own per-strip shadows, so this is what makes it read).
-  const groupThick = cols.length * thick;
-  const gPerp = (groupThick / 2) * dir;
-  strips.push(shape(`Strip ${corner} shadow`, { x: bx + px * gPerp - len / 2, y: by + py * gPerp - groupThick / 2, width: len, height: groupThick }, {
-    shape: "rect",
-    fill: "@background",
-    rotation: angle,
-    effects: { shadow: { enabled: true, color: "#000000", blur: 42, opacity: 0.6, offsetX: 16, offsetY: 26 } },
-  }));
+  // giving BOTH corners the same soft shadow.
+  if (!glow) {
+    const groupThick = cols.length * thick;
+    const gPerp = (groupThick / 2) * dir;
+    strips.push(shape(`Strip ${corner} shadow`, { x: bx + px * gPerp - len / 2, y: by + py * gPerp - groupThick / 2, width: len, height: groupThick }, {
+      shape: "rect",
+      fill: "@background",
+      rotation: angle,
+      effects: { shadow: { enabled: true, color: "#000000", blur: 42, opacity: 0.6, offsetX: 16, offsetY: 26 } },
+    }));
+  }
   for (let i = 0; i < cols.length; i++) {
     // Flush: each strip's centre is one full thickness from the last.
     const perp = (i * thick + thick / 2) * dir;
@@ -4370,6 +4373,8 @@ function skewStrips(corner: "tl" | "br"): LayerSpec[] {
       shape: "rect",
       fill: cols[i],
       rotation: angle,
+      // Each strip blooms in its own colour — white glows white, red glows red.
+      effects: glow ? { glow: { enabled: true, color: cols[i], strength: 30 } } : {},
     }));
   }
   return strips;
@@ -4398,6 +4403,8 @@ const VANGUARD: FamilyStyle = {
   },
   headlineEffects: { shadow: { enabled: true, color: "#000000", blur: 18, opacity: 0.5, offsetX: 0, offsetY: 6 } },
   plateShape: "rect",
+  // A light social pill so the icons read on the charcoal ground.
+  socialPill: "@text/18",
   scene: () => [
     // A flat charcoal ground (#353535 on the Vanguard palette) — not near-black.
     shape("Backdrop", FULL, { background: true, fill: "@background" }),
@@ -4406,6 +4413,26 @@ const VANGUARD: FamilyStyle = {
   ],
   overlayDecor: () => [...skewStrips("tl"), ...skewStrips("br")],
   contentOffsetY: 0,
+};
+
+/** Vanguard Glow: the same strips, but each blooms in neon instead of casting a
+    drop shadow, with a glowing headline. */
+const VANGUARD_GLOW: FamilyStyle = {
+  ...VANGUARD,
+  id: "vanguardglow",
+  name: "Vanguard Glow",
+  tags: ["Esports", "Neon", "Red"],
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
+    glow: { enabled: true, color: "@glow", strength: 24 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    ...skewStrips("tl", true),
+    ...skewStrips("br", true),
+  ],
+  overlayDecor: () => [...skewStrips("tl", true), ...skewStrips("br", true)],
 };
 
 const NEW_FAMILIES: FamilyStyle[] = [
@@ -4454,7 +4481,7 @@ const VANGUARD_PALETTES = [
   ...ABSTRACT_PALETTES.filter((p) => p.id.includes("vanguard")),
 ];
 const ABSTRACT_TEMPLATES: Template[] = [
-  ...expand(familyScreens(VANGUARD), VANGUARD_PALETTES),
+  ...expand([...familyScreens(VANGUARD), ...familyScreens(VANGUARD_GLOW)], VANGUARD_PALETTES),
   ...expand(familyScreens(RISO_CONCRETE), RISO_CONCRETE_PALETTES),
   ...expand([...familyScreens(AURORA_SILK), ...familyScreens(AURORA_SILK_NEON)], AURORA_SILK_PALETTES),
 ];
