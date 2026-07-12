@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Copy, Star, Trash2 } from "lucide-react";
@@ -21,8 +21,26 @@ export default function ProjectsPage() {
   const profile = useRenderProfile();
   const [onlyFavorites, setOnlyFavorites] = useState(false);
 
-  const shown = onlyFavorites ? projects.filter((p) => p.favorite) : projects;
-  const sorted = [...shown].sort((a, b) => b.updatedAt - a.updatedAt);
+  // The grid shows one card per PACK, not one per screen: a design opened as a
+  // pack seeds ~17 linked sibling screens (same packId), all edited together in
+  // the editor, so listing every screen here just clutters. Group by packId and
+  // show the cover; the screen count hints at the rest.
+  const packs = useMemo(() => {
+    const groups = new Map<string, Project[]>();
+    for (const p of projects) {
+      const key = p.packId ?? p.id;
+      const arr = groups.get(key);
+      if (arr) arr.push(p);
+      else groups.set(key, [p]);
+    }
+    return [...groups.values()]
+      .map((arr) => {
+        const screens = [...arr].sort((a, b) => a.packOrder - b.packOrder);
+        return { cover: screens[0], count: arr.length, updatedAt: Math.max(...arr.map((p) => p.updatedAt)) };
+      })
+      .sort((a, b) => b.updatedAt - a.updatedAt);
+  }, [projects]);
+  const sorted = onlyFavorites ? packs.filter((g) => g.cover.favorite) : packs;
 
   return (
     <div className="app-bg min-h-screen">
@@ -61,8 +79,8 @@ export default function ProjectsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {sorted.map((project) => (
-              <ProjectCard key={project.id} project={project} profile={profile} />
+            {sorted.map((pack) => (
+              <ProjectCard key={pack.cover.id} pack={pack} profile={profile} />
             ))}
           </div>
         )}
@@ -71,69 +89,89 @@ export default function ProjectsPage() {
   );
 }
 
-function ProjectCard({ project, profile }: { project: Project; profile: ReturnType<typeof useRenderProfile> }) {
+type PackView = { cover: Project; count: number; updatedAt: number };
+
+function ProjectCard({ pack, profile }: { pack: PackView; profile: ReturnType<typeof useRenderProfile> }) {
   const t = useT();
   const router = useRouter();
   const [viewRef, inView] = useInView<HTMLDivElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
   const duplicate = useProjectsStore((s) => s.duplicate);
+  const duplicatePack = useProjectsStore((s) => s.duplicatePack);
   const remove = useProjectsStore((s) => s.remove);
+  const removePack = useProjectsStore((s) => s.removePack);
   const toggleFavorite = useProjectsStore((s) => s.toggleFavorite);
   const [confirming, setConfirming] = useState(false);
 
-  const hasBackdrop = project.layers.some((l) => l.type === "background");
+  const { cover, count } = pack;
+  const isPack = count > 1;
+  const hasBackdrop = cover.layers.some((l) => l.type === "background");
+  const title = cover.packName ?? cover.name;
+
+  const onDuplicate = () => {
+    const copy = cover.packId ? duplicatePack(cover.packId) : duplicate(cover.id);
+    if (copy) router.push(`/editor?id=${copy.id}`);
+  };
+  const onDelete = () => {
+    if (cover.packId) removePack(cover.packId);
+    else remove(cover.id);
+  };
 
   return (
     <div ref={viewRef} className="group animate-rise">
       <button
-        onClick={() => router.push(`/editor?id=${project.id}`)}
+        onClick={() => router.push(`/editor?id=${cover.id}`)}
         className="relative block w-full overflow-hidden rounded-2xl border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/50"
       >
-        <div ref={sizeRef} className={cx("aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}>
+        <div ref={sizeRef} className={cx("relative aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}>
           {inView && size.width > 0 && (
             <ClientOverlayStage
-              layers={project.layers}
-              theme={project.theme}
+              layers={cover.layers}
+              theme={cover.theme}
               profile={profile}
               time={SETTLED}
               mode="preview"
               width={size.width}
             />
           )}
+          {isPack && (
+            <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-zinc-100 backdrop-blur">
+              {count} {t("screens")}
+            </span>
+          )}
         </div>
       </button>
 
       <div className="mt-3 flex items-start justify-between gap-2 px-0.5">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-zinc-100">{project.name}</p>
-          <p className="truncate font-mono text-[11px] text-zinc-600">{project.obsCode}</p>
+          <p className="truncate text-sm font-semibold text-zinc-100">{title}</p>
+          <p className="truncate font-mono text-[11px] text-zinc-600">
+            {isPack ? `${count} ${t("screens")}` : cover.obsCode}
+          </p>
         </div>
 
         <div className="flex shrink-0 items-center gap-0.5">
           <button
-            onClick={() => toggleFavorite(project.id)}
+            onClick={() => toggleFavorite(cover.id)}
             title={t("Favorite")}
             className={cx(
               "rounded p-1.5 transition-colors hover:bg-white/5",
-              project.favorite ? "text-amber-400" : "text-zinc-600 hover:text-zinc-300",
+              cover.favorite ? "text-amber-400" : "text-zinc-600 hover:text-zinc-300",
             )}
           >
-            <Star className={cx("size-3.5", project.favorite && "fill-current")} />
+            <Star className={cx("size-3.5", cover.favorite && "fill-current")} />
           </button>
           <button
-            onClick={() => {
-              const copy = duplicate(project.id);
-              if (copy) router.push(`/editor?id=${copy.id}`);
-            }}
-            title={t("Duplicate")}
+            onClick={onDuplicate}
+            title={isPack ? t("Duplicate pack") : t("Duplicate")}
             className="rounded p-1.5 text-zinc-600 transition-colors hover:bg-white/5 hover:text-zinc-300"
           >
             <Copy className="size-3.5" />
           </button>
           <button
-            onClick={() => (confirming ? remove(project.id) : setConfirming(true))}
+            onClick={() => (confirming ? onDelete() : setConfirming(true))}
             onBlur={() => setConfirming(false)}
-            title={confirming ? t("Click again to delete") : t("Delete")}
+            title={confirming ? t("Click again to delete") : isPack ? t("Delete pack") : t("Delete")}
             className={cx(
               "rounded p-1.5 transition-colors hover:bg-white/5",
               confirming ? "bg-red-500/20 text-red-300" : "text-zinc-600 hover:text-red-400",

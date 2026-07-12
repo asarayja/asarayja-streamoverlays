@@ -39,6 +39,11 @@ interface ProjectsState {
   /** Open a design as a pack: seed every sibling screen as a linked project.
       Returns the cover (packOrder 0) to open. */
   createPack: (anchorTemplateId: string, theme?: Theme) => Project | null;
+  /** Delete every screen in a pack in one go (from the Projects grid, which
+      shows one card per pack). */
+  removePack: (packId: string) => void;
+  /** Clone a whole pack into a fresh linked pack; returns the new cover to open. */
+  duplicatePack: (packId: string) => Project | null;
   addScreenToPack: (packId: string, templateId: string) => Project | null;
   removeScreenFromPack: (id: string) => void;
   reorderPackScreen: (packId: string, id: string, toIndex: number) => void;
@@ -194,6 +199,30 @@ export const useProjectsStore = create<ProjectsState>()(
         }));
         set((s) => ({ projects: [...built, ...s.projects] }));
         return built[0] ?? null;
+      },
+
+      removePack: (packId) =>
+        set((s) => ({ projects: s.projects.filter((p) => p.packId !== packId) })),
+
+      duplicatePack: (packId) => {
+        const siblings = get()
+          .projects.filter((p) => p.packId === packId)
+          .sort((a, b) => a.packOrder - b.packOrder);
+        if (siblings.length === 0) return null;
+        const now = Date.now();
+        const newPackId = uid();
+        const copyName = siblings[0].packName ? `${siblings[0].packName} copy` : null;
+        const copies: Project[] = siblings.map((src) => ({
+          ...structuredClone(src),
+          id: uid(),
+          obsCode: obsCode(),
+          createdAt: now,
+          updatedAt: now,
+          packId: newPackId,
+          packName: copyName ?? src.packName,
+        }));
+        set((s) => ({ projects: [...copies, ...s.projects] }));
+        return copies[0] ?? null;
       },
 
       addScreenToPack: (packId, templateId) => {
