@@ -5369,10 +5369,12 @@ const PAPERCUT_PRIDE: FamilyStyle = {
       animation: anim("float", { duration: 9000, intensity: 0.3 }),
     }),
     // The flag laid as wavy cut-paper hills (buildVariant fills the stripes).
-    shape("Flag hills", { x: -160, y: 540, width: 2240, height: 620 }, {
+    // A flag has more stripes than the plain palette, so the band sits lower and
+    // shorter — a bottom strip that clears the copy above it.
+    shape("Flag hills", { x: -160, y: 712, width: 2240, height: 470 }, {
       shape: "flagwave",
       facetColors: PRIDE_RAIN_FLAG,
-      cornerRadius: 44,
+      cornerRadius: 34,
       effects: { shadow: { enabled: true, color: "@shadow", blur: 26, offsetY: -14, opacity: 0.3 } },
       animation: anim("sway", { duration: 10000, intensity: 0.3 }),
     }),
