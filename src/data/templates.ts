@@ -4373,8 +4373,12 @@ function skewStrips(corner: "tl" | "br", glow = false): LayerSpec[] {
       shape: "rect",
       fill: cols[i],
       rotation: angle,
-      // Each strip blooms in its own colour — white glows white, red glows red.
-      effects: glow ? { glow: { enabled: true, color: cols[i], strength: 30 } } : {},
+      // Each strip glows in its own colour — white glows white, red glows red.
+      // Strong for the neon pack, a faint edge sheen for the flat pack.
+      effects: { glow: { enabled: true, color: cols[i], strength: glow ? 30 : 9 } },
+      // Motion lives on the strips: the glow breathes, staggered so a soft wave
+      // of light travels across the group.
+      animation: anim("glow", { duration: 3200, delay: i * 420, intensity: glow ? 1 : 0.7 }),
     }));
   }
   return strips;
