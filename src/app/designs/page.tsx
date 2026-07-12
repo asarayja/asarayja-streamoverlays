@@ -6,11 +6,9 @@ import { useRouter } from "next/navigation";
 import { LayoutGrid, Palette as PaletteIcon, PenTool, Search, Upload } from "lucide-react";
 import { DESIGNS } from "@/lib/designs";
 import type { Design } from "@/lib/designs";
-import { STARTERS } from "@/data/templates";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
 import { TopNav } from "@/components/site/TopNav";
 import { MyDesigns } from "@/components/gallery/MyDesigns";
-import { StarterCard } from "@/components/gallery/StarterCard";
 import { Button, Chip, TextInput, cx } from "@/components/ui";
 import { getPalette } from "@/data/palettes";
 import { useElementSize, useInView, useOnScreen, usePrefersReducedMotion } from "@/lib/useElementSize";
@@ -19,7 +17,7 @@ import { isStingerMotion, previewClock, settledTime, timelineDuration } from "@/
 import { useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
 import { useT } from "@/lib/i18n";
-import type { Collection, Template } from "@/lib/types";
+import type { Collection } from "@/lib/types";
 
 const SETTLED = 6000;
 
@@ -42,12 +40,6 @@ export default function DesignsPage() {
 
   const openBlank = () => {
     const project = createDraft("blank");
-    if (project) router.push(`/editor?id=${project.id}`);
-  };
-
-  // Starters are one-off scaffolds, so they open as a single draft.
-  const openStarter = (template: Template) => {
-    const project = createDraft(template.id);
     if (project) router.push(`/editor?id=${project.id}`);
   };
 
@@ -101,44 +93,29 @@ export default function DesignsPage() {
 
         <MyDesigns />
 
-        {/* Build a completely new overlay: a blank canvas, a ready scaffold for
-            the fiddly pieces, or an imported design file. */}
-        <section className="mb-10">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-zinc-200">{t("Start something new")}</h2>
-              <p className="mt-0.5 text-xs text-zinc-500">
-                {t("Build from a blank canvas, open a ready scaffold — a webcam frame, panels, a chat box — or import a design file.")}
-              </p>
-            </div>
-            <input
-              ref={importRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              onChange={onImportFile}
-            />
-            <Button
-              onClick={() => importRef.current?.click()}
-              title={t("Import a design file (.asarayja-design.json)")}
-              className="shrink-0"
-            >
-              <Upload className="size-3.5" />
-              {t("Import design")}
-            </Button>
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            <button
-              onClick={openBlank}
-              className="group flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 text-zinc-400 transition-colors hover:border-brand-400/50 hover:text-brand-300"
-            >
-              <PenTool className="size-5" />
-              <span className="text-xs font-semibold">{t("Start from scratch")}</span>
-            </button>
-            {STARTERS.map((s) => (
-              <StarterCard key={s.id} template={s} profile={profile} onOpen={openStarter} />
-            ))}
-          </div>
+        {/* Make a brand-new overlay from an empty canvas, or bring in a saved
+            design file. Every ready-made piece (webcam frames, panels, chat,
+            socials) already lives inside the designs below. */}
+        <section className="mb-10 flex flex-wrap items-center justify-center gap-3">
+          <input
+            ref={importRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={onImportFile}
+          />
+          <Button variant="primary" onClick={openBlank} title={t("Open an empty canvas and build from scratch")}>
+            <PenTool className="size-3.5" />
+            {t("Start from scratch")}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => importRef.current?.click()}
+            title={t("Import a design file (.asarayja-design.json)")}
+          >
+            <Upload className="size-3.5" />
+            {t("Import design")}
+          </Button>
         </section>
 
         <h2 className="text-center text-sm font-semibold text-zinc-200">{t("Or browse a finished look")}</h2>
