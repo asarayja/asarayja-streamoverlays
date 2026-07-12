@@ -5228,9 +5228,16 @@ const COMIC_POP: FamilyStyle = {
   plateShape: "rect",
   scene: () => [
     shape("Backdrop", FULL, { background: true, fill: "@surface" }),
-    shape("Halftone", FULL, { shape: "halftoneField", fill: "@accent", opacity: 0.3, animation: anim("shimmer", { duration: 6000 }) }),
-    particles("Decor — Rays", { kind: "rays", count: 7, size: 10, speed: 0.4, color: "@primary", opacity: 0.24 }),
-    particles("Decor — Pop", { kind: "confetti", count: 28, size: 11, speed: 0.4, color: "@secondary", opacity: 0.9 }),
+    // Halftone lives in two opposite corners, leaving the centre diagonal clean
+    // for the copy — a pop-art poster, not a wall of dots.
+    shape("Halftone TL", { x: -60, y: -60, width: 900, height: 660 }, {
+      shape: "halftoneField", fill: "@accent", opacity: 0.42, animation: anim("shimmer", { duration: 6000 }),
+    }),
+    shape("Halftone BR", { x: 1080, y: 480, width: 900, height: 660 }, {
+      shape: "halftoneField", fill: "@primary", opacity: 0.34, animation: anim("shimmer", { duration: 6800, delay: 500 }),
+    }),
+    particles("Decor — Rays", { kind: "rays", count: 6, size: 10, speed: 0.35, color: "@secondary", opacity: 0.18 }),
+    particles("Decor — Pop", { kind: "confetti", count: 22, size: 11, speed: 0.4, color: "@secondary", opacity: 0.9 }),
   ],
   overlayDecor: () => [],
   contentOffsetY: 0,
