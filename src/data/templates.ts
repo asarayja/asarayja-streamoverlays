@@ -1167,659 +1167,6 @@ const BASE_TEMPLATES: BaseTemplate[] = [
       }),
     ],
   },
-  {
-    id: "minimal-play",
-    name: "Minimal Play",
-    category: "Gameplay",
-    tags: ["Minimal"],
-    collection: "core",
-    layers: [
-      shape("Name pill", { x: 40, y: 40, width: 380, height: 64 }, {
-        fill: "@surface/85",
-        cornerRadius: 32,
-      }),
-      img("Logo", { x: 56, y: 52, width: 40, height: 40 }, "{{LOGO}}", { logo: true }),
-      text("Channel name", { x: 112, y: 56, width: 290, height: 34 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Space Grotesk",
-        fontSize: 26,
-        fontWeight: 700,
-        fill: "@text",
-      }),
-      frame("Webcam", { x: 40, y: 700, width: 440, height: 248 }, {
-        camera: true,
-        strokeColor: "@border",
-        strokeWidth: 2,
-        cornerRadius: 20,
-        // Every template supports motion; minimal designs just keep it subtle.
-        effects: { glow: { enabled: true, color: "@glow", strength: 10 } },
-        animation: anim("glow", { duration: 5200, intensity: 0.5 }),
-      }),
-      social("Socials", { x: 40, y: 976, width: 440, height: 44 }, {
-        platforms: ["twitch", "instagram"],
-        pill: false,
-        fontSize: 20,
-        gap: 32,
-      }),
-    ],
-  },
-  {
-    id: "esports-hud",
-    name: "Esports HUD",
-    category: "Gameplay",
-    tags: ["Esports", "RGB"],
-    collection: "core",
-    layers: [
-      shape("Left rail", { x: 0, y: 0, width: 12, height: 1080 }, {
-        fill: "@accent",
-        effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
-        animation: anim("glow", { duration: 2400 }),
-      }),
-      shape("Header", { x: 60, y: 36, width: 620, height: 88 }, {
-        fill: "@surface/90",
-        cornerRadius: 8,
-        effects: { border: { enabled: true, color: "@border", width: 2, radius: 8 } },
-        animation: anim("slide", { direction: "left", duration: 600 }),
-      }),
-      shape("Header notch", { x: 60, y: 36, width: 8, height: 88 }, { fill: "@primary" }),
-      text("Channel name", { x: 92, y: 50, width: 560, height: 42 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Chakra Petch",
-        fontSize: 34,
-        fontWeight: 700,
-        fill: "@text",
-        textTransform: "uppercase",
-        letterSpacing: 3,
-      }),
-      text("Slogan", { x: 92, y: 90, width: 560, height: 24 }, "{{SLOGAN}}", {
-        fontFamily: "Rajdhani",
-        fontSize: 18,
-        fill: "@accent",
-        textTransform: "uppercase",
-        letterSpacing: 4,
-      }),
-      frame("Webcam", { x: 1400, y: 60, width: 460, height: 259 }, {
-        camera: true,
-        shape: "rect",
-        strokeColor: "@accent",
-        strokeWidth: 3,
-        cornerRadius: 4,
-        corners: true,
-        effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
-        animation: anim("glow", { duration: 2800 }),
-      }),
-      chatbox("Chat", { x: 1400, y: 360, width: 460, height: 480 }, {
-        fontFamily: "Rajdhani",
-        cornerRadius: 6,
-        rows: 7,
-      }),
-      shape("Bottom bar", { x: 0, y: 1010, width: 1920, height: 70 }, {
-        fill: "@surface/85",
-        animation: anim("slide", { direction: "down", duration: 700, delay: 200 }),
-      }),
-      social("Socials", { x: 60, y: 1024, width: 800, height: 44 }, {
-        platforms: ["twitch", "youtube", "discord", "x", "instagram"],
-        pill: false,
-        fontFamily: "Rajdhani",
-        fontSize: 22,
-        iconColor: "@accent",
-      }),
-    ],
-  },
-
-  /* ---------------------------- Just Chatting ----------------------------- */
-  {
-    id: "chat-lounge",
-    name: "Chat Lounge",
-    category: "Just Chatting",
-    tags: ["Cozy"],
-    collection: "core",
-    layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/25", angle: 135 } },
-      }),
-      particles("Dust", { kind: "dots", count: 40, size: 3, speed: 0.4, opacity: 0.5 }),
-      frame("Webcam", { x: 90, y: 150, width: 1000, height: 563 }, {
-        camera: true,
-        strokeColor: "@primary",
-        strokeWidth: 6,
-        cornerRadius: 28,
-        effects: { shadow: { enabled: true, color: "@shadow", blur: 48, offsetY: 18, opacity: 0.7 } },
-      }),
-      text("Channel name", { x: 90, y: 760, width: 1000, height: 70 }, "{{DISPLAY_NAME}}", {
-        fontFamily: "Playfair Display",
-        fontSize: 60,
-        fontWeight: 900,
-        fill: "@text",
-        animation: anim("fade", { duration: 900, delay: 300 }),
-      }),
-      text("Slogan", { x: 92, y: 840, width: 1000, height: 40 }, "{{SLOGAN}}", {
-        fontFamily: "Inter",
-        fontSize: 26,
-        fontWeight: 400,
-        fill: "@textSecondary",
-        animation: anim("fade", { duration: 900, delay: 500 }),
-      }),
-      chatbox("Chat", { x: 1180, y: 150, width: 640, height: 730 }, {
-        cornerRadius: 28,
-        rows: 9,
-      }),
-      social("Socials", { x: 90, y: 930, width: 900, height: 56 }, {
-        platforms: ["twitch", "youtube", "instagram", "tiktok"],
-        animation: anim("fade", { duration: 900, delay: 700 }),
-      }),
-    ],
-  },
-
-  /* ---------------------------- Starting Soon ----------------------------- */
-  {
-    id: "starting-pulse",
-    name: "Starting Soon — Pulse",
-    category: "Starting Soon",
-    tags: ["Neon"],
-    collection: "core",
-    layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@primary/35", angle: 160 } },
-      }),
-      particles("Particles", { kind: "stars", count: 90, size: 4, speed: 0.6, color: "@glow" }),
-      shape("Halo", { x: 710, y: 170, width: 500, height: 500 }, {
-        shape: "ellipse",
-        fill: "@primary/15",
-        effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
-        animation: anim("pulse", { duration: 3200, intensity: 1.6 }),
-      }),
-      img("Logo", { x: 830, y: 250, width: 260, height: 260 }, "{{LOGO}}", {
-        logo: true,
-        animation: anim("float", { duration: 4000 }),
-      }),
-      text("Headline", { x: 260, y: 600, width: 1400, height: 150 }, "STARTING SOON", {
-        fontFamily: "Bebas Neue",
-        fontSize: 130,
-        align: "center",
-        fill: "@text",
-        letterSpacing: 14,
-        effects: { glow: { enabled: true, color: "@glow", strength: 34 } },
-        animation: anim("zoom", { duration: 1000, easing: "backOut" }),
-      }),
-      text("Channel name", { x: 260, y: 752, width: 1400, height: 70 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Orbitron",
-        fontSize: 52,
-        fontWeight: 900,
-        align: "center",
-        fill: "@accent",
-        letterSpacing: 6,
-        textTransform: "uppercase",
-        animation: anim("fade", { duration: 1000, delay: 500 }),
-      }),
-      text("Slogan", { x: 260, y: 838, width: 1400, height: 40 }, "{{SLOGAN}}", {
-        fontFamily: "Inter",
-        fontSize: 26,
-        fontWeight: 400,
-        align: "center",
-        fill: "@textSecondary",
-        animation: anim("fade", { duration: 1000, delay: 800 }),
-      }),
-      social("Socials", { x: 460, y: 940, width: 1000, height: 56 }, {
-        platforms: ["twitch", "youtube", "discord", "instagram", "x"],
-        animation: anim("slide", { direction: "up", duration: 900, delay: 1000 }),
-      }),
-    ],
-  },
-  {
-    id: "starting-cyber",
-    name: "Starting Soon — Cyber",
-    category: "Starting Soon",
-    tags: ["Cyberpunk", "Sci-Fi"],
-    collection: "core",
-    layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-      }),
-      shape("Grid glow", { x: -200, y: 700, width: 2320, height: 600 }, {
-        fill: "@primary/20",
-        rotation: -4,
-        effects: { glow: { enabled: true, color: "@glow", strength: 60 } },
-      }),
-      particles("Embers", { kind: "embers", count: 70, size: 5, speed: 1.2, color: "@accent" }),
-      shape("Frame line", { x: 300, y: 330, width: 1320, height: 420 }, {
-        fill: "transparent",
-        cornerRadius: 4,
-        effects: { border: { enabled: true, color: "@accent", width: 3, radius: 4 } },
-        animation: anim("flicker", { duration: 1800 }),
-      }),
-      text("Headline", { x: 300, y: 380, width: 1320, height: 160 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Audiowide",
-        fontSize: 96,
-        align: "center",
-        fill: "@text",
-        textTransform: "uppercase",
-        effects: { glow: { enabled: true, color: "@glow", strength: 40 } },
-        animation: anim("typewriter", { duration: 1600 }),
-      }),
-      text("Sub", { x: 300, y: 560, width: 1320, height: 60 }, "STREAM STARTS IN A MOMENT", {
-        fontFamily: "Chakra Petch",
-        fontSize: 34,
-        align: "center",
-        fill: "@accent",
-        letterSpacing: 8,
-        animation: anim("fade", { duration: 900, delay: 1400 }),
-      }),
-      text("Slogan", { x: 300, y: 650, width: 1320, height: 44 }, "{{SLOGAN}}", {
-        fontFamily: "Rajdhani",
-        fontSize: 26,
-        align: "center",
-        fill: "@textSecondary",
-        animation: anim("fade", { duration: 900, delay: 1700 }),
-      }),
-      social("Socials", { x: 460, y: 880, width: 1000, height: 56 }, {
-        platforms: ["twitch", "discord", "x", "tiktok"],
-        fontFamily: "Rajdhani",
-        animation: anim("slide", { direction: "up", duration: 900, delay: 1900 }),
-      }),
-    ],
-  },
-
-  /* --------------------------------- BRB ---------------------------------- */
-  {
-    id: "brb-cozy",
-    name: "Be Right Back — Cozy",
-    category: "BRB",
-    tags: ["Cozy", "Minimal"],
-    collection: "core",
-    layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@secondary/25", angle: 200 } },
-      }),
-      particles("Snow", { kind: "snow", count: 60, size: 5, speed: 0.5, opacity: 0.7 }),
-      img("Profile", { x: 830, y: 260, width: 260, height: 260 }, "{{PROFILE_IMAGE}}", {
-        fit: "cover",
-        cornerRadius: 130,
-        effects: { border: { enabled: true, color: "@primary", width: 6, radius: 130 } },
-        animation: anim("float", { duration: 5000 }),
-      }),
-      text("Headline", { x: 260, y: 580, width: 1400, height: 130 }, "BE RIGHT BACK", {
-        fontFamily: "Playfair Display",
-        fontSize: 104,
-        fontWeight: 900,
-        align: "center",
-        fill: "@text",
-        animation: anim("fade", { duration: 1200 }),
-      }),
-      text("Sub", { x: 260, y: 730, width: 1400, height: 50 }, "{{CHANNEL_NAME}} will be back shortly", {
-        fontFamily: "Inter",
-        fontSize: 30,
-        fontWeight: 400,
-        align: "center",
-        fill: "@textSecondary",
-        animation: anim("fade", { duration: 1200, delay: 400 }),
-      }),
-      social("Socials", { x: 560, y: 900, width: 800, height: 56 }, {
-        platforms: ["twitch", "instagram", "discord"],
-        animation: anim("fade", { duration: 1000, delay: 700 }),
-      }),
-    ],
-  },
-  {
-    id: "brb-horror",
-    name: "Be Right Back — Dread",
-    category: "BRB",
-    tags: ["Horror", "Dark"],
-    collection: "core",
-    layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-      }),
-      shape("Vignette", { x: 260, y: 60, width: 1400, height: 960 }, {
-        shape: "ellipse",
-        fill: "@primary/10",
-        effects: { glow: { enabled: true, color: "@glow", strength: 120 } },
-        animation: anim("flicker", { duration: 2200 }),
-      }),
-      particles("Embers", { kind: "embers", count: 40, size: 3, speed: 0.8, color: "@primary" }),
-      text("Headline", { x: 260, y: 420, width: 1400, height: 200 }, "BE RIGHT BACK", {
-        fontFamily: "Creepster",
-        fontSize: 140,
-        align: "center",
-        fill: "@primary",
-        effects: { glow: { enabled: true, color: "@glow", strength: 46 } },
-        animation: anim("flicker", { duration: 1400 }),
-      }),
-      text("Sub", { x: 260, y: 640, width: 1400, height: 50 }, "{{SLOGAN}}", {
-        fontFamily: "Inter",
-        fontSize: 28,
-        fontWeight: 400,
-        align: "center",
-        fill: "@textSecondary",
-        animation: anim("fade", { duration: 1600, delay: 600 }),
-      }),
-    ],
-  },
-
-  /* ----------------------------- Stream Ending ---------------------------- */
-  {
-    id: "ending-thanks",
-    name: "Stream Ending — Thank You",
-    category: "Stream Ending",
-    tags: ["Neon", "Dark"],
-    collection: "core",
-    layers: [
-      shape("Backdrop", { x: 0, y: 0, width: 1920, height: 1080 }, {
-        background: true,
-        fill: "@background",
-        effects: { gradient: { enabled: true, from: "@background", to: "@accent/20", angle: 45 } },
-      }),
-      particles("Stars", { kind: "stars", count: 80, size: 4, speed: 0.5 }),
-      text("Headline", { x: 210, y: 410, width: 1500, height: 140 }, "THANKS FOR WATCHING", {
-        fontFamily: "Bebas Neue",
-        fontSize: 116,
-        align: "center",
-        fill: "@text",
-        letterSpacing: 10,
-        effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
-        animation: anim("slide", { direction: "up", duration: 900, delay: 200 }),
-      }),
-      text("Channel name", { x: 210, y: 560, width: 1500, height: 70 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Orbitron",
-        fontSize: 46,
-        fontWeight: 900,
-        align: "center",
-        fill: "@accent",
-        letterSpacing: 6,
-        textTransform: "uppercase",
-        animation: anim("fade", { duration: 900, delay: 500 }),
-      }),
-      text("Follow", { x: 210, y: 680, width: 1500, height: 44 }, "FOLLOW ME EVERYWHERE", {
-        fontFamily: "Inter",
-        fontSize: 22,
-        fontWeight: 600,
-        align: "center",
-        fill: "@secondary",
-        letterSpacing: 6,
-        animation: anim("fade", { duration: 900, delay: 700 }),
-      }),
-      social("Socials", { x: 260, y: 760, width: 1400, height: 60 }, {
-        platforms: ["twitch", "youtube", "discord", "instagram", "tiktok", "x"],
-        direction: "horizontal",
-        fontSize: 22,
-        animation: anim("slide", { direction: "up", duration: 900, delay: 900 }),
-      }),
-    ],
-  },
-
-  /* ----------------------------- Webcam Frames ---------------------------- */
-  {
-    id: "cam-hex",
-    name: "Webcam — Hex Cut",
-    category: "Webcam Frames",
-    tags: ["Sci-Fi", "Esports"],
-    collection: "core",
-    layers: [
-      frame("Camera", { x: 320, y: 120, width: 1280, height: 720 }, {
-        camera: true,
-        shape: "hexagon",
-        strokeColor: "@accent",
-        strokeWidth: 6,
-        effects: { glow: { enabled: true, color: "@glow", strength: 40 } },
-        animation: anim("glow", { duration: 2600 }),
-      }),
-      shape("Name plate", { x: 660, y: 850, width: 600, height: 70 }, {
-        fill: "@surface/90",
-        cornerRadius: 35,
-        effects: { border: { enabled: true, color: "@border", width: 2, radius: 35 } },
-        animation: anim("slide", { direction: "up", duration: 700, delay: 200 }),
-      }),
-      text("Channel name", { x: 660, y: 868, width: 600, height: 40 }, "{{DISPLAY_NAME}}", {
-        fontFamily: "Chakra Petch",
-        fontSize: 30,
-        fontWeight: 700,
-        align: "center",
-        fill: "@text",
-        letterSpacing: 3,
-        textTransform: "uppercase",
-        animation: anim("fade", { duration: 700, delay: 400 }),
-      }),
-    ],
-  },
-  {
-    id: "cam-circle",
-    name: "Webcam — Soft Circle",
-    category: "Webcam Frames",
-    tags: ["Minimal", "Cozy"],
-    collection: "core",
-    layers: [
-      frame("Camera", { x: 610, y: 90, width: 700, height: 700 }, {
-        camera: true,
-        shape: "ellipse",
-        strokeColor: "@primary",
-        strokeWidth: 8,
-        effects: { shadow: { enabled: true, color: "@shadow", blur: 60, offsetY: 20, opacity: 0.6 } },
-        animation: anim("float", { duration: 6000, intensity: 0.35 }),
-      }),
-      text("Channel name", { x: 460, y: 830, width: 1000, height: 60 }, "{{DISPLAY_NAME}}", {
-        fontFamily: "Space Grotesk",
-        fontSize: 44,
-        fontWeight: 700,
-        align: "center",
-        fill: "@text",
-      }),
-      text("Slogan", { x: 460, y: 900, width: 1000, height: 40 }, "{{SLOGAN}}", {
-        fontFamily: "Inter",
-        fontSize: 24,
-        fontWeight: 400,
-        align: "center",
-        fill: "@secondary",
-      }),
-    ],
-  },
-
-  /* -------------------------------- Alerts -------------------------------- */
-  {
-    id: "alert-follow",
-    name: "Alert — New Follower",
-    category: "Alerts",
-    tags: ["Neon"],
-    collection: "core",
-    layers: [
-      alert("Follower alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW FOLLOWER", "AwesomeViewer", {
-        effects: { glow: { enabled: true, color: "@glow", strength: 40 } },
-        animation: anim("elastic", { duration: 1500 }),
-      }),
-    ],
-  },
-  {
-    id: "alert-sub",
-    name: "Alert — Subscriber",
-    category: "Alerts",
-    tags: ["Esports", "RGB"],
-    collection: "core",
-    layers: [
-      alert("Sub alert", { x: 560, y: 400, width: 800, height: 240 }, "NEW SUB", "Tier 1 · Thank you!", {
-        fill: "@accent/95",
-        cornerRadius: 8,
-        titleColor: "@background",
-        subtitleColor: "@background/85",
-        effects: { glow: { enabled: true, color: "@glow", strength: 50 } },
-        animation: anim("bounce", { duration: 1400 }),
-      }),
-    ],
-  },
-
-  /* ------------------------------- Chat Boxes ----------------------------- */
-  {
-    id: "chatbox-glass",
-    name: "Chat Box — Glass",
-    category: "Chat Boxes",
-    tags: ["Minimal", "Dark"],
-    collection: "core",
-    layers: [
-      chatbox("Chat", { x: 1400, y: 120, width: 460, height: 840 }, {
-        cornerRadius: 24,
-        rows: 11,
-        effects: { border: { enabled: true, color: "@border", width: 1, radius: 24 } },
-      }),
-      text("Chat title", { x: 1400, y: 60, width: 460, height: 44 }, "LIVE CHAT", {
-        fontFamily: "Space Grotesk",
-        fontSize: 26,
-        fontWeight: 700,
-        align: "center",
-        fill: "@accent",
-        letterSpacing: 6,
-        animation: anim("fade", { duration: 700, delay: 300 }),
-      }),
-    ],
-  },
-
-  /* ------------------------------ Social Bars ----------------------------- */
-  {
-    id: "social-pill",
-    name: "Social Bar — Pill",
-    category: "Social Bars",
-    tags: ["Minimal"],
-    collection: "core",
-    layers: [
-      social("Socials", { x: 360, y: 960, width: 1200, height: 64 }, {
-        platforms: ["twitch", "youtube", "discord", "instagram", "tiktok"],
-        pill: true,
-        gap: 20,
-        fontSize: 22,
-        animation: anim("slide", { direction: "up", duration: 800 }),
-      }),
-    ],
-  },
-  {
-    id: "social-rail",
-    name: "Social Bar — Side Rail",
-    category: "Social Bars",
-    tags: ["Neon", "Dark"],
-    collection: "core",
-    layers: [
-      shape("Rail", { x: 40, y: 300, width: 72, height: 480 }, {
-        fill: "@surface/85",
-        cornerRadius: 36,
-        effects: { border: { enabled: true, color: "@border", width: 1, radius: 36 } },
-        animation: anim("slide", { direction: "left", duration: 700 }),
-      }),
-      social("Socials", { x: 40, y: 330, width: 72, height: 420 }, {
-        direction: "vertical",
-        platforms: ["twitch", "youtube", "discord", "instagram"],
-        showHandles: false,
-        pill: false,
-        gap: 40,
-        animation: anim("fade", { duration: 800, delay: 300 }),
-      }),
-    ],
-  },
-
-  /* --------------------------- Stinger Transitions ------------------------ */
-  {
-    id: "stinger-sweep",
-    name: "Stinger — Diagonal Sweep",
-    category: "Stinger Transitions",
-    tags: ["Neon", "Esports"],
-    collection: "core",
-    // A real cover→reveal wipe: skewed strips sweep off one edge → full cover at
-    // the mid peak (the OBS transition point) → off the other edge. The name
-    // reads only at the peak. See STINGER_FORMS for the family variants.
-    layers: [
-      shape("Cover", { x: -520, y: -520, width: 2960, height: 2120 }, {
-        fill: "@primary",
-        rotation: 12,
-        effects: { gradient: { enabled: true, from: "@primary", to: "@background", angle: 90 } },
-        animation: anim("sweep", { direction: "right", duration: 1700, easing: "linear" }),
-      }),
-      shape("Blade — accent", { x: -600, y: -540, width: 900, height: 2160 }, {
-        fill: "@accent",
-        rotation: 12,
-        opacity: 0.92,
-        effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
-        animation: anim("sweep", { direction: "right", duration: 1700, delay: 60, easing: "linear" }),
-      }),
-      shape("Blade — light", { x: 520, y: -540, width: 300, height: 2160 }, {
-        fill: "@surface",
-        rotation: 12,
-        opacity: 0.96,
-        effects: { border: { enabled: true, color: "@accent", width: 2, radius: 0 } },
-        animation: anim("sweep", { direction: "right", duration: 1700, delay: 120, easing: "linear" }),
-      }),
-    ],
-  },
-
-  /* ------------------------ Complete Stream Package ----------------------- */
-  {
-    id: "package-signature",
-    name: "Signature Package",
-    category: "Complete Stream Package",
-    tags: ["Esports", "Neon"],
-    collection: "core",
-    layers: [
-      shape("Top bar", { x: 0, y: 0, width: 1920, height: 84 }, {
-        fill: "@surface/92",
-        animation: anim("slide", { direction: "up", duration: 700 }),
-      }),
-      shape("Top accent", { x: 0, y: 84, width: 1920, height: 3 }, {
-        fill: "@accent",
-        effects: { glow: { enabled: true, color: "@glow", strength: 16 } },
-      }),
-      img("Logo", { x: 30, y: 16, width: 52, height: 52 }, "{{LOGO}}", { logo: true }),
-      text("Channel name", { x: 100, y: 20, width: 600, height: 40 }, "{{CHANNEL_NAME}}", {
-        fontFamily: "Orbitron",
-        fontSize: 30,
-        fontWeight: 900,
-        fill: "@text",
-        letterSpacing: 2,
-        textTransform: "uppercase",
-      }),
-      text("Slogan", { x: 100, y: 56, width: 600, height: 24 }, "{{SLOGAN}}", {
-        fontFamily: "Inter",
-        fontSize: 15,
-        fill: "@textSecondary",
-      }),
-      shape("Live pill", { x: 1740, y: 22, width: 140, height: 40 }, {
-        fill: "@accent",
-        cornerRadius: 20,
-        animation: anim("pulse", { duration: 2000 }),
-      }),
-      text("Live", { x: 1740, y: 30, width: 140, height: 26 }, "● LIVE", {
-        fontFamily: "Inter",
-        fontSize: 18,
-        fontWeight: 800,
-        align: "center",
-        fill: "@background",
-      }),
-      frame("Webcam", { x: 44, y: 660, width: 500, height: 281 }, {
-        camera: true,
-        strokeColor: "@primary",
-        strokeWidth: 4,
-        cornerRadius: 16,
-        corners: true,
-        effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
-        animation: anim("glow", { duration: 3200 }),
-      }),
-      chatbox("Chat", { x: 1496, y: 140, width: 384, height: 600 }, { rows: 8 }),
-      alert("Alert", { x: 660, y: 120, width: 600, height: 180 }, "NEW FOLLOWER", "AwesomeViewer", {
-        opacity: 0.96,
-        effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
-        animation: anim("elastic", { duration: 1500, delay: 900 }),
-      }),
-      shape("Bottom bar", { x: 0, y: 1012, width: 1920, height: 68 }, {
-        fill: "@surface/90",
-        animation: anim("slide", { direction: "down", duration: 700, delay: 200 }),
-      }),
-      social("Socials", { x: 44, y: 1026, width: 900, height: 44 }, {
-        platforms: ["twitch", "youtube", "discord", "instagram", "x"],
-        pill: false,
-        fontSize: 21,
-        animation: anim("fade", { duration: 900, delay: 600 }),
-      }),
-    ],
-  },
 ];
 
 
@@ -2092,6 +1439,23 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   "prism-stripes": ["ribbon", 0],
   "frost-stripes": ["ribbon", 10],
   "plasma-flag": ["ribbon", -10],
+  // Promoted standalone pieces, grouped by vibe.
+  minimalplay: ["iris", 0],
+  chatlounge: ["iris", 6],
+  hearth: ["iris", -8],
+  pillbar: ["iris", 14],
+  halo: ["burst", 0],
+  neonpop: ["burst", -8],
+  encore: ["wave", 4],
+  cyberframe: ["glitch", 6],
+  siderail: ["glitch", 8],
+  clearview: ["prism", 4],
+  esportshud: ["shards", 4],
+  hexcut: ["shards", -16],
+  rgbslam: ["shards", 10],
+  vector: ["shards", -6],
+  signature: ["shards", 14],
+  dread: ["veil", -10],
 };
 
 /** Build a family's stinger transition screen in its own identity. */
@@ -6323,7 +5687,538 @@ const RIPPLE: FamilyStyle = {
   contentOffsetY: 0,
 };
 
+/* -------------------------------------------------------------------------- */
+/*        Promoted standalone pieces — now full FamilyStyle families           */
+/* -------------------------------------------------------------------------- */
+/*
+ * These began as single hand-authored screens (one Starting Soon, one alert, a
+ * lone chat box …). They now declare a full style so the generator gives each a
+ * complete ~17-screen pack in every palette, dark and light, with motion — like
+ * every other family. Each keeps the identity of the screen it grew from.
+ */
+
+/** Minimal Play: a clean, near-silent ground — the minimalist's overlay. */
+const MINIMAL_PLAY: FamilyStyle = {
+  id: "minimalplay",
+  name: "Minimal Play",
+  tags: ["Minimal", "Dark"],
+  display: "Space Grotesk",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 20,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 10 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 165 } },
+    }),
+    particles("Decor — Motes", { kind: "dots", count: 24, size: 2.4, speed: 0.2, color: "@glow", opacity: 0.32 }),
+  ],
+};
+
+/** Esports HUD: an RGB competitive ground — accent rail, scanlines, hex mesh. */
+const ESPORTS_HUD: FamilyStyle = {
+  id: "esportshud",
+  name: "Esports HUD",
+  tags: ["Esports", "RGB"],
+  display: "Chakra Petch",
+  displayWeight: 700,
+  displayTracking: 6,
+  displayTransform: "uppercase",
+  displayItalic: true,
+  body: "Rajdhani",
+  radius: 6,
+  frameRadius: 6,
+  corners: true,
+  strokeWidth: 3,
+  plateShape: "chamfer",
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 160 } },
+    }),
+    shape("Decor — Left rail", { x: 0, y: 0, width: 12, height: 1080 }, {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+      animation: anim("glow", { duration: 2400 }),
+    }),
+    shape("Decor — Hex mesh", { x: 1240, y: 120, width: 700, height: 840 }, {
+      shape: "hexmesh",
+      fill: "@accent",
+      opacity: 0.16,
+    }),
+    shape("Decor — Scanlines", FULL, { shape: "scanlines", fill: "@accent", cornerRadius: 4, opacity: 0.05 }),
+  ],
+  overlayDecor: () => [
+    shape("Decor — Scanlines", FULL, { shape: "scanlines", fill: "@accent", cornerRadius: 4, opacity: 0.04 }),
+  ],
+};
+
+/** Chat Lounge: a warm, unhurried ground — soft dust over a graded dark. */
+const CHAT_LOUNGE: FamilyStyle = {
+  id: "chatlounge",
+  name: "Chat Lounge",
+  tags: ["Cozy", "Minimal"],
+  display: "Playfair Display",
+  displayWeight: 900,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 28,
+  frameRadius: 28,
+  corners: false,
+  strokeWidth: 4,
+  frameEffects: { shadow: { enabled: true, color: "@shadow", blur: 48, offsetY: 18, opacity: 0.7 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/25", angle: 135 } },
+    }),
+    particles("Decor — Dust", { kind: "dots", count: 40, size: 3, speed: 0.4, color: "@glow", opacity: 0.45 }),
+  ],
+};
+
+/** Halo: a neon starfield with a pulsing bloom — the hype countdown ground. */
+const HALO: FamilyStyle = {
+  id: "halo",
+  name: "Halo",
+  tags: ["Neon", "Purple"],
+  display: "Bebas Neue",
+  displayWeight: 400,
+  displayTracking: 12,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 16,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 34 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/35", angle: 160 } },
+    }),
+    shape("Decor — Halo", { x: 610, y: 120, width: 700, height: 700 }, {
+      shape: "ellipse",
+      fill: "@primary/15",
+      effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
+      animation: anim("pulse", { duration: 3200, intensity: 1.4 }),
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 90, size: 4, speed: 0.6, color: "@glow", opacity: 0.8 }),
+  ],
+};
+
+/** Cyberframe: a neon-grid cyberpunk ground — embers over a horizon glow. */
+const CYBERFRAME: FamilyStyle = {
+  id: "cyberframe",
+  name: "Cyberframe",
+  tags: ["Cyberpunk", "Sci-Fi"],
+  display: "Audiowide",
+  displayWeight: 400,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Chakra Petch",
+  radius: 4,
+  frameRadius: 4,
+  corners: true,
+  strokeWidth: 3,
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 34 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 40 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    shape("Decor — Horizon glow", { x: -200, y: 700, width: 2320, height: 600 }, {
+      fill: "@primary/20",
+      rotation: -4,
+      effects: { glow: { enabled: true, color: "@glow", strength: 60 } },
+    }),
+    shape("Decor — Scanlines", FULL, { shape: "scanlines", fill: "@accent", cornerRadius: 4, opacity: 0.05 }),
+    particles("Decor — Embers", { kind: "embers", count: 60, size: 5, speed: 1.1, color: "@accent", opacity: 0.8 }),
+  ],
+};
+
+/** Hearth: a soft snowfall over a warm graded night — the cosiest BRB. */
+const HEARTH: FamilyStyle = {
+  id: "hearth",
+  name: "Hearth",
+  tags: ["Cozy", "Minimal"],
+  display: "Playfair Display",
+  displayWeight: 900,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 24,
+  frameRadius: 24,
+  corners: false,
+  strokeWidth: 6,
+  frameEffects: { border: { enabled: true, color: "@primary", width: 6, radius: 24 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@secondary/25", angle: 200 } },
+    }),
+    particles("Decor — Snow", { kind: "snow", count: 60, size: 5, speed: 0.5, color: "@text", opacity: 0.7 }),
+  ],
+};
+
+/** Dread: a flickering vignette and drifting embers — the horror ground. */
+const DREAD: FamilyStyle = {
+  id: "dread",
+  name: "Dread",
+  tags: ["Horror", "Dark"],
+  display: "Creepster",
+  displayFill: "@primary",
+  displayWeight: 400,
+  displayTracking: 2,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 10,
+  frameRadius: 10,
+  corners: false,
+  strokeWidth: 2,
+  alertShape: "coffin",
+  chatShape: "coffin",
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 34 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 46 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    shape("Decor — Vignette", { x: 260, y: 60, width: 1400, height: 960 }, {
+      shape: "ellipse",
+      fill: "@primary/10",
+      effects: { glow: { enabled: true, color: "@glow", strength: 120 } },
+      animation: anim("flicker", { duration: 2200 }),
+    }),
+    particles("Decor — Embers", { kind: "embers", count: 42, size: 3, speed: 0.8, color: "@primary", opacity: 0.75 }),
+  ],
+};
+
+/** Encore: a quiet starfield over an accent-graded dark — the send-off. */
+const ENCORE: FamilyStyle = {
+  id: "encore",
+  name: "Encore",
+  tags: ["Neon", "Dark"],
+  display: "Bebas Neue",
+  displayWeight: 400,
+  displayTracking: 10,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 16,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 28 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@accent/20", angle: 45 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 80, size: 4, speed: 0.5, color: "@glow", opacity: 0.75 }),
+  ],
+};
+
+/** Hex Cut: a chamfered sci-fi ground with a honeycomb accent mesh. */
+const HEX_CUT: FamilyStyle = {
+  id: "hexcut",
+  name: "Hex Cut",
+  tags: ["Sci-Fi", "Esports"],
+  display: "Chakra Petch",
+  displayWeight: 700,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 8,
+  frameRadius: 8,
+  corners: false,
+  strokeWidth: 6,
+  frameShape: "hexagon",
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 40 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  plateShape: "chamfer",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 150 } },
+    }),
+    shape("Decor — Hex mesh", { x: 120, y: 140, width: 1680, height: 820 }, {
+      shape: "hexmesh",
+      fill: "@accent",
+      opacity: 0.12,
+    }),
+    particles("Decor — Motes", { kind: "dots", count: 26, size: 2.6, speed: 0.3, color: "@glow", opacity: 0.4 }),
+  ],
+};
+
+/** Neon Pop: a hot neon ground — glowing blobs and sparks, the alert family. */
+const NEON_POP: FamilyStyle = {
+  id: "neonpop",
+  name: "Neon Pop",
+  tags: ["Neon", "Pink"],
+  display: "Orbitron",
+  displayWeight: 900,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 16,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 38 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 40 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/30", angle: 150 } },
+    }),
+    shape("Decor — Bloom", { x: 300, y: 120, width: 620, height: 620 }, {
+      shape: "ellipse",
+      fill: "@accent/14",
+      effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
+      animation: anim("pulse", { duration: 3600, intensity: 1.2 }),
+    }),
+    particles("Decor — Sparks", { kind: "stars", count: 70, size: 4, speed: 0.7, color: "@accent", opacity: 0.75 }),
+  ],
+};
+
+/** RGB Slam: a competitive chamfer HUD ground — rail, mesh and scanlines. */
+const RGB_SLAM: FamilyStyle = {
+  id: "rgbslam",
+  name: "RGB Slam",
+  tags: ["Esports", "RGB"],
+  display: "Rajdhani",
+  displayWeight: 700,
+  displayTracking: 6,
+  displayTransform: "uppercase",
+  displayItalic: true,
+  body: "Rajdhani",
+  radius: 8,
+  frameRadius: 8,
+  corners: true,
+  strokeWidth: 3,
+  plateShape: "chamfer",
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 34 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 44 } },
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/24", angle: 200 } },
+    }),
+    shape("Decor — Right rail", { x: 1908, y: 0, width: 12, height: 1080 }, {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+      animation: anim("glow", { duration: 2200 }),
+    }),
+    shape("Decor — Hex mesh", { x: -40, y: 120, width: 700, height: 840 }, {
+      shape: "hexmesh",
+      fill: "@accent",
+      opacity: 0.14,
+    }),
+    shape("Decor — Scanlines", FULL, { shape: "scanlines", fill: "@accent", cornerRadius: 4, opacity: 0.05 }),
+  ],
+  overlayDecor: () => [
+    shape("Decor — Scanlines", FULL, { shape: "scanlines", fill: "@accent", cornerRadius: 4, opacity: 0.04 }),
+  ],
+};
+
+/** Clearview: a frosted-glass minimalist family — copy behind a soft pane. */
+const CLEARVIEW: FamilyStyle = {
+  id: "clearview",
+  name: "Clearview",
+  tags: ["Minimal", "Dark"],
+  display: "Space Grotesk",
+  displayWeight: 700,
+  displayTracking: 6,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 24,
+  frameRadius: 24,
+  corners: false,
+  strokeWidth: 1,
+  glass: true,
+  glassStyle: "frost",
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 16 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/28", angle: 145 } },
+    }),
+    particles("Decor — Orbs", { kind: "blobs", count: 5, size: 12, speed: 0.4, color: "@accent", opacity: 0.4 }),
+  ],
+};
+
+/** Pillbar: a clean, rounded minimal family — the pill-bar's ground. */
+const PILLBAR: FamilyStyle = {
+  id: "pillbar",
+  name: "Pillbar",
+  tags: ["Minimal"],
+  display: "Space Grotesk",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "none",
+  body: "Inter",
+  radius: 32,
+  frameRadius: 24,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 14 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@surface", angle: 175 } },
+    }),
+    particles("Decor — Motes", { kind: "dots", count: 22, size: 2.4, speed: 0.22, color: "@glow", opacity: 0.3 }),
+  ],
+};
+
+/** Side Rail: a neon-dark family with a glowing vertical rail. */
+const SIDE_RAIL: FamilyStyle = {
+  id: "siderail",
+  name: "Side Rail",
+  tags: ["Neon", "Dark"],
+  display: "Orbitron",
+  displayWeight: 900,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 36,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 90 } },
+    }),
+    shape("Decor — Rail", { x: 60, y: 220, width: 10, height: 640 }, {
+      fill: "@accent",
+      cornerRadius: 5,
+      effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+      animation: anim("glow", { duration: 2600 }),
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 54, size: 3, speed: 0.4, color: "@glow", opacity: 0.6 }),
+  ],
+};
+
+/** Vector: an angular esports family — big diagonal blades sweep the ground. */
+const VECTOR: FamilyStyle = {
+  id: "vector",
+  name: "Vector",
+  tags: ["Esports", "Neon"],
+  display: "Chakra Petch",
+  displayWeight: 700,
+  displayTracking: 6,
+  displayTransform: "uppercase",
+  displayItalic: true,
+  body: "Rajdhani",
+  radius: 4,
+  frameRadius: 4,
+  corners: true,
+  strokeWidth: 3,
+  plateShape: "chamfer",
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    shape("Decor — Blade primary", { x: -200, y: -80, width: 620, height: 1300 }, {
+      shape: "shard",
+      fill: "@primary/22",
+      rotation: 12,
+    }),
+    shape("Decor — Blade accent", { x: 1500, y: -80, width: 420, height: 1300 }, {
+      shape: "shard",
+      fill: "@accent/16",
+      rotation: 12,
+      effects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+    }),
+    shape("Decor — Scanlines", FULL, { shape: "scanlines", fill: "@accent", cornerRadius: 4, opacity: 0.04 }),
+  ],
+};
+
+/** Signature: a broadcast-HUD family — a thin top seam over a graded dark. */
+const SIGNATURE: FamilyStyle = {
+  id: "signature",
+  name: "Signature",
+  tags: ["Esports", "Neon"],
+  display: "Orbitron",
+  displayWeight: 900,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Inter",
+  radius: 16,
+  frameRadius: 16,
+  corners: true,
+  strokeWidth: 4,
+  frameEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 24 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/20", angle: 170 } },
+    }),
+    shape("Decor — Top seam", { x: 0, y: 96, width: 1920, height: 3 }, {
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+    }),
+    particles("Decor — Stars", { kind: "stars", count: 40, size: 3, speed: 0.35, color: "@glow", opacity: 0.5 }),
+  ],
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  MINIMAL_PLAY,
+  ESPORTS_HUD,
+  CHAT_LOUNGE,
+  HALO,
+  CYBERFRAME,
+  HEARTH,
+  DREAD,
+  ENCORE,
+  HEX_CUT,
+  NEON_POP,
+  RGB_SLAM,
+  CLEARVIEW,
+  PILLBAR,
+  SIDE_RAIL,
+  VECTOR,
+  SIGNATURE,
   CONSTELLATION,
   RIPPLE,
   SNOWFALL,

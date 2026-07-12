@@ -35,7 +35,7 @@ const SOCIAL_LABELS: Record<SocialPlatform, string> = {
 };
 
 /** A template that shows off the name, logo, slogan and socials at once. */
-const PREVIEW_TEMPLATE_ID = "starting-pulse--purple-neon";
+const PREVIEW_TEMPLATE_ID = "halo-starting--purple-neon";
 
 export default function ProfilePage() {
   const t = useT();
