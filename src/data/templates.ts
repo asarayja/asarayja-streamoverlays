@@ -6029,7 +6029,7 @@ const NEON_CITY: FamilyStyle = {
 const SNOWFALL: FamilyStyle = {
   id: "snowfall",
   name: "Snowfall",
-  tags: ["Nordic", "Cozy", "Blue"],
+  tags: ["Nordic", "Cozy", "Dark"],
   display: "Josefin Sans",
   displayWeight: 600,
   displayTracking: 3,
@@ -6096,25 +6096,12 @@ const CONFETTI: FamilyStyle = {
   headlineEffects: { shadow: { enabled: true, color: "@shadow", blur: 6, offsetY: 2, opacity: 0.22 } },
   plateShape: "rect",
   scene: () => {
-    const streamers = [
-      { x: 120, c: "@primary", r: 14 },
-      { x: 480, c: "@secondary", r: -12 },
-      { x: 1360, c: "@accent", r: 12 },
-      { x: 1720, c: "@primary", r: -16 },
-    ];
     return [
       shape("Backdrop", FULL, {
         background: true,
         fill: "@surface",
         effects: { gradient: { enabled: true, from: "@surface", to: "@primary/12", angle: 130 } },
       }),
-      ...streamers.map((s, i) =>
-        shape(`Streamer ${i}`, { x: s.x, y: -160, width: 14, height: 600 }, {
-          shape: "rect", fill: s.c, opacity: 0.55, rotation: s.r,
-          effects: { glow: { enabled: true, color: "@glow", strength: 8 } },
-          animation: anim("sway", { duration: 5200 + i * 400, intensity: 0.6 }),
-        }),
-      ),
       particles("Decor — Confetti A", { kind: "confetti", count: 46, size: 11, speed: 0.9, color: "@accent", opacity: 0.9 }),
       particles("Decor — Confetti B", { kind: "confetti", count: 34, size: 9, speed: 1.2, color: "@primary", opacity: 0.85 }),
       particles("Decor — Confetti C", { kind: "confetti", count: 28, size: 8, speed: 1.4, color: "@secondary", opacity: 0.8 }),
