@@ -6210,41 +6210,6 @@ const WIREFRAME: FamilyStyle = {
 
 /* --------------------------- Sixth proposal set --------------------------- */
 
-/** Autumn: falling leaves drift across a warm gradient — cosy and seasonal.
-    Follows the palette. */
-const AUTUMN: FamilyStyle = {
-  id: "autumn",
-  name: "Autumn",
-  tags: ["Cozy", "Orange", "Nordic"],
-  display: "Bitter",
-  displayWeight: 700,
-  displayTracking: 1,
-  displayTransform: "uppercase",
-  body: "Nunito",
-  radius: 14,
-  frameRadius: 16,
-  corners: false,
-  strokeWidth: 2,
-  frameEffects: {
-    border: { enabled: true, color: "@accent", width: 2, radius: 16 },
-    glow: { enabled: true, color: "@glow", strength: 16 },
-  },
-  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 20 } },
-  plateShape: "rect",
-  scene: () => [
-    shape("Backdrop", FULL, {
-      background: true,
-      fill: "@background",
-      effects: { gradient: { enabled: true, from: "@primary/26", to: "@background", angle: 120 } },
-    }),
-    particles("Decor — Leaves", { kind: "petals", count: 34, size: 16, speed: 0.6, color: "@accent", opacity: 0.85 }),
-    particles("Decor — Leaves 2", { kind: "petals", count: 22, size: 12, speed: 0.9, color: "@secondary", opacity: 0.7 }),
-    particles("Decor — Motes", { kind: "dots", count: 16, size: 3, speed: 0.3, color: "@glow", opacity: 0.4 }),
-  ],
-  overlayDecor: () => [],
-  contentOffsetY: 0,
-};
-
 /** Constellation: a night star map — bright stars linked by faint lines over a
     deep sky, with a drifting shooting star. Follows the palette. */
 const CONSTELLATION: FamilyStyle = {
@@ -6306,46 +6271,6 @@ const CONSTELLATION: FamilyStyle = {
   contentOffsetY: 0,
 };
 
-/** Storm: a thunderstorm — drifting clouds, driving rain and a lightning bolt
-    that flashes now and then. Moody; follows the palette. */
-const STORM: FamilyStyle = {
-  id: "storm",
-  name: "Storm",
-  tags: ["Dark", "Blue", "Sci-Fi"],
-  display: "Oswald",
-  displayWeight: 600,
-  displayTracking: 3,
-  displayTransform: "uppercase",
-  body: "Saira",
-  radius: 6,
-  frameRadius: 8,
-  corners: false,
-  strokeWidth: 2,
-  frameEffects: {
-    border: { enabled: true, color: "@accent", width: 2, radius: 8 },
-    glow: { enabled: true, color: "@glow", strength: 24 },
-  },
-  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 28 } },
-  plateShape: "rect",
-  scene: () => [
-    shape("Backdrop", FULL, {
-      background: true,
-      fill: "@background",
-      effects: { gradient: { enabled: true, from: "@primary/24", to: "@background", angle: 90 } },
-    }),
-    particles("Decor — Clouds", { kind: "clouds", count: 5, size: 220, speed: 0.25, color: "@secondary", opacity: 0.32 }),
-    // A lightning bolt that flashes on and off like distant strikes.
-    shape("Lightning", { x: 1180, y: -20, width: 420, height: 1100 }, {
-      shape: "bolt", fill: "@text", cornerRadius: 26,
-      effects: { glow: { enabled: true, color: "@glow", strength: 50 } },
-      animation: anim("blink", { duration: 3200 }),
-    }),
-    particles("Decor — Rain", { kind: "rain", count: 80, size: 2, speed: 1.6, color: "@glow", opacity: 0.4 }),
-  ],
-  overlayDecor: () => [],
-  contentOffsetY: 0,
-};
-
 /** Ripple: a calm water surface — concentric ripples spreading from a drop with
     a soft caustic light and drifting motes. Serene; follows the palette. */
 const RIPPLE: FamilyStyle = {
@@ -6394,9 +6319,7 @@ const RIPPLE: FamilyStyle = {
 };
 
 const NEW_FAMILIES: FamilyStyle[] = [
-  AUTUMN,
   CONSTELLATION,
-  STORM,
   RIPPLE,
   SNOWFALL,
   CONFETTI,
