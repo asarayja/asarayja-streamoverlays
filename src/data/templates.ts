@@ -15,6 +15,7 @@ import {
 } from "@/lib/types";
 import { ABSTRACT_PALETTES, CORE_PALETTES, DEFAULT_PALETTE_ID, GOTHIC_PALETTES, PRIDE_PALETTES, PRISM_PALETTES, paletteTags } from "./palettes";
 import { CUSTOM_TEMPLATES } from "./custom-designs";
+import { noise } from "@/lib/animation";
 import type { Palette } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
@@ -2006,6 +2007,7 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   mecha: ["shards", 6],
   // Cyber — glitch.
   cyberpill: ["glitch", 0],
+  neonbars: ["shards", 0],
   // Crystal / glass — facets.
   holo: ["prism", 8],
   frost: ["prism", -6],
@@ -4330,7 +4332,98 @@ const AURORA_SILK_NEON: FamilyStyle = {
   ],
 };
 
+/** One diagonal neon capsule — a rounded-rect *outline* (hollow) with a glowing
+    tube stroke, rotated to the pack's diagonal. A traveling shimmer makes the
+    neon hum. */
+function neonBar(
+  name: string,
+  cx: number,
+  cy: number,
+  len: number,
+  thick: number,
+  color: string,
+  angle: number,
+  delay: number,
+): LayerSpec {
+  return shape(name, { x: cx - len / 2, y: cy - thick / 2, width: len, height: thick }, {
+    shape: "rect",
+    fill: "transparent",
+    rotation: angle,
+    cornerRadius: thick / 2,
+    effects: {
+      border: { enabled: true, color, width: 3, radius: thick / 2 },
+      glow: { enabled: true, color: "@glow", strength: 22 },
+    },
+    animation: anim("shimmer", { duration: 3600, delay }),
+  });
+}
+
+/** A cluster of parallel diagonal neon bars fanning through one side of the
+    frame — varying lengths, scattered, some with a nested inner tube. */
+function neonBarCluster(prefix: string, color: string, originX: number, seed: number): LayerSpec[] {
+  const angle = -58;
+  const N = 9;
+  const bars: LayerSpec[] = [];
+  for (let i = 0; i < N; i++) {
+    const n = noise(seed + i * 3.1);
+    const n2 = noise(seed + i * 5.7);
+    const len = 300 + n * 660;
+    const thick = 40 + n2 * 26;
+    const cx = originX + (i / (N - 1) - 0.5) * 560 + (n2 - 0.5) * 130;
+    const cy = 150 + i * 88 + (n - 0.5) * 150;
+    bars.push(neonBar(`${prefix} ${i}`, cx, cy, len, thick, color, angle, i * 180));
+    if (n > 0.52) {
+      bars.push(neonBar(`${prefix} ${i} inner`, cx, cy, len - thick * 2.6, thick * 0.42, color, angle, i * 180 + 120));
+    }
+  }
+  return bars;
+}
+
+/** Neon Bars: a diagonal rain of glowing neon capsule outlines in two colour
+    zones — one accent on the left, another on the right — over pure black, the
+    reference wallpaper turned into an overlay family. Colour follows the palette. */
+const NEON_BARS: FamilyStyle = {
+  id: "neonbars",
+  name: "Neon Bars",
+  tags: ["Neon", "Esports", "Sci-Fi"],
+  display: "Orbitron",
+  displayWeight: 800,
+  displayTracking: 3,
+  displayTransform: "uppercase",
+  body: "Rajdhani",
+  radius: 8,
+  frameRadius: 10,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 10 },
+    glow: { enabled: true, color: "@glow", strength: 26 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    ...neonBarCluster("Bar L", "@secondary", 360, 3),
+    ...neonBarCluster("Bar R", "@accent", 1560, 50),
+    // A soft dark pool keeps the centre lane legible for the copy.
+    shape("Centre dim", { x: 360, y: 280, width: 1200, height: 520 }, {
+      shape: "ellipse",
+      fill: "@background",
+      opacity: 0.55,
+      effects: { blur: { enabled: true, amount: 60 } },
+    }),
+    particles("Decor — Dust", { kind: "dots", count: 40, size: 2.4, speed: 0.4, color: "@glow", opacity: 0.4 }),
+  ],
+  // Over gameplay/webcam: just a couple of bars in each corner, no full field.
+  overlayDecor: () => [
+    ...neonBarCluster("Bar edge L", "@secondary", 120, 3).slice(0, 3),
+    ...neonBarCluster("Bar edge R", "@accent", 1800, 50).slice(0, 3),
+  ],
+  contentOffsetY: 0,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  NEON_BARS,
   HALLOWED_NIGHT,
   ASTRAL_DECK,
   PIXEL_WINDOWS,
