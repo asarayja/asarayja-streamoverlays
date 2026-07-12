@@ -1617,7 +1617,7 @@ const DEFS: PaletteDef[] = [
     name: "Vanguard Red",
     collection: "core",
     subStyle: "Abstract",
-    tags: ["Red", "Esports", "Dark"],
+    tags: ["Red", "Minimal", "Esports", "Dark"],
     theme: {
       primary: "#c90000",
       secondary: "#9a9a9a",
@@ -1637,7 +1637,7 @@ const DEFS: PaletteDef[] = [
     name: "Vanguard Purple",
     collection: "core",
     subStyle: "Abstract",
-    tags: ["Purple", "Esports", "Dark"],
+    tags: ["Purple", "Minimal", "Esports", "Dark"],
     theme: {
       primary: "#8b2fd6",
       secondary: "#9a9a9a",
@@ -1657,7 +1657,7 @@ const DEFS: PaletteDef[] = [
     name: "Vanguard Blue",
     collection: "core",
     subStyle: "Abstract",
-    tags: ["Blue", "Esports", "Dark"],
+    tags: ["Blue", "Minimal", "Esports", "Dark"],
     theme: {
       primary: "#1f6feb",
       secondary: "#9a9a9a",

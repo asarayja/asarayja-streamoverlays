@@ -4346,9 +4346,21 @@ function skewStrips(corner: "tl" | "br"): LayerSpec[] {
   const dir = corner === "tl" ? 1 : -1;
   // Three equally-thick strips, white / accent / white, flush against each other.
   const cols = ["@text", "@accent", "@text"];
-  const thick = 56;
-  const len = 1700;
+  const thick = 88;
+  const len = 1800;
   const strips: LayerSpec[] = [];
+  // One shadow-caster the size of the whole group, drawn behind the strips and
+  // filled in the ground colour so it's invisible — only its drop shadow shows,
+  // giving BOTH corners the same soft shadow (the strips overlap and hide their
+  // own per-strip shadows, so this is what makes it read).
+  const groupThick = cols.length * thick;
+  const gPerp = (groupThick / 2) * dir;
+  strips.push(shape(`Strip ${corner} shadow`, { x: bx + px * gPerp - len / 2, y: by + py * gPerp - groupThick / 2, width: len, height: groupThick }, {
+    shape: "rect",
+    fill: "@background",
+    rotation: angle,
+    effects: { shadow: { enabled: true, color: "#000000", blur: 42, opacity: 0.6, offsetX: 16, offsetY: 26 } },
+  }));
   for (let i = 0; i < cols.length; i++) {
     // Flush: each strip's centre is one full thickness from the last.
     const perp = (i * thick + thick / 2) * dir;
@@ -4358,7 +4370,6 @@ function skewStrips(corner: "tl" | "br"): LayerSpec[] {
       shape: "rect",
       fill: cols[i],
       rotation: angle,
-      effects: { shadow: { enabled: true, color: "#000000", blur: 30, opacity: 0.5, offsetX: 0, offsetY: 18 } },
     }));
   }
   return strips;
@@ -4371,7 +4382,7 @@ function skewStrips(corner: "tl" | "br"): LayerSpec[] {
 const VANGUARD: FamilyStyle = {
   id: "vanguard",
   name: "Vanguard",
-  tags: ["Esports", "Red", "Dark"],
+  tags: ["Esports", "Minimal", "Red"],
   display: "Bebas Neue",
   displayWeight: 400,
   displayTracking: 5,
@@ -4392,17 +4403,6 @@ const VANGUARD: FamilyStyle = {
     shape("Backdrop", FULL, { background: true, fill: "@background" }),
     ...skewStrips("tl"),
     ...skewStrips("br"),
-    // The big centre box that holds the copy.
-    shape("Centre box", { x: 340, y: 300, width: 1240, height: 520 }, {
-      shape: "rect",
-      fill: "@surface",
-      opacity: 0.9,
-      cornerRadius: 8,
-      effects: {
-        border: { enabled: true, color: "@accent", width: 2, radius: 8 },
-        shadow: { enabled: true, color: "#000000", blur: 44, opacity: 0.5, offsetX: 0, offsetY: 12 },
-      },
-    }),
   ],
   overlayDecor: () => [...skewStrips("tl"), ...skewStrips("br")],
   contentOffsetY: 0,
@@ -4446,9 +4446,13 @@ const AURORA_PALETTES = ABSTRACT_PALETTES.filter((p) => p.id.includes("aurora"))
 // it comes in every colour like the other families, not just one.
 const AURORA_SILK_PALETTES = [...CORE_PALETTES, ...AURORA_PALETTES];
 const RISO_CONCRETE_PALETTES = [...CORE_PALETTES, ...RISO_PALETTES];
-// Vanguard is a fixed identity (charcoal / accent / white), so it only flies its
-// own signature palettes — red is the reference, plus a purple and a blue.
-const VANGUARD_PALETTES = ABSTRACT_PALETTES.filter((p) => p.id.includes("vanguard"));
+// Vanguard comes in every colour like the rest — the full core set plus its own
+// signature charcoal palettes (Vanguard Red is the reference). Those signature
+// palettes are also pickable for any other design from the palette menu.
+const VANGUARD_PALETTES = [
+  ...CORE_PALETTES,
+  ...ABSTRACT_PALETTES.filter((p) => p.id.includes("vanguard")),
+];
 const ABSTRACT_TEMPLATES: Template[] = [
   ...expand(familyScreens(VANGUARD), VANGUARD_PALETTES),
   ...expand(familyScreens(RISO_CONCRETE), RISO_CONCRETE_PALETTES),
