@@ -456,11 +456,12 @@ function particles(
 const FULL: Box = { x: 0, y: 0, width: 1920, height: 1080 };
 
 // Screens where the slogan / social bar are dropped by default and become
-// opt-in (add them from the editor's Add panel). The slogan goes on the idle
-// message screens; the social bar goes there AND on gameplay (it rarely suits
-// a live overlay). Intermission, the dedicated Social Bar screen and the rest
-// keep theirs. Declared early: expand()/buildVariant run during module init, so
-// these must be initialised before the first expansion.
+// opt-in (add them from the editor's Add panel). The slogan goes off the idle
+// message screens; the social bar goes off those plus gameplay (it rarely suits
+// a live overlay) — but NOT Offline, where handles fit ("follow me while I'm
+// away"). Intermission and the dedicated Social Bar screen keep theirs too.
+// Declared early: expand()/buildVariant run during module init, so these must be
+// initialised before the first expansion.
 const NO_SLOGAN = new Set<TemplateCategory>([
   "Starting Soon",
   "BRB",
@@ -473,7 +474,6 @@ const NO_SOCIAL = new Set<TemplateCategory>([
   "BRB",
   "Stream Ending",
   "Pause",
-  "Offline",
   "Gameplay",
 ]);
 
