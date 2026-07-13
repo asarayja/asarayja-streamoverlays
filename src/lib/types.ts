@@ -356,9 +356,30 @@ export interface LayerBase {
   locked: boolean;
   /** Id of the owning group, if any. */
   groupId?: string;
+  /** How the layer composites against everything below it. Omitted / "normal"
+      is the default source-over. Maps to Konva's globalCompositeOperation. */
+  blend?: BlendMode;
   effects: Effects;
   animation: Animation;
 }
+
+export type BlendMode =
+  | "normal"
+  | "multiply"
+  | "screen"
+  | "overlay"
+  | "darken"
+  | "lighten"
+  | "color-dodge"
+  | "color-burn"
+  | "hard-light"
+  | "soft-light"
+  | "difference"
+  | "exclusion"
+  | "hue"
+  | "saturation"
+  | "color"
+  | "luminosity";
 
 export type ShapeKind =
   | "rect"

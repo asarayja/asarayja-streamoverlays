@@ -43,6 +43,7 @@ import type {
   GoalLayer,
   ImageLayer,
   Layer,
+  BlendMode,
   LayerPatch,
   ParticleKind,
   ParticleLayer,
@@ -58,6 +59,7 @@ const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "dia
 const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs", "ghosts", "bokeh"];
 // Shapes coloured by a list of `facetColors` (a pride flag, a gradient) rather
 // than a single fill. The pure flag bands ignore `fill` entirely.
+const BLEND_MODES: BlendMode[] = ["normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "hue", "saturation", "color", "luminosity"];
 const FLAG_SHAPES = new Set<ShapeKind>(["flagarc", "flagwave", "flaground", "flagrays", "flagzig"]);
 const FACET_SHAPES = new Set<ShapeKind>([...FLAG_SHAPES, "flagwaves", "glasssheet", "auroraField", "bloomVeil"]);
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
@@ -103,6 +105,9 @@ export function RightPanel() {
   const selectedIds = useEditorStore((s) => s.selectedIds);
   const updateLayer = useEditorStore((s) => s.updateLayer);
   const beginGesture = useEditorStore((s) => s.beginGesture);
+  const copyStyle = useEditorStore((s) => s.copyStyle);
+  const pasteStyle = useEditorStore((s) => s.pasteStyle);
+  const hasStyle = useEditorStore((s) => s.styleClipboard !== null);
 
   if (!project) return null;
 
@@ -137,10 +142,31 @@ export function RightPanel() {
   return (
     <aside className="w-[320px] shrink-0 overflow-y-auto border-l border-white/[0.06] bg-ink-900">
       <div className="border-b border-white/[0.06] px-4 py-3.5">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-600">
-          {layer.type}
-        </p>
-        <h2 className="truncate text-sm font-semibold text-zinc-100">{layer.name}</h2>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-600">
+              {layer.type}
+            </p>
+            <h2 className="truncate text-sm font-semibold text-zinc-100">{layer.name}</h2>
+          </div>
+          <div className="flex shrink-0 gap-1">
+            <button
+              onClick={copyStyle}
+              title={t("Copy style (colour, effects, blend, type)")}
+              className="rounded-md border border-white/10 bg-white/[0.02] px-2 py-1 text-[10px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:text-white"
+            >
+              {t("Copy style")}
+            </button>
+            <button
+              onClick={pasteStyle}
+              disabled={!hasStyle}
+              title={t("Paste style onto the selected layer(s)")}
+              className="rounded-md border border-white/10 bg-white/[0.02] px-2 py-1 text-[10px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:text-white disabled:opacity-30"
+            >
+              {t("Paste")}
+            </button>
+          </div>
+        </div>
       </div>
 
       <Section title={t("Transform")}>
@@ -168,6 +194,15 @@ export function RightPanel() {
           onBegin={beginGesture}
           onChange={(v) => live({ opacity: v / 100 })}
         />
+        <Field label={t("Blend")}>
+          <Select value={layer.blend ?? "normal"} onChange={(e) => commit({ blend: e.target.value as BlendMode })}>
+            {BLEND_MODES.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </Select>
+        </Field>
       </Section>
 
       <TypeSection layer={layer} theme={theme} live={live} commit={commit} beginGesture={beginGesture} />

@@ -149,6 +149,12 @@ interface EditorState {
   /** Paste the clipboard layers with a small offset, and select them
       (Ctrl/Cmd+V). Works across screens in a pack. */
   pasteClipboard: () => void;
+  /** The look (colour, effects, blend, typography) copied off one layer. */
+  styleClipboard: Partial<Layer> | null;
+  /** Copy the first selected layer's look. */
+  copyStyle: () => void;
+  /** Apply the copied look to every selected layer (only the fields it has). */
+  pasteStyle: () => void;
   /** Move every selected (unlocked) layer by a delta — group/multi drag + nudge. */
   moveSelected: (dx: number, dy: number, commit?: boolean) => void;
   /** Align the selected layers to a shared edge or centre. */
@@ -199,6 +205,16 @@ interface EditorState {
 }
 
 const HISTORY_LIMIT = 60;
+
+/** The look-fields that Copy style carries between layers — colour, effects,
+    compositing and typography, but never geometry or content. Each is applied
+    only to a target that already owns the field. */
+const STYLE_KEYS = [
+  "fill", "effects", "blend", "opacity", "strokeColor", "strokeWidth", "cornerRadius",
+  "fontFamily", "fontWeight", "letterSpacing", "lineHeight", "textTransform", "italic",
+  "fillStripes", "facetColors", "runnerColors", "usernameColor", "messageColor",
+  "barColor", "trackColor", "valueColor", "labelColor", "iconColor", "titleColor", "subtitleColor",
+] as const;
 
 /** Late enough that every shipped entry animation has come to rest. */
 export const SETTLED_TIME = 4000;
@@ -432,6 +448,7 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     drawWidth: 8,
     drawBrush: "pen",
     clipboard: [],
+    styleClipboard: null,
     // Paused at a settled frame: entry animations have finished, so what you
     // see is the layout you are editing rather than a mid-flight pose.
     playing: false,
@@ -591,6 +608,35 @@ export const useEditorStore = create<EditorState>()((set, get) => {
         selectedIds: copies.map((c) => c.id),
         clipboard: structuredClone(copies),
       });
+    },
+
+    copyStyle: () => {
+      const { selectedIds, project } = get();
+      const src = project?.layers.find((l) => selectedIds.includes(l.id));
+      if (!src) return;
+      const style: Record<string, unknown> = {};
+      for (const k of STYLE_KEYS) {
+        if (k in src) style[k] = structuredClone((src as unknown as Record<string, unknown>)[k]);
+      }
+      set({ styleClipboard: style as Partial<Layer> });
+    },
+
+    pasteStyle: () => {
+      const { styleClipboard, selectedIds, project } = get();
+      if (!project || !styleClipboard || selectedIds.length === 0) return;
+      pushHistory();
+      // Only copy over the look-fields the target actually owns, so a text's
+      // font never lands on a shape and a shape's fill never wipes a photo.
+      mapLayers((layers) =>
+        layers.map((l) => {
+          if (!selectedIds.includes(l.id) || l.locked) return l;
+          const patch: Record<string, unknown> = {};
+          for (const [k, v] of Object.entries(styleClipboard)) {
+            if (k in l) patch[k] = structuredClone(v);
+          }
+          return { ...l, ...patch } as Layer;
+        }),
+      );
     },
 
     moveSelected: (dx, dy, commit = true) => {

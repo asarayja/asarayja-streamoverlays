@@ -4629,6 +4629,7 @@ export function LayerNode({
       offsetY={h / 2}
       rotation={layer.rotation}
       opacity={layer.opacity * anim.opacity}
+      globalCompositeOperation={layer.blend && layer.blend !== "normal" ? layer.blend : undefined}
       listening={draggable && !layer.locked}
       draggable={draggable && !layer.locked}
       onMouseDown={(e) => onSelect?.(layer.id, e.evt.shiftKey || e.evt.metaKey)}
