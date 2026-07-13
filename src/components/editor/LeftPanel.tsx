@@ -1477,27 +1477,40 @@ function TextTab() {
             placeholder={t("Search fonts…")}
             className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-brand-500/60 focus:outline-none"
           />
-          <div className="max-h-[420px] space-y-1 overflow-y-auto pr-1">
-            {shownFonts.map((font) => (
-              <button
-                key={font.family}
-                disabled={!isText}
-                onClick={() => isText && updateLayer(layer.id, { fontFamily: font.family })}
-                className={cx(
-                  "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors disabled:opacity-40",
-                  isText && (layer as TextLayer).fontFamily === font.family
-                    ? "bg-brand-500/15 text-brand-400"
-                    : "text-zinc-300 hover:bg-white/[0.04]",
-                )}
-              >
-                <span style={{ fontFamily: `"${font.family}", sans-serif` }} className="truncate text-sm">
-                  {font.family}
-                </span>
-                <span className="ml-2 shrink-0 text-[10px] uppercase tracking-wider text-zinc-600">
-                  {t(font.category)}
-                </span>
-              </button>
-            ))}
+          <div className="max-h-[440px] space-y-1 overflow-y-auto pr-1">
+            {shownFonts.map((font) => {
+              const active = isText && (layer as TextLayer).fontFamily === font.family;
+              return (
+                <button
+                  key={font.family}
+                  disabled={!isText}
+                  onClick={() => isText && updateLayer(layer.id, { fontFamily: font.family })}
+                  // content-visibility keeps 700 rows cheap: off-screen rows skip
+                  // layout *and* their font download until scrolled into view.
+                  style={{ contentVisibility: "auto", containIntrinsicSize: "auto 48px" }}
+                  className={cx(
+                    "flex w-full flex-col items-start gap-0.5 rounded-lg px-3 py-2 text-left transition-colors disabled:opacity-40",
+                    active
+                      ? "bg-brand-500/15 ring-1 ring-brand-400/40"
+                      : "hover:bg-white/[0.04]",
+                  )}
+                >
+                  <span
+                    style={{ fontFamily: `"${font.family}", sans-serif` }}
+                    className={cx("w-full truncate text-[19px] leading-tight", active ? "text-brand-300" : "text-zinc-100")}
+                  >
+                    {font.family}
+                  </span>
+                  <span className="flex w-full items-center gap-1.5 text-[10px] text-zinc-500">
+                    <span className="uppercase tracking-wider">{t(font.category)}</span>
+                    <span className="text-zinc-700">·</span>
+                    <span className="truncate opacity-70" style={{ fontFamily: `"${font.family}", sans-serif` }}>
+                      Handgloves 123
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
             {shownFonts.length === 0 && (
               <p className="px-3 py-2 text-xs text-zinc-600">{t("No fonts match “{q}”.", { q: fontQuery })}</p>
             )}
