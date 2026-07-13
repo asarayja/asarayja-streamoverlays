@@ -129,6 +129,69 @@ export const FONTS: FontDef[] = [
   { family: "MedievalSharp", weights: [400], category: "gothic" },
   { family: "Cinzel Decorative", weights: [400, 700], category: "gothic" },
   { family: "IM Fell English SC", weights: [400], category: "gothic" },
+
+  /* ----------------------------- added batch ----------------------------- */
+  // Pixel / retro (grouped under display).
+  { family: "VT323", weights: [400], category: "display" },
+  { family: "Silkscreen", weights: [400, 700], category: "display" },
+  { family: "Pixelify Sans", weights: [400, 700], category: "display" },
+  { family: "DotGothic16", weights: [400], category: "display" },
+  { family: "Handjet", weights: [400, 700], category: "display" },
+  // Bold display / impact.
+  { family: "Titan One", weights: [400], category: "display" },
+  { family: "Paytone One", weights: [400], category: "display" },
+  { family: "Concert One", weights: [400], category: "display" },
+  { family: "Rammetto One", weights: [400], category: "display" },
+  { family: "Ultra", weights: [400], category: "display" },
+  { family: "Modak", weights: [400], category: "display" },
+  { family: "Bowlby One", weights: [400], category: "display" },
+  { family: "Bungee Inline", weights: [400], category: "display" },
+  { family: "Bungee Shade", weights: [400], category: "display" },
+  { family: "Bungee Hairline", weights: [400], category: "display" },
+  // Rounded / friendly (sans).
+  { family: "Varela Round", weights: [400], category: "sans" },
+  { family: "M PLUS Rounded 1c", weights: [400, 700], category: "sans" },
+  { family: "Sniglet", weights: [400, 800], category: "sans" },
+  // Gaming / futuristic.
+  { family: "Electrolize", weights: [400], category: "gaming" },
+  { family: "Aldrich", weights: [400], category: "gaming" },
+  { family: "Quantico", weights: [400, 700], category: "gaming" },
+  { family: "Jura", weights: [400, 700], category: "gaming" },
+  { family: "Krona One", weights: [400], category: "gaming" },
+  { family: "Nova Flat", weights: [400], category: "gaming" },
+  { family: "Nova Round", weights: [400], category: "gaming" },
+  // Script / elegant (handwriting).
+  { family: "Kaushan Script", weights: [400], category: "handwriting" },
+  { family: "Yellowtail", weights: [400], category: "handwriting" },
+  { family: "Courgette", weights: [400], category: "handwriting" },
+  { family: "Cookie", weights: [400], category: "handwriting" },
+  { family: "Marck Script", weights: [400], category: "handwriting" },
+  { family: "Allura", weights: [400], category: "handwriting" },
+  { family: "Tangerine", weights: [400, 700], category: "handwriting" },
+  // Marker / hand.
+  { family: "Architects Daughter", weights: [400], category: "handwriting" },
+  { family: "Reenie Beanie", weights: [400], category: "handwriting" },
+  { family: "Covered By Your Grace", weights: [400], category: "handwriting" },
+  // Serif.
+  { family: "Marcellus", weights: [400], category: "serif" },
+  { family: "Cardo", weights: [400, 700], category: "serif" },
+  { family: "Fraunces", weights: [400, 700, 900], category: "serif" },
+  // Horror + more gothic / blackletter / medieval.
+  { family: "Nosifer", weights: [400], category: "gothic" },
+  { family: "Butcherman", weights: [400], category: "gothic" },
+  { family: "Eater", weights: [400], category: "gothic" },
+  { family: "Metal Mania", weights: [400], category: "gothic" },
+  { family: "Griffy", weights: [400], category: "gothic" },
+  { family: "Special Elite", weights: [400], category: "gothic" },
+  { family: "UnifrakturCook", weights: [700], category: "gothic" },
+  { family: "Germania One", weights: [400], category: "gothic" },
+  { family: "New Rocker", weights: [400], category: "gothic" },
+  { family: "Metamorphous", weights: [400], category: "gothic" },
+  { family: "Uncial Antiqua", weights: [400], category: "gothic" },
+  { family: "Henny Penny", weights: [400], category: "gothic" },
+  { family: "Fondamento", weights: [400, 700], category: "gothic" },
+  { family: "Caesar Dressing", weights: [400], category: "gothic" },
+  { family: "Emblema One", weights: [400], category: "gothic" },
 ];
 
 export const FONT_FAMILIES = FONTS.map((f) => f.family);
