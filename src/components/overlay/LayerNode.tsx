@@ -2721,11 +2721,20 @@ function parseIconBody(body: string): Array<{ tag: string; attrs: Record<string,
     `<svg xmlns="http://www.w3.org/2000/svg">${body}</svg>`,
     "image/svg+xml",
   );
-  return Array.from(doc.documentElement.children).map((el) => {
-    const attrs: Record<string, string> = {};
-    for (const at of Array.from(el.attributes)) attrs[at.name] = at.value;
-    return { tag: el.tagName.toLowerCase(), attrs };
-  });
+  // Flatten <g> wrappers (Phosphor duotone groups its two paths), inheriting the
+  // group's attributes so a group-level fill/opacity reaches the shapes.
+  const out: Array<{ tag: string; attrs: Record<string, string> }> = [];
+  const walk = (el: Element, inherited: Record<string, string>) => {
+    for (const child of Array.from(el.children)) {
+      const attrs: Record<string, string> = { ...inherited };
+      for (const at of Array.from(child.attributes)) attrs[at.name] = at.value;
+      const tag = child.tagName.toLowerCase();
+      if (tag === "g") walk(child, attrs);
+      else out.push({ tag, attrs });
+    }
+  };
+  walk(doc.documentElement, {});
+  return out;
 }
 
 const parsePoints = (s: string): number[] => (s ?? "").trim().split(/[\s,]+/).map(Number).filter((n) => !Number.isNaN(n));
@@ -2743,7 +2752,9 @@ function renderIconEl(
   const stroke = tint(a.stroke);
   const fill = tint(a.fill, colour);
   const strokeWidth = a["stroke-width"] ? Number(a["stroke-width"]) : stroke ? 2 : 0;
-  const common = { key, fill, stroke, strokeWidth, lineCap: "round" as const, lineJoin: "round" as const, ...shadow };
+  // Duotone icons dim their background layer with an opacity attr.
+  const opacity = a.opacity !== undefined ? Number(a.opacity) : a["fill-opacity"] !== undefined ? Number(a["fill-opacity"]) : 1;
+  const common = { key, fill, stroke, strokeWidth, opacity, lineCap: "round" as const, lineJoin: "round" as const, ...shadow };
   switch (el.tag) {
     case "path":
       return <Path {...common} data={a.d} />;
