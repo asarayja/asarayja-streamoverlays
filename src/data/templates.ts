@@ -329,7 +329,7 @@ function icon(
   name: string,
   box: Box,
   symbol: string,
-  o: BaseOpts & { fill?: string; strokeWidth?: number } = {},
+  o: BaseOpts & { fill?: string; strokeWidth?: number; body?: string; iconW?: number; iconH?: number } = {},
 ): LayerSpec {
   return {
     ...common(name, o),
@@ -338,8 +338,13 @@ function icon(
     symbol,
     fill: o.fill ?? "@accent",
     strokeWidth: o.strokeWidth ?? 2,
+    ...(o.body ? { body: o.body, iconW: o.iconW ?? 24, iconH: o.iconH ?? 24 } : {}),
   };
 }
+
+/** MDI's carved jack-o'-lantern (single path, recolours with the theme). */
+const MDI_PUMPKIN =
+  '<path fill="currentColor" d="M6.5 6c.97 0 1.87.5 2.61 1.38c.55-.59 1.2-1.02 1.89-1.23V4a2 2 0 0 1 2-2h2v2h-2v2.15c.69.21 1.34.64 1.89 1.23C15.63 6.5 16.53 6 17.5 6C20 6 22 9.36 22 13.5S20 21 17.5 21c-.97 0-1.87-.5-2.61-1.38C14.08 20.5 13.08 21 12 21s-2.08-.5-2.89-1.38C8.37 20.5 7.47 21 6.5 21C4 21 2 17.64 2 13.5S4 6 6.5 6M9 10l-1.25 2.25h2.5zm6 0l-1.25 2.25h2.5zm-7 7h2l1-1l1 1h2l1-1l1 1l1.5-3l-3.58.62L13 16l-1-1h-2l-1 1l-1-1l-2-1z"/>';
 
 function windowBox(
   name: string,
@@ -1445,7 +1450,6 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   summer: ["iris", -8],
   halloween: ["veil", 8],
   valentine: ["ribbon", 0],
-  autumn: ["iris", 4],
   spring: ["iris", -6],
   // Aquatic — organic blobs bloom.
   aquarium: ["liquid", 6],
@@ -6515,22 +6519,16 @@ const HALLOWEEN: FamilyStyle = {
       effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
       animation: anim("flicker", { duration: 2600 }),
     }),
-    shape("Decor — Pumpkin", { x: 90, y: 780, width: 280, height: 250 }, {
-      shape: "pumpkin",
+    icon("Decor — Pumpkin", { x: 120, y: 790, width: 240, height: 240 }, "mdi:halloween", {
       fill: "@accent",
-      effects: {
-        glow: { enabled: true, color: "@glow", strength: 34 },
-        border: { enabled: true, color: "@shadow", width: 4, radius: 0 },
-      },
+      body: MDI_PUMPKIN,
+      effects: { glow: { enabled: true, color: "@glow", strength: 34 } },
       animation: anim("flicker", { duration: 2200 }),
     }),
-    shape("Decor — Pumpkin 2", { x: 1520, y: 830, width: 220, height: 200 }, {
-      shape: "pumpkin",
+    icon("Decor — Pumpkin 2", { x: 1540, y: 840, width: 190, height: 190 }, "mdi:halloween", {
       fill: "@primary",
-      effects: {
-        glow: { enabled: true, color: "@glow", strength: 28 },
-        border: { enabled: true, color: "@shadow", width: 4, radius: 0 },
-      },
+      body: MDI_PUMPKIN,
+      effects: { glow: { enabled: true, color: "@glow", strength: 28 } },
       animation: anim("flicker", { duration: 2800, delay: 400 }),
     }),
     particles("Decor — Bats", { kind: "bats", count: 14, size: 8, speed: 1, color: "@text", opacity: 0.85 }),
@@ -6587,47 +6585,6 @@ const VALENTINE: FamilyStyle = {
   ],
 };
 
-/** Autumn: warm falling leaves drifting through a soft golden haze. */
-const AUTUMN: FamilyStyle = {
-  id: "autumn",
-  name: "Autumn",
-  tags: ["Orange", "Cozy", "Nordic"],
-  display: "Playfair Display",
-  displayWeight: 700,
-  displayTracking: 1,
-  displayTransform: "none",
-  body: "Nunito",
-  radius: 18,
-  frameRadius: 20,
-  corners: false,
-  strokeWidth: 2,
-  frameEffects: {
-    border: { enabled: true, color: "@accent", width: 2, radius: 20 },
-    glow: { enabled: true, color: "@glow", strength: 16 },
-  },
-  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 18 } },
-  plateShape: "rect",
-  scene: () => [
-    shape("Backdrop", FULL, {
-      background: true,
-      fill: "@background",
-      effects: { gradient: { enabled: true, from: "@primary/24", to: "@background", angle: 120 } },
-    }),
-    shape("Decor — Warm glow", { x: 300, y: -240, width: 1320, height: 560 }, {
-      shape: "ellipse",
-      fill: "@glow/8",
-      effects: { glow: { enabled: true, color: "@glow", strength: 70 } },
-      animation: anim("pulse", { duration: 6000, intensity: 0.4 }),
-    }),
-    particles("Decor — Leaves", { kind: "petals", count: 36, size: 12, speed: 0.9, color: "@accent", opacity: 0.8 }),
-    particles("Decor — Leaves 2", { kind: "petals", count: 24, size: 9, speed: 1.2, color: "@primary", opacity: 0.7 }),
-    particles("Decor — Haze", { kind: "fog", count: 5, size: 6, speed: 0.3, color: "@secondary" }),
-  ],
-  overlayDecor: () => [
-    particles("Decor — Leaves", { kind: "petals", count: 16, size: 10, speed: 0.9, color: "@accent", opacity: 0.5 }),
-  ],
-};
-
 /** Spring: drifting blossom petals, soft clouds and a couple of moths. */
 const SPRING: FamilyStyle = {
   id: "spring",
@@ -6670,7 +6627,6 @@ const NEW_FAMILIES: FamilyStyle[] = [
   SUMMER,
   HALLOWEEN,
   VALENTINE,
-  AUTUMN,
   SPRING,
   AQUARIUM,
   MINIMAL_PLAY,
