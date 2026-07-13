@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Asarayja Stream Overlays",
+  "version": "0.1.0",
+  "identifier": "app.asarayja.overlays",
+  "build": {
+    "frontendDist": "../out",
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:3000"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Asarayja Stream Overlays",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 960,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "publisher": "Asarayja development",
+    "category": "GraphicsAndDesign",
+    "shortDescription": "Overlay editor for Twitch / OBS",
+    "longDescription": "Design animated stream overlays — scenes, alerts, chat, goals and more — and export them for OBS. The desktop build wraps the same editor as asarayja.github.io.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.digicert.com",
+      "certificateThumbprint": null
+    }
+  }
+}

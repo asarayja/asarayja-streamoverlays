@@ -42,3 +42,7 @@ next-env.d.ts
 
 # Local maintainer notes — never committed
 .dev-notes.md
+
+# Tauri
+/src-tauri/target/
+/src-tauri/gen/schemas/
