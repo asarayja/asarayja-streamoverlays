@@ -1443,6 +1443,10 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   christmas: ["iris", 6],
   newyear: ["wave", 0],
   summer: ["iris", -8],
+  halloween: ["veil", 8],
+  valentine: ["ribbon", 0],
+  autumn: ["iris", 4],
+  spring: ["iris", -6],
   // Aquatic — organic blobs bloom.
   aquarium: ["liquid", 6],
   aquariumpride: ["ribbon", 12],
@@ -6472,10 +6476,202 @@ const SUMMER: FamilyStyle = {
   ],
 };
 
+/** Halloween: a full moon, bats and fog over a flickering pumpkin glow. */
+const HALLOWEEN: FamilyStyle = {
+  id: "halloween",
+  name: "Halloween",
+  tags: ["Horror", "Orange", "Purple"],
+  display: "Creepster",
+  displayWeight: 400,
+  displayTracking: 2,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 14,
+  frameRadius: 16,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 16 },
+    glow: { enabled: true, color: "@glow", strength: 22 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 200 } },
+    }),
+    shape("Decor — Moon", { x: 1360, y: 60, width: 300, height: 300 }, {
+      shape: "moon",
+      moonPhase: 1,
+      craters: true,
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 70 } },
+    }),
+    shape("Decor — Pumpkin glow", { x: 260, y: 760, width: 1400, height: 520 }, {
+      shape: "ellipse",
+      fill: "@accent/10",
+      effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
+      animation: anim("flicker", { duration: 2600 }),
+    }),
+    shape("Decor — Pumpkin", { x: 90, y: 780, width: 280, height: 250 }, {
+      shape: "pumpkin",
+      fill: "@accent",
+      effects: {
+        glow: { enabled: true, color: "@glow", strength: 34 },
+        border: { enabled: true, color: "@shadow", width: 4, radius: 0 },
+      },
+      animation: anim("flicker", { duration: 2200 }),
+    }),
+    shape("Decor — Pumpkin 2", { x: 1520, y: 830, width: 220, height: 200 }, {
+      shape: "pumpkin",
+      fill: "@primary",
+      effects: {
+        glow: { enabled: true, color: "@glow", strength: 28 },
+        border: { enabled: true, color: "@shadow", width: 4, radius: 0 },
+      },
+      animation: anim("flicker", { duration: 2800, delay: 400 }),
+    }),
+    particles("Decor — Bats", { kind: "bats", count: 14, size: 8, speed: 1, color: "@text", opacity: 0.85 }),
+    particles("Decor — Fog", { kind: "fog", count: 6, size: 6, speed: 0.4, color: "@secondary" }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Bats", { kind: "bats", count: 6, size: 7, speed: 1, color: "@text", opacity: 0.6 }),
+  ],
+};
+
+/** Valentine: floating hearts, a soft glow and a big translucent heart. */
+const VALENTINE: FamilyStyle = {
+  id: "valentine",
+  name: "Valentine",
+  tags: ["Pink", "Cozy"],
+  display: "Dancing Script",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 24,
+  frameRadius: 26,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 26 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 20 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@primary/26", to: "@background", angle: 150 } },
+    }),
+    shape("Decor — Glow", { x: 460, y: -220, width: 1000, height: 520 }, {
+      shape: "ellipse",
+      fill: "@glow/10",
+      effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
+      animation: anim("pulse", { duration: 4200, intensity: 0.6 }),
+    }),
+    shape("Decor — Heart", { x: 1360, y: 640, width: 360, height: 340 }, {
+      shape: "heart",
+      fill: "@accent/22",
+      effects: { glow: { enabled: true, color: "@glow", strength: 40 } },
+      animation: anim("pulse", { duration: 3200, intensity: 1 }),
+    }),
+    particles("Decor — Hearts", { kind: "hearts", count: 26, size: 12, speed: 0.6, color: "@accent", opacity: 0.8 }),
+    particles("Decor — Sparkle", { kind: "bokeh", count: 16, size: 10, speed: 0.3, color: "@glow", opacity: 0.5 }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Hearts", { kind: "hearts", count: 12, size: 10, speed: 0.6, color: "@accent", opacity: 0.5 }),
+  ],
+};
+
+/** Autumn: warm falling leaves drifting through a soft golden haze. */
+const AUTUMN: FamilyStyle = {
+  id: "autumn",
+  name: "Autumn",
+  tags: ["Orange", "Cozy", "Nordic"],
+  display: "Playfair Display",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 18,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 20 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 18 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@primary/24", to: "@background", angle: 120 } },
+    }),
+    shape("Decor — Warm glow", { x: 300, y: -240, width: 1320, height: 560 }, {
+      shape: "ellipse",
+      fill: "@glow/8",
+      effects: { glow: { enabled: true, color: "@glow", strength: 70 } },
+      animation: anim("pulse", { duration: 6000, intensity: 0.4 }),
+    }),
+    particles("Decor — Leaves", { kind: "petals", count: 36, size: 12, speed: 0.9, color: "@accent", opacity: 0.8 }),
+    particles("Decor — Leaves 2", { kind: "petals", count: 24, size: 9, speed: 1.2, color: "@primary", opacity: 0.7 }),
+    particles("Decor — Haze", { kind: "fog", count: 5, size: 6, speed: 0.3, color: "@secondary" }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Leaves", { kind: "petals", count: 16, size: 10, speed: 0.9, color: "@accent", opacity: 0.5 }),
+  ],
+};
+
+/** Spring: drifting blossom petals, soft clouds and a couple of moths. */
+const SPRING: FamilyStyle = {
+  id: "spring",
+  name: "Spring",
+  tags: ["Green", "Pink", "Cozy"],
+  display: "Comfortaa",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 26,
+  frameRadius: 28,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 28 },
+    glow: { enabled: true, color: "@glow", strength: 14 },
+  },
+  headlineEffects: { shadow: { enabled: true, color: "@shadow", blur: 6, offsetY: 2, opacity: 0.2 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@accent/20", to: "@primary/12", angle: 150 } },
+    }),
+    particles("Decor — Clouds", { kind: "clouds", count: 4, size: 8, speed: 0.3, color: "@surface" }),
+    particles("Decor — Blossom", { kind: "petals", count: 34, size: 11, speed: 0.7, color: "@accent", opacity: 0.75 }),
+    particles("Decor — Sparkle", { kind: "bokeh", count: 16, size: 10, speed: 0.3, color: "@glow", opacity: 0.5 }),
+    particles("Decor — Moths", { kind: "moths", count: 8, size: 7, speed: 0.8, color: "@primary", opacity: 0.6 }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Blossom", { kind: "petals", count: 14, size: 9, speed: 0.7, color: "@accent", opacity: 0.5 }),
+  ],
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
   CHRISTMAS,
   NEW_YEAR,
   SUMMER,
+  HALLOWEEN,
+  VALENTINE,
+  AUTUMN,
+  SPRING,
   AQUARIUM,
   MINIMAL_PLAY,
   ESPORTS_HUD,

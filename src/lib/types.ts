@@ -498,6 +498,8 @@ export type ShapeKind =
   | "check"
   /** A ring / annulus — a filled disc with a centre hole (a progress ring). */
   | "ring"
+  /** A jack-o'-lantern: a ribbed pumpkin body, a stem and a carved face. */
+  | "pumpkin"
   /** A lightning bolt. */
   | "bolt"
   /** A title ribbon/banner with forked ends. */

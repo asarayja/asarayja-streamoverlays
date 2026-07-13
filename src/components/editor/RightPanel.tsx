@@ -55,7 +55,7 @@ import type {
   Theme,
 } from "@/lib/types";
 
-const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "diamond", "star", "gem", "cross", "gear", "heart", "check", "ring", "arrow", "banner", "bubble", "line", "moon", "crescent", "coffin", "plaque", "scanlines", "web", "drip", "graveyard", "chain", "shard", "hexmesh", "wave", "chamfer", "carbon", "flagarc", "flagwave", "flaground", "flagrays", "flagzig"];
+const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "diamond", "star", "gem", "cross", "gear", "heart", "check", "ring", "pumpkin", "arrow", "banner", "bubble", "line", "moon", "crescent", "coffin", "plaque", "scanlines", "web", "drip", "graveyard", "chain", "shard", "hexmesh", "wave", "chamfer", "carbon", "flagarc", "flagwave", "flaground", "flagrays", "flagzig"];
 const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs", "ghosts", "bokeh"];
 // Shapes coloured by a list of `facetColors` (a pride flag, a gradient) rather
 // than a single fill. The pure flag bands ignore `fill` entirely.

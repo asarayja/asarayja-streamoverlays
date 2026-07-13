@@ -1427,6 +1427,49 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "pumpkin") {
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          const cx = w / 2;
+          const cy = h * 0.58;
+          const rx = w * 0.46;
+          const ry = h * 0.4;
+          c.beginPath();
+          // Ribbed body: a central ellipse plus two flanking lobes.
+          c.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+          c.ellipse(cx - rx * 0.44, cy, rx * 0.64, ry * 0.95, 0, 0, Math.PI * 2);
+          c.ellipse(cx + rx * 0.44, cy, rx * 0.64, ry * 0.95, 0, 0, Math.PI * 2);
+          // Stem.
+          const sw = w * 0.07;
+          const sh = h * 0.16;
+          c.moveTo(cx - sw / 2, cy - ry + 4);
+          c.lineTo(cx - sw * 0.7, cy - ry - sh);
+          c.lineTo(cx + sw * 0.4, cy - ry - sh * 0.7);
+          c.lineTo(cx + sw / 2, cy - ry + 4);
+          c.closePath();
+          // Carved face — vertices reversed so the winding punches holes.
+          const hole = (pts: number[]) => {
+            c.moveTo(pts[0], pts[1]);
+            for (let i = pts.length - 2; i >= 2; i -= 2) c.lineTo(pts[i], pts[i + 1]);
+            c.closePath();
+          };
+          hole([cx - rx * 0.44, cy - ry * 0.16, cx - rx * 0.14, cy - ry * 0.16, cx - rx * 0.29, cy + ry * 0.08]);
+          hole([cx + rx * 0.14, cy - ry * 0.16, cx + rx * 0.44, cy - ry * 0.16, cx + rx * 0.29, cy + ry * 0.08]);
+          hole([cx - rx * 0.08, cy + ry * 0.18, cx + rx * 0.08, cy + ry * 0.18, cx, cy + ry * 0.02]);
+          const my = cy + ry * 0.44;
+          const mw = rx * 0.52;
+          hole([
+            cx - mw, my, cx - mw * 0.5, my + ry * 0.16, cx, my, cx + mw * 0.5, my + ry * 0.16, cx + mw, my,
+            cx + mw * 0.55, my - ry * 0.08, cx, my - ry * 0.02, cx - mw * 0.55, my - ry * 0.08,
+          ]);
+          c.fillStrokeShape(shape);
+        }}
+      />
+    );
+  }
+
   if (layer.shape === "ring") {
     return (
       <KonvaShape
