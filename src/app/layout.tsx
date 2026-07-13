@@ -21,11 +21,19 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Mirrors next.config: Pages serves under /<repo>, the desktop build at root.
+  const basePath = process.env.GITHUB_PAGES === "true" ? "/asarayja-streamoverlays" : "";
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <head>
-        {/* Loaded document-wide rather than through next/font: Konva paints text
-            onto a canvas and can only use families the document has loaded. */}
+        {/* The standard set is bundled as local woff2 so it works offline (the
+            desktop app's baseline). Relative src URLs inside the CSS resolve
+            against its own path, so the same file works under the Pages basePath
+            and at the desktop root. */}
+        <link rel="stylesheet" href={`${basePath}/fonts/offline-fonts.css`} />
+        {/* Every other family streams from Google Fonts (needs a connection).
+            Loaded document-wide because Konva paints text onto a canvas and can
+            only use families the document has already loaded. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href={googleFontsHref()} />

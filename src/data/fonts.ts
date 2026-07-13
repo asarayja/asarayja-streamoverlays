@@ -133,13 +133,41 @@ export const FONTS: FontDef[] = [
 
 export const FONT_FAMILIES = FONTS.map((f) => f.family);
 
-/** `https://fonts.googleapis.com/css2?...` — built once, used in the layout. */
+/**
+ * The standard set bundled as local woff2 (public/fonts/offline-fonts.css), so
+ * these work with no internet — the desktop app's offline baseline. Every other
+ * family still streams from Google Fonts and needs a connection. Keep this in
+ * sync with the download list in the offline-font step.
+ */
+export const OFFLINE_FONT_FAMILIES = new Set([
+  // sans
+  "Inter", "Space Grotesk", "Poppins", "Montserrat", "Roboto", "Open Sans", "Lato", "Nunito",
+  "Work Sans", "Raleway", "Rubik", "DM Sans", "Manrope", "Josefin Sans", "Quicksand", "Comfortaa", "Outfit", "Jost",
+  // display
+  "Bebas Neue", "Anton", "Oswald", "Teko", "Fredoka", "Baloo 2", "Lobster", "Pacifico", "Bangers",
+  "Alfa Slab One", "Righteous", "Staatliches", "Fjalla One", "Archivo Black",
+  // gaming
+  "Orbitron", "Rajdhani", "Chakra Petch", "Audiowide", "Michroma", "Press Start 2P", "Iceland",
+  // serif
+  "Playfair Display", "Cinzel", "Merriweather", "Lora", "Cormorant Garamond", "EB Garamond", "DM Serif Display", "PT Serif",
+  // handwriting
+  "Creepster", "Permanent Marker", "Caveat", "Dancing Script", "Great Vibes", "Satisfy", "Amatic SC",
+  // mono
+  "JetBrains Mono", "Space Mono",
+  // gothic
+  "Cinzel Decorative", "Grenze Gotisch", "MedievalSharp", "Pirata One",
+]);
+
+/** `https://fonts.googleapis.com/css2?...` — only the families NOT bundled
+    locally, so the bundled set never double-loads over the network. */
 export function googleFontsHref(): string {
-  const families = FONTS.map((f) => {
-    const name = f.family.replace(/ /g, "+");
-    const weights = f.weights.join(";");
-    return `family=${name}:wght@${weights}`;
-  }).join("&");
+  const families = FONTS.filter((f) => !OFFLINE_FONT_FAMILIES.has(f.family))
+    .map((f) => {
+      const name = f.family.replace(/ /g, "+");
+      const weights = f.weights.join(";");
+      return `family=${name}:wght@${weights}`;
+    })
+    .join("&");
   return `https://fonts.googleapis.com/css2?${families}&display=swap`;
 }
 
