@@ -195,9 +195,53 @@ function polygonPoints(shape: string, w: number, h: number): number[] {
     case "diamond":
       // A rhombus / rotated square — the diamond plate.
       return [w / 2, 0, w, h / 2, w / 2, h, 0, h / 2];
+    case "cross": {
+      // A thick plus. Arms are the middle third; rotate 45° for an X.
+      const a = 1 / 3;
+      return [
+        w * a, 0, w * (1 - a), 0, w * (1 - a), h * a, w, h * a,
+        w, h * (1 - a), w * (1 - a), h * (1 - a), w * (1 - a), h, w * a, h,
+        w * a, h * (1 - a), 0, h * (1 - a), 0, h * a, w * a, h * a,
+      ];
+    }
     default:
       return [0, 0, w, 0, w, h, 0, h];
   }
+}
+
+/** A cog wheel: `teeth` square teeth around the rim, with a punched centre hole
+    (drawn opposite-wound so non-zero fill leaves it open). */
+function gearPath(c: Konva.Context, w: number, h: number) {
+  const cx = w / 2;
+  const cy = h / 2;
+  const R = Math.min(w, h) / 2;
+  const teeth = 9;
+  const rTip = R;
+  const rRoot = R * 0.74;
+  const hole = R * 0.32;
+  const seg = (Math.PI * 2) / teeth;
+  const P = (r: number, frac: number, i: number): [number, number] => {
+    const ang = (i + frac) * seg - Math.PI / 2;
+    return [cx + Math.cos(ang) * r, cy + Math.sin(ang) * r];
+  };
+  c.beginPath();
+  for (let i = 0; i < teeth; i++) {
+    const verts: Array<[number, number]> = [
+      [rTip, -0.2],
+      [rTip, 0.2],
+      [rRoot, 0.32],
+      [rRoot, 0.68],
+    ];
+    verts.forEach(([r, f], k) => {
+      const [x, y] = P(r, f, i);
+      if (i === 0 && k === 0) c.moveTo(x, y);
+      else c.lineTo(x, y);
+    });
+  }
+  c.closePath();
+  // Centre hole, wound the other way so it reads as a hole, not a filled disc.
+  c.moveTo(cx + hole, cy);
+  c.arc(cx, cy, hole, 0, Math.PI * 2, true);
 }
 
 /** Points of an n-pointed star filling the box; `inner` is the valley radius. */
@@ -1349,6 +1393,18 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
         {...paint}
         sceneFunc={(c, shape) => {
           bubblePath(c, w, h);
+          c.fillStrokeShape(shape);
+        }}
+      />
+    );
+  }
+
+  if (layer.shape === "gear") {
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          gearPath(c, w, h);
           c.fillStrokeShape(shape);
         }}
       />

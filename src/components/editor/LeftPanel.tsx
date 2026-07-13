@@ -357,6 +357,9 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
   { label: "Diagonal split", patch: { shape: "diagonalsplit", x: 0, y: 0, width: 1920, height: 1080, fill: "@primary", cornerRadius: 240 } },
   { label: "Zigzag split", patch: { shape: "zigzagsplit", x: 0, y: 430, width: 1920, height: 650, fill: "@primary", cornerRadius: 60 } },
   { label: "Circle", patch: { shape: "ellipse", x: 660, y: 300, width: 600, height: 600, fill: "@primary" } },
+  { label: "Rounded square", patch: { shape: "rect", x: 700, y: 340, width: 400, height: 400, cornerRadius: 64, fill: "@primary" } },
+  { label: "Cross", patch: { shape: "cross", x: 760, y: 340, width: 360, height: 360, fill: "@accent" } },
+  { label: "Gear", patch: { shape: "gear", x: 760, y: 340, width: 380, height: 380, fill: "@accent" } },
   {
     label: "Spotlight",
     patch: {
@@ -561,7 +564,8 @@ const DECOR_GROUP: Record<string, DecorCategory> = {
   "Colour fill": "Blocks & splits", "Curved split": "Blocks & splits", "Wave split": "Blocks & splits",
   "Diagonal split": "Blocks & splits", "Zigzag split": "Blocks & splits", "Split — gradient": "Blocks & splits",
   "Split — plasma": "Blocks & splits",
-  "Circle": "Shapes", "Rectangle": "Shapes", "Ellipse": "Shapes", "Triangle": "Shapes", "Hexagon": "Shapes",
+  "Circle": "Shapes", "Rounded square": "Shapes", "Cross": "Shapes", "Gear": "Shapes",
+  "Rectangle": "Shapes", "Ellipse": "Shapes", "Triangle": "Shapes", "Hexagon": "Shapes",
   "Shard": "Shapes", "Star": "Shapes", "Sunburst": "Shapes", "Arrow": "Shapes", "Lightning": "Shapes",
   "Banner": "Shapes", "Speech bubble": "Shapes", "Diamond plate": "Shapes", "Gem — glow": "Shapes",
   "Gem — inset": "Shapes", "Gem — drop shadow": "Shapes", "Line": "Shapes",

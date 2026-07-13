@@ -469,6 +469,10 @@ export type ShapeKind =
   | "burst"
   /** A block arrow pointing right (rotate for any direction). */
   | "arrow"
+  /** A thick plus/cross (rotate 45° for an X). */
+  | "cross"
+  /** A cog wheel: toothed rim around a centre hole. */
+  | "gear"
   /** A lightning bolt. */
   | "bolt"
   /** A title ribbon/banner with forked ends. */
