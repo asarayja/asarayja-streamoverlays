@@ -1439,6 +1439,10 @@ const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
   "prism-stripes": ["ribbon", 0],
   "frost-stripes": ["ribbon", 10],
   "plasma-flag": ["ribbon", -10],
+  // Seasonal.
+  christmas: ["iris", 6],
+  newyear: ["wave", 0],
+  summer: ["iris", -8],
   // Aquatic — organic blobs bloom.
   aquarium: ["liquid", 6],
   aquariumpride: ["ribbon", 12],
@@ -6298,7 +6302,180 @@ const SIGNATURE: FamilyStyle = {
   ],
 };
 
+/* -------------------------------------------------------------------------- */
+/*                              Seasonal packs                                */
+/* -------------------------------------------------------------------------- */
+/* The season lives in the DECOR (snow + fairy lights, fireworks, a sun), never
+   in fixed colours — so each pack still comes in every palette, dark and light. */
+
+/** Christmas: cosy pines under a warm hearth glow, fairy lights and soft snow. */
+const CHRISTMAS: FamilyStyle = {
+  id: "christmas",
+  name: "Christmas",
+  tags: ["Red", "Cozy", "Nordic"],
+  display: "Cinzel Decorative",
+  displayWeight: 700,
+  displayTracking: 2,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 18,
+  frameRadius: 20,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 20 },
+    glow: { enabled: true, color: "@glow", strength: 18 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 22 } },
+  plateShape: "rect",
+  scene: () => {
+    const trees = [
+      { x: 70, w: 220, h: 300 },
+      { x: 270, w: 160, h: 220 },
+      { x: 1480, w: 190, h: 260 },
+      { x: 1650, w: 250, h: 330 },
+    ];
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@primary/24", to: "@background", angle: 90 } },
+      }),
+      // A warm hearth glow pooled at the top.
+      shape("Decor — Hearth glow", { x: 360, y: -280, width: 1200, height: 560 }, {
+        shape: "ellipse",
+        fill: "@glow/10",
+        effects: { glow: { enabled: true, color: "@glow", strength: 90 } },
+        animation: anim("pulse", { duration: 5600, intensity: 0.5 }),
+      }),
+      ...trees.map((tr, i) =>
+        shape(`Pine ${i}`, { x: tr.x, y: 1080 - tr.h, width: tr.w, height: tr.h + 20 }, {
+          shape: "triangle",
+          fill: "@surface",
+          opacity: 0.92,
+          effects: { glow: { enabled: true, color: "@glow", strength: 6 } },
+        }),
+      ),
+      // Baubles / a bright star topper, glowing.
+      shape("Decor — Star", { x: 150, y: 720, width: 56, height: 56 }, {
+        shape: "star",
+        fill: "@accent",
+        effects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+        animation: anim("glow", { duration: 3000 }),
+      }),
+      // Fairy lights and gentle snow.
+      particles("Decor — Lights", { kind: "bokeh", count: 22, size: 11, speed: 0.3, color: "@accent", opacity: 0.7 }),
+      particles("Decor — Snow", { kind: "snow", count: 70, size: 5, speed: 0.6, color: "@text", opacity: 0.7 }),
+    ];
+  },
+  overlayDecor: () => [
+    particles("Decor — Snow", { kind: "snow", count: 36, size: 5, speed: 0.7, color: "@text", opacity: 0.5 }),
+  ],
+};
+
+/** New Year: a midnight sky with bursting fireworks, confetti and sparkles. */
+const NEW_YEAR: FamilyStyle = {
+  id: "newyear",
+  name: "New Year",
+  tags: ["Neon", "Dark", "Purple"],
+  display: "Cinzel",
+  displayWeight: 700,
+  displayTracking: 4,
+  displayTransform: "uppercase",
+  body: "Poppins",
+  radius: 12,
+  frameRadius: 14,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 14 },
+    glow: { enabled: true, color: "@glow", strength: 24 },
+  },
+  headlineEffects: { glow: { enabled: true, color: "@glow", strength: 30 } },
+  plateShape: "rect",
+  scene: () => {
+    const cols = ["@accent/55", "@primary/55", "@secondary/55"];
+    const fireworks = [
+      { x: 150, y: 80, s: 360 },
+      { x: 1380, y: 40, s: 420 },
+      { x: 740, y: 120, s: 300 },
+    ];
+    return [
+      shape("Backdrop", FULL, {
+        background: true,
+        fill: "@background",
+        effects: { gradient: { enabled: true, from: "@background", to: "@primary/22", angle: 200 } },
+      }),
+      particles("Decor — Stars", { kind: "stars", count: 120, size: 3, speed: 0.15, color: "@text", opacity: 0.85 }),
+      ...fireworks.map((f, i) =>
+        shape(`Firework ${i}`, { x: f.x, y: f.y, width: f.s, height: f.s }, {
+          shape: "burst",
+          fill: cols[i],
+          effects: { glow: { enabled: true, color: "@glow", strength: 60 } },
+          animation: anim("pulse", { duration: 2600 + i * 700, intensity: 1.5 }),
+        }),
+      ),
+      particles("Decor — Confetti", { kind: "confetti", count: 40, size: 9, speed: 1.1, color: "@accent", opacity: 0.85 }),
+      particles("Decor — Sparks", { kind: "bokeh", count: 18, size: 8, speed: 0.4, color: "@glow", opacity: 0.6 }),
+    ];
+  },
+  overlayDecor: () => [
+    particles("Decor — Confetti", { kind: "confetti", count: 24, size: 8, speed: 1.1, color: "@accent", opacity: 0.7 }),
+  ],
+};
+
+/** Summer: a bright warm sky with a glowing sun, rays, sparkles and petals. */
+const SUMMER: FamilyStyle = {
+  id: "summer",
+  name: "Summer",
+  tags: ["Orange", "Cozy", "Pink"],
+  display: "Baloo 2",
+  displayWeight: 700,
+  displayTracking: 1,
+  displayTransform: "none",
+  body: "Nunito",
+  radius: 24,
+  frameRadius: 26,
+  corners: false,
+  strokeWidth: 2,
+  frameEffects: {
+    border: { enabled: true, color: "@accent", width: 2, radius: 26 },
+    glow: { enabled: true, color: "@glow", strength: 16 },
+  },
+  headlineEffects: { shadow: { enabled: true, color: "@shadow", blur: 6, offsetY: 2, opacity: 0.22 } },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, {
+      background: true,
+      fill: "@background",
+      effects: { gradient: { enabled: true, from: "@accent/26", to: "@primary/14", angle: 160 } },
+    }),
+    // Sun rays fanning out behind the sun, in the top-right.
+    shape("Decor — Rays", { x: 1120, y: -320, width: 900, height: 900 }, {
+      shape: "burst",
+      fill: "@glow/14",
+      effects: { glow: { enabled: true, color: "@glow", strength: 40 } },
+      animation: anim("pulse", { duration: 7000, intensity: 0.4 }),
+    }),
+    // The sun disc.
+    shape("Decor — Sun", { x: 1400, y: -40, width: 340, height: 340 }, {
+      shape: "ellipse",
+      fill: "@accent",
+      effects: { glow: { enabled: true, color: "@glow", strength: 80 } },
+      animation: anim("pulse", { duration: 5000, intensity: 0.6 }),
+    }),
+    particles("Decor — Sparkle", { kind: "bokeh", count: 18, size: 11, speed: 0.3, color: "@glow", opacity: 0.6 }),
+    particles("Decor — Petals", { kind: "petals", count: 22, size: 10, speed: 0.7, color: "@accent", opacity: 0.6 }),
+  ],
+  overlayDecor: () => [
+    particles("Decor — Petals", { kind: "petals", count: 12, size: 9, speed: 0.7, color: "@accent", opacity: 0.45 }),
+  ],
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  CHRISTMAS,
+  NEW_YEAR,
+  SUMMER,
   AQUARIUM,
   MINIMAL_PLAY,
   ESPORTS_HUD,
