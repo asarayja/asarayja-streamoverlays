@@ -34,7 +34,7 @@ interface IconifyJson {
   icons: Record<string, { body: string; width?: number; height?: number }>;
 }
 
-let cache: Partial<Record<IconSource, LibIcon[]>> = {};
+const cache: Partial<Record<IconSource, LibIcon[]>> = {};
 
 async function loadRaw(source: IconSource): Promise<IconifyJson> {
   switch (source) {
