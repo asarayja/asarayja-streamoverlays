@@ -34,7 +34,7 @@ import { publishLive } from "@/lib/share";
 import { resolveColor } from "@/lib/theme";
 import { downloadBlob, slugify } from "@/lib/export";
 import { packToDesignFile } from "@/lib/design-file";
-import { CANVAS_WIDTH } from "@/lib/types";
+import { CANVAS_PRESETS, CANVAS_WIDTH } from "@/lib/types";
 import type { Layer, Theme } from "@/lib/types";
 import { BRUSH_KINDS, useEditorStore } from "@/store/editor";
 import { useProfileStore, useRenderProfile } from "@/store/profile";
@@ -70,6 +70,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const duplicateSelected = useEditorStore((s) => s.duplicateSelected);
   const setTheme = useEditorStore((s) => s.setTheme);
   const setMotion = useEditorStore((s) => s.setMotion);
+  const setCanvasSize = useEditorStore((s) => s.setCanvasSize);
 
   const upsert = useProjectsStore((s) => s.upsert);
   const syncPackTheme = useProjectsStore((s) => s.syncPackTheme);
@@ -375,6 +376,24 @@ export default function EditorShell({ projectId }: { projectId: string }) {
 
         <div className="mx-2 h-6 w-px bg-white/8" />
 
+        <select
+          value={CANVAS_PRESETS.find((p) => p.w === (project.canvasWidth ?? 1920) && p.h === (project.canvasHeight ?? 1080))?.id ?? "landscape"}
+          onChange={(e) => {
+            const preset = CANVAS_PRESETS.find((p) => p.id === e.target.value);
+            if (preset) setCanvasSize(preset.w, preset.h);
+          }}
+          title={t("Artboard format — layers keep their positions, so switching may need a reposition")}
+          className="rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-[11px] text-zinc-200 focus:border-brand-500/60 focus:outline-none"
+        >
+          {CANVAS_PRESETS.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+
+        <div className="mx-2 h-6 w-px bg-white/8" />
+
         <ToolButton onClick={() => setZoom(zoom / 1.2)} title={t("Zoom out")}>
           <ZoomOut className="size-4" />
         </ToolButton>
@@ -470,7 +489,9 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           profile={profile}
           time={exportTime}
           mode="live"
-          width={CANVAS_WIDTH}
+          width={project.canvasWidth ?? CANVAS_WIDTH}
+          canvasWidth={project.canvasWidth}
+          canvasHeight={project.canvasHeight}
         />
       </div>
 

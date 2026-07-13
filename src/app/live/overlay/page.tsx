@@ -98,9 +98,11 @@ function LiveOverlay() {
     );
   }
 
-  // In OBS the viewport is exactly 1920×1080 and this is a no-op. In a normal
-  // tab it letterboxes rather than distorting the overlay.
-  const width = size.height > 0 ? Math.min(size.width, (size.height * 16) / 9) : size.width;
+  // In OBS the viewport matches the artboard and this is a no-op. In a normal
+  // tab it letterboxes to the artboard aspect rather than distorting the overlay.
+  const cw = payload?.project.canvasWidth ?? 1920;
+  const ch = payload?.project.canvasHeight ?? 1080;
+  const width = size.height > 0 ? Math.min(size.width, (size.height * cw) / ch) : size.width;
 
   return (
     <div ref={containerRef} className="grid h-screen w-screen place-items-center overflow-hidden">
@@ -112,6 +114,8 @@ function LiveOverlay() {
           time={time}
           mode="live"
           width={width}
+          canvasWidth={payload.project.canvasWidth}
+          canvasHeight={payload.project.canvasHeight}
         />
       )}
     </div>

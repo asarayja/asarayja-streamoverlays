@@ -175,6 +175,8 @@ interface EditorState {
   renameLayer: (id: string, name: string) => void;
 
   setTheme: (theme: Theme) => void;
+  /** Change the artboard format (vertical/square/…); layers keep their coords. */
+  setCanvasSize: (canvasWidth: number, canvasHeight: number) => void;
   setThemeToken: (token: ThemeToken, color: string) => void;
   /** Several tokens in one undoable step — used by the cascade and contrast fixes. */
   setThemePatch: (patch: Partial<Theme>) => void;
@@ -776,6 +778,11 @@ export const useEditorStore = create<EditorState>()((set, get) => {
       patchProject((project) => ({ ...project, theme }));
     },
 
+    setCanvasSize: (canvasWidth, canvasHeight) => {
+      pushHistory();
+      patchProject((project) => ({ ...project, canvasWidth, canvasHeight }));
+    },
+
     setThemeToken: (token, color) => {
       pushHistory();
       patchProject((project) => ({ ...project, theme: { ...project.theme, [token]: color } }));
@@ -808,8 +815,11 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     setZoom: (zoom) => set({ zoom: Math.max(0.05, Math.min(4, zoom)) }),
     setPan: (panX, panY) => set({ panX, panY }),
     zoomToFit: (vw, vh) => {
-      const zoom = Math.min(vw / 1920, vh / 1080) * 0.92;
-      set({ zoom, panX: (vw - 1920 * zoom) / 2, panY: (vh - 1080 * zoom) / 2 });
+      const { project } = get();
+      const cw = project?.canvasWidth ?? 1920;
+      const ch = project?.canvasHeight ?? 1080;
+      const zoom = Math.min(vw / cw, vh / ch) * 0.92;
+      set({ zoom, panX: (vw - cw * zoom) / 2, panY: (vh - ch * zoom) / 2 });
     },
     toggleGrid: () => set((s) => ({ showGrid: !s.showGrid })),
     toggleGuides: () => set((s) => ({ showGuides: !s.showGuides })),

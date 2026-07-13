@@ -15,8 +15,11 @@ interface OverlayStageProps {
   profile: ChannelProfile;
   time: number;
   mode: RenderMode;
-  /** Rendered width in CSS px; height follows the 16:9 canvas. */
+  /** Rendered width in CSS px; height follows the artboard aspect. */
   width: number;
+  /** Artboard size the layers are laid out on. Defaults to 1920×1080. */
+  canvasWidth?: number;
+  canvasHeight?: number;
   listening?: boolean;
 }
 
@@ -26,11 +29,13 @@ interface OverlayStageProps {
  * built on the same `LayerNode`.
  */
 export const OverlayStage = forwardRef<Konva.Stage, OverlayStageProps>(function OverlayStage(
-  { layers, theme, profile, time, mode, width, listening = false },
+  { layers, theme, profile, time, mode, width, canvasWidth, canvasHeight, listening = false },
   ref,
 ) {
-  const scale = width / CANVAS_WIDTH;
-  const height = CANVAS_HEIGHT * scale;
+  const cw = canvasWidth ?? CANVAS_WIDTH;
+  const ch = canvasHeight ?? CANVAS_HEIGHT;
+  const scale = width / cw;
+  const height = ch * scale;
   const fontsReady = useFontsReady();
   const ctx = { theme, profile, time, mode };
 

@@ -993,4 +993,17 @@ export interface Project {
   /** Screen role (Starting Soon / BRB / …), captured so the switcher and My
       Designs can label screens even when templateId no longer resolves. */
   category: TemplateCategory | null;
+  /** Artboard size. Absent = the classic 1920×1080; set for vertical/square
+      formats (TikTok/Shorts). Layers keep their coordinates, so switching format
+      may need a reposition. */
+  canvasWidth?: number;
+  canvasHeight?: number;
 }
+
+/** Selectable artboard formats. The first is the default 16:9. */
+export const CANVAS_PRESETS: Array<{ id: string; label: string; w: number; h: number }> = [
+  { id: "landscape", label: "Landscape · 1920×1080", w: 1920, h: 1080 },
+  { id: "vertical", label: "Vertical · 1080×1920", w: 1080, h: 1920 },
+  { id: "square", label: "Square · 1080×1080", w: 1080, h: 1080 },
+  { id: "landscape-1440", label: "Landscape · 2560×1440", w: 2560, h: 1440 },
+];

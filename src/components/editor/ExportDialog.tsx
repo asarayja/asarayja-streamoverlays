@@ -208,7 +208,7 @@ export function ExportDialog({
           await nextFrame();
           await nextFrame(); // one for React's commit, one for Konva's draw
 
-          const crop = layerCropBox(layers[i]);
+          const crop = layerCropBox(layers[i], project.canvasWidth ?? 1920, project.canvasHeight ?? 1080);
           const blob = await canvasToBlob(stage().toCanvas({ ...crop, pixelRatio: scale }), "image/png");
           entries.push({
             name: `${String(i + 1).padStart(2, "0")}-${slugify(layers[i].name)}.png`,
@@ -423,7 +423,7 @@ export function ExportDialog({
                 max={4}
                 step={1}
                 value={scale}
-                suffix={`× · ${1920 * scale}×${1080 * scale}`}
+                suffix={`× · ${(project.canvasWidth ?? 1920) * scale}×${(project.canvasHeight ?? 1080) * scale}`}
                 onChange={setScale}
               />
             </div>

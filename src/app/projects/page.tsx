@@ -152,7 +152,8 @@ function ProjectCard({ pack, profile }: { pack: PackView; profile: ReturnType<ty
             sizeRef.current = el;
             screenRef.current = el;
           }}
-          className={cx("relative aspect-video w-full", hasBackdrop ? "bg-ink-900" : "checker")}
+          className={cx("relative grid w-full place-items-center", hasBackdrop ? "bg-ink-900" : "checker")}
+          style={{ aspectRatio: `${cover.canvasWidth ?? 1920} / ${cover.canvasHeight ?? 1080}` }}
         >
           {inView && size.width > 0 && (
             <ClientOverlayStage
@@ -162,6 +163,8 @@ function ProjectCard({ pack, profile }: { pack: PackView; profile: ReturnType<ty
               time={time}
               mode="preview"
               width={size.width}
+              canvasWidth={cover.canvasWidth}
+              canvasHeight={cover.canvasHeight}
             />
           )}
           {isPack && (

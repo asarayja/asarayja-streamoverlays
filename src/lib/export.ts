@@ -93,7 +93,11 @@ export const nextFrame = () => new Promise<number>((resolve) => requestAnimation
  * bounding box plus room for glow, shadow and stroke to bleed past the edges.
  * Clamped to the canvas — pixels outside it don't exist in the overlay either.
  */
-export function layerCropBox(layer: Layer): { x: number; y: number; width: number; height: number } {
+export function layerCropBox(
+  layer: Layer,
+  cw = CANVAS_WIDTH,
+  ch = CANVAS_HEIGHT,
+): { x: number; y: number; width: number; height: number } {
   const { effects } = layer;
   let pad = 40;
   if (effects.glow.enabled) pad += effects.glow.strength * 1.5;
@@ -111,8 +115,8 @@ export function layerCropBox(layer: Layer): { x: number; y: number; width: numbe
 
   const x0 = Math.max(0, Math.floor(cx - bw / 2 - pad));
   const y0 = Math.max(0, Math.floor(cy - bh / 2 - pad));
-  const x1 = Math.min(CANVAS_WIDTH, Math.ceil(cx + bw / 2 + pad));
-  const y1 = Math.min(CANVAS_HEIGHT, Math.ceil(cy + bh / 2 + pad));
+  const x1 = Math.min(cw, Math.ceil(cx + bw / 2 + pad));
+  const y1 = Math.min(ch, Math.ceil(cy + bh / 2 + pad));
 
   return { x: x0, y: y0, width: Math.max(1, x1 - x0), height: Math.max(1, y1 - y0) };
 }
@@ -149,9 +153,12 @@ export async function recordVideo(options: RecordOptions): Promise<Blob> {
   const { stage, durationMs, fps, mime, setTime, background, onProgress } = options;
   const startTime = options.startTime ?? 0;
 
+  // Match the stage's own canvas so any artboard format (vertical/square) is
+  // captured at its true size, not forced to 1920×1080.
+  const src = nativeCanvas(stage);
   const target = document.createElement("canvas");
-  target.width = CANVAS_WIDTH;
-  target.height = CANVAS_HEIGHT;
+  target.width = src.width;
+  target.height = src.height;
   const ctx = target.getContext("2d")!;
 
   const stream = target.captureStream(fps);
@@ -174,8 +181,8 @@ export async function recordVideo(options: RecordOptions): Promise<Blob> {
   for (;;) {
     const elapsed = performance.now() - started;
     ctx.fillStyle = background;
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    ctx.drawImage(nativeCanvas(stage), 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.fillRect(0, 0, target.width, target.height);
+    ctx.drawImage(nativeCanvas(stage), 0, 0, target.width, target.height);
 
     onProgress?.(Math.min(1, elapsed / durationMs));
     if (elapsed >= durationMs) break;

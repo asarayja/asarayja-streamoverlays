@@ -96,6 +96,8 @@ export function EditorCanvas({
   }, []);
 
   const project = useEditorStore((s) => s.project);
+  const cw = project?.canvasWidth ?? CANVAS_WIDTH;
+  const ch = project?.canvasHeight ?? CANVAS_HEIGHT;
   const selectedIds = useEditorStore((s) => s.selectedIds);
   const zoom = useEditorStore((s) => s.zoom);
   const panX = useEditorStore((s) => s.panX);
@@ -173,7 +175,7 @@ export function EditorCanvas({
       // below the curve. Over another colour it's a hand-drawn colour split.
       const lastX = pts[pts.length - 2];
       const firstX = pts[0];
-      renderPts = [...pts, lastX, CANVAS_HEIGHT, firstX, CANVAS_HEIGHT];
+      renderPts = [...pts, lastX, ch, firstX, ch];
       drawStyle = "fill";
       pad = 2;
     } else if (drawBrush === "ink" || drawBrush === "calligraphy" || drawBrush === "ribbon") {
@@ -272,7 +274,7 @@ export function EditorCanvas({
       animation: { ...DEFAULT_ANIMATION },
     };
     insertDrawing(layer);
-  }, [stroke, drawWidth, drawBrush, drawColor, insertDrawing, eraseStrokes]);
+  }, [stroke, drawWidth, drawBrush, drawColor, ch, insertDrawing, eraseStrokes]);
 
   // Bucket fill: flood the clicked region, bounded by the freehand strokes, and
   // drop it in as an image layer below the lines — fill in the sides you drew.
@@ -283,8 +285,8 @@ export function EditorCanvas({
     if (!ptr) return;
     const o = toOverlay(ptr);
     const SC = 0.5; // half-res for speed/memory; the image scales back up
-    const W = Math.round(CANVAS_WIDTH * SC);
-    const H = Math.round(CANVAS_HEIGHT * SC);
+    const W = Math.round(cw * SC);
+    const H = Math.round(ch * SC);
     const sx = Math.round(o.x * SC);
     const sy = Math.round(o.y * SC);
     if (sx < 0 || sx >= W || sy < 0 || sy >= H) return;
@@ -371,8 +373,8 @@ export function EditorCanvas({
       type: "image",
       x: 0,
       y: 0,
-      width: CANVAS_WIDTH,
-      height: CANVAS_HEIGHT,
+      width: cw,
+      height: ch,
       rotation: 0,
       opacity: 1,
       visible: true,
@@ -386,13 +388,16 @@ export function EditorCanvas({
     insertFillLayer(layer);
   }, [project, toOverlay, drawColor, insertFillLayer]);
 
-  // Fit once, as soon as the container has been measured.
-  const fitted = useRef(false);
+  // Fit when first measured, and again whenever the artboard format changes —
+  // but not on ordinary container resizes (the key stays the same).
+  const fittedFormat = useRef<string | null>(null);
   useEffect(() => {
-    if (fitted.current || size.width === 0) return;
-    fitted.current = true;
+    if (size.width === 0) return;
+    const key = `${cw}x${ch}`;
+    if (fittedFormat.current === key) return;
+    fittedFormat.current = key;
     zoomToFit(size.width, size.height);
-  }, [size, zoomToFit]);
+  }, [cw, ch, size, zoomToFit]);
 
   // Keep the transformer bound to whatever is selected.
   useEffect(() => {
@@ -433,8 +438,8 @@ export function EditorCanvas({
   /** Canvas edges/centre plus every other layer's edges and centre. */
   const snapTargets = useCallback(
     (movingId: string) => {
-      const x = [0, CANVAS_WIDTH / 2, CANVAS_WIDTH];
-      const y = [0, CANVAS_HEIGHT / 2, CANVAS_HEIGHT];
+      const x = [0, cw / 2, cw];
+      const y = [0, ch / 2, ch];
       for (const layer of project?.layers ?? []) {
         if (layer.id === movingId || !layer.visible) continue;
         x.push(layer.x, layer.x + layer.width / 2, layer.x + layer.width);
@@ -442,7 +447,7 @@ export function EditorCanvas({
       }
       return { x, y };
     },
-    [project?.layers],
+    [project?.layers, cw, ch],
   );
 
   const handleDragMove = useCallback(
@@ -564,8 +569,8 @@ export function EditorCanvas({
               {/* Canvas bounds. Filled only faintly — the checkerboard beneath
                   communicates that unpainted pixels export as transparent. */}
               <Rect
-                width={CANVAS_WIDTH}
-                height={CANVAS_HEIGHT}
+                width={cw}
+                height={ch}
                 stroke="rgba(255,255,255,0.14)"
                 strokeWidth={1 / zoom}
                 shadowColor="black"
@@ -574,7 +579,7 @@ export function EditorCanvas({
                 listening={false}
               />
 
-              {showGrid && <Grid zoom={zoom} />}
+              {showGrid && <Grid zoom={zoom} cw={cw} ch={ch} />}
 
               {/* Layers are clipped to the artboard, matching what export and
                   OBS produce — decor that deliberately overshoots the canvas
@@ -582,7 +587,7 @@ export function EditorCanvas({
                   spill into the workspace. */}
               <Group
                 clipFunc={(c) => {
-                  c.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                  c.rect(0, 0, cw, ch);
                 }}
               >
                 {project.layers.map((layer) => (
@@ -623,7 +628,7 @@ export function EditorCanvas({
                   const firstX = stroke[0];
                   return (
                     <Line
-                      points={[...stroke, lastX, CANVAS_HEIGHT, firstX, CANVAS_HEIGHT]}
+                      points={[...stroke, lastX, ch, firstX, ch]}
                       closed
                       fill={col}
                       opacity={0.75}
@@ -735,31 +740,31 @@ export function EditorCanvas({
           className="size-2.5 rounded-full ring-1 ring-white/20"
           style={{ background: backgroundHint }}
         />
-        1920 × 1080 · {Math.round(zoom * 100)}%
+        {cw} × {ch} · {Math.round(zoom * 100)}%
       </div>
     </div>
   );
 }
 
-function Grid({ zoom }: { zoom: number }) {
+function Grid({ zoom, cw, ch }: { zoom: number; cw: number; ch: number }) {
   const lines = [];
   const width = 1 / zoom;
-  for (let x = GRID_STEP; x < CANVAS_WIDTH; x += GRID_STEP) {
+  for (let x = GRID_STEP; x < cw; x += GRID_STEP) {
     lines.push(
       <Line
         key={`v${x}`}
-        points={[x, 0, x, CANVAS_HEIGHT]}
+        points={[x, 0, x, ch]}
         stroke="rgba(255,255,255,0.06)"
         strokeWidth={width}
         listening={false}
       />,
     );
   }
-  for (let y = GRID_STEP; y < CANVAS_HEIGHT; y += GRID_STEP) {
+  for (let y = GRID_STEP; y < ch; y += GRID_STEP) {
     lines.push(
       <Line
         key={`h${y}`}
-        points={[0, y, CANVAS_WIDTH, y]}
+        points={[0, y, cw, y]}
         stroke="rgba(255,255,255,0.06)"
         strokeWidth={width}
         listening={false}
