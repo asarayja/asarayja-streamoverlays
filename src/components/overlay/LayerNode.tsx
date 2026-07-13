@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, useEffect, useRef, type ReactNode } from "react";
+import { cloneElement, useEffect, useMemo, useRef, type ReactNode } from "react";
 import Konva from "konva";
 import {
   Circle,
@@ -2622,7 +2622,80 @@ function FlagContent({ layer, ctx, glowBoost }: { layer: FlagLayer; ctx: RenderC
 }
 
 /** A catalogue icon, scaled from its 24x24 grid into the layer's box. */
+/** Parse a stored icon `body` (SVG inner markup) into flat element descriptors,
+    once per body string. Runs client-side where DOMParser exists. */
+function parseIconBody(body: string): Array<{ tag: string; attrs: Record<string, string> }> {
+  if (typeof window === "undefined" || !body) return [];
+  const doc = new DOMParser().parseFromString(
+    `<svg xmlns="http://www.w3.org/2000/svg">${body}</svg>`,
+    "image/svg+xml",
+  );
+  return Array.from(doc.documentElement.children).map((el) => {
+    const attrs: Record<string, string> = {};
+    for (const at of Array.from(el.attributes)) attrs[at.name] = at.value;
+    return { tag: el.tagName.toLowerCase(), attrs };
+  });
+}
+
+const parsePoints = (s: string): number[] => (s ?? "").trim().split(/[\s,]+/).map(Number).filter((n) => !Number.isNaN(n));
+
+/** Render one parsed SVG element as a Konva shape, `currentColor` → `colour`. */
+function renderIconEl(
+  el: { tag: string; attrs: Record<string, string> },
+  key: number,
+  colour: string,
+  shadow: Record<string, unknown>,
+): ReactNode {
+  const a = el.attrs;
+  const tint = (v: string | undefined, dflt?: string) =>
+    v === "currentColor" ? colour : v === "none" ? undefined : v ?? dflt;
+  const stroke = tint(a.stroke);
+  const fill = tint(a.fill, colour);
+  const strokeWidth = a["stroke-width"] ? Number(a["stroke-width"]) : stroke ? 2 : 0;
+  const common = { key, fill, stroke, strokeWidth, lineCap: "round" as const, lineJoin: "round" as const, ...shadow };
+  switch (el.tag) {
+    case "path":
+      return <Path {...common} data={a.d} />;
+    case "circle":
+      return <Circle {...common} x={+a.cx} y={+a.cy} radius={+a.r} />;
+    case "ellipse":
+      return <Ellipse {...common} x={+a.cx} y={+a.cy} radiusX={+a.rx} radiusY={+a.ry} />;
+    case "line":
+      return <Line {...common} points={[+a.x1, +a.y1, +a.x2, +a.y2]} />;
+    case "rect":
+      return <Rect {...common} x={+a.x || 0} y={+a.y || 0} width={+a.width} height={+a.height} cornerRadius={+a.rx || 0} />;
+    case "polyline":
+      return <Line {...common} points={parsePoints(a.points)} />;
+    case "polygon":
+      return <Line {...common} points={parsePoints(a.points)} closed />;
+    default:
+      return null;
+  }
+}
+
+/** A library icon (Lucide / Font Awesome): its stored SVG body drawn as crisp
+    Konva vector shapes, scaled from its viewBox into the layer box. */
+function LibraryIconContent({ layer, ctx, glowBoost }: { layer: IconLayer; ctx: RenderContext; glowBoost: number }) {
+  const vw = layer.iconW ?? 24;
+  const vh = layer.iconH ?? 24;
+  const scale = Math.min(layer.width / vw, layer.height / vh);
+  const dx = (layer.width - vw * scale) / 2;
+  const dy = (layer.height - vh * scale) / 2;
+  const colour = resolveColor(layer.fill, ctx.theme);
+  const els = useMemo(() => parseIconBody(layer.body ?? ""), [layer.body]);
+  // Shadow lives on each shape (a Group paints none). Its blur is divided by the
+  // group scale so a glow reads the same whatever size the icon is drawn at.
+  const sp = shadowProps(layer.effects, ctx.theme, glowBoost) as Record<string, unknown> & { shadowBlur?: number };
+  const shadow = sp.shadowBlur ? { ...sp, shadowBlur: sp.shadowBlur / (scale || 1) } : sp;
+  return (
+    <Group x={dx} y={dy} scaleX={scale} scaleY={scale}>
+      {els.map((el, i) => renderIconEl(el, i, colour, shadow))}
+    </Group>
+  );
+}
+
 function IconContent({ layer, ctx, glowBoost }: { layer: IconLayer; ctx: RenderContext; glowBoost: number }) {
+  if (layer.body) return <LibraryIconContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
   const def = ICONS[layer.symbol as IconName] ?? ICONS.star;
   const scale = Math.min(layer.width, layer.height) / 24;
   const dx = (layer.width - 24 * scale) / 2;

@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@iconify-json/fa6-brands": "^1.2.6",
+    "@iconify-json/fa6-solid": "^1.2.4",
+    "@iconify-json/lucide": "^1.2.116",
     "konva": "^10.3.0",
     "lucide-react": "^1.24.0",
     "nanoid": "^5.1.16",

@@ -553,6 +553,13 @@ export interface IconLayer extends LayerBase {
   fill: ColorValue;
   /** Outline weight for stroke-drawn icons. */
   strokeWidth: number;
+  /** A library icon (Lucide / Font Awesome): raw SVG inner markup on an
+      `iconW`×`iconH` viewBox, self-contained so it survives export. When set it
+      is drawn instead of the built-in `symbol` path; `currentColor` in the body
+      is filled/stroked with `fill`. */
+  body?: string;
+  iconW?: number;
+  iconH?: number;
 }
 
 /** A retro OS window: title bar, traffic-light buttons, glass gloss. */

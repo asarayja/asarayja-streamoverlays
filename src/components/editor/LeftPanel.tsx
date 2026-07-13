@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowDown,
@@ -39,6 +39,8 @@ import { FONTS } from "@/data/fonts";
 import { STARTERS, TEMPLATES } from "@/data/templates";
 import { ICONS, ICON_GROUPS } from "@/data/icons";
 import type { IconName } from "@/data/icons";
+import { ICON_SOURCES, loadIconSource, searchIcons } from "@/data/icon-library";
+import type { IconSource, LibIcon } from "@/data/icon-library";
 import { getPalette } from "@/data/palettes";
 import { ContrastCheck } from "@/components/ContrastCheck";
 import { HarmonyGenerator, PaletteGrid, ThemeTokens } from "@/components/ThemeEditor";
@@ -728,6 +730,87 @@ function NBandGenerator() {
   );
 }
 
+/** Search and place icons from the Lucide / Font Awesome libraries. The data is
+    fetched lazily on first open, then filtered by name. */
+function IconLibraryBrowser({ onPick }: { onPick: (ic: LibIcon) => void }) {
+  const t = useT();
+  const [source, setSource] = useState<IconSource>("lucide");
+  const [query, setQuery] = useState("");
+  const [all, setAll] = useState<LibIcon[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let ok = true;
+    setLoading(true);
+    loadIconSource(source).then((list) => {
+      if (ok) {
+        setAll(list);
+        setLoading(false);
+      }
+    });
+    return () => {
+      ok = false;
+    };
+  }, [source]);
+
+  const results = useMemo(() => searchIcons(all, query), [all, query]);
+  const shown = results.slice(0, 300);
+
+  return (
+    <div>
+      <div className="mb-2 flex gap-0.5 rounded-lg border border-white/10 bg-black/30 p-0.5">
+        {ICON_SOURCES.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setSource(s.id)}
+            className={cx(
+              "flex-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+              source === s.id ? "bg-brand-500/20 text-white" : "text-zinc-400 hover:text-zinc-200",
+            )}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={loading ? t("Loading…") : t("Search {n} icons…", { n: all.length })}
+        className="mb-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-brand-500/60 focus:outline-none"
+      />
+      {loading ? (
+        <p className="py-8 text-center text-xs text-zinc-500">{t("Loading…")}</p>
+      ) : (
+        <>
+          <div className="grid max-h-[420px] grid-cols-6 gap-1.5 overflow-y-auto pr-1">
+            {shown.map((ic) => (
+              <button
+                key={ic.id}
+                title={ic.name}
+                onClick={() => onPick(ic)}
+                className="grid aspect-square place-items-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
+              >
+                <svg
+                  viewBox={`0 0 ${ic.w} ${ic.h}`}
+                  className="size-5"
+                  dangerouslySetInnerHTML={{ __html: ic.body }}
+                />
+              </button>
+            ))}
+          </div>
+          {results.length === 0 && <p className="py-6 text-center text-xs text-zinc-500">{t("No icons match.")}</p>}
+          {results.length > shown.length && (
+            <p className="mt-2 text-[11px] text-zinc-600">
+              {t("Showing {a} of {b} — keep typing to narrow.", { a: shown.length, b: results.length })}
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function AddTab() {
   const addLayer = useEditorStore((s) => s.addLayer);
   const insertLayer = useEditorStore((s) => s.insertLayer);
@@ -735,6 +818,7 @@ function AddTab() {
   const theme = useEditorStore((s) => s.project?.theme);
   const profile = useRenderProfile();
   const [openDecor, setOpenDecor] = useState<DecorCategory | null>(null);
+  const [showIconLib, setShowIconLib] = useState(false);
   const t = useT();
   const imgInput = useRef<HTMLInputElement>(null);
 
@@ -899,11 +983,33 @@ function AddTab() {
       </div>
 
       <div className="border-t border-white/[0.06] px-4 py-4">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Icons")}</p>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Icons")}</p>
+          <button
+            onClick={() => setShowIconLib((v) => !v)}
+            className={cx(
+              "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors",
+              showIconLib
+                ? "border-brand-400/60 bg-brand-500/15 text-white"
+                : "border-white/10 bg-white/[0.02] text-zinc-300 hover:border-brand-400/40 hover:text-white",
+            )}
+          >
+            {showIconLib ? t("Built-in") : t("Icon library")}
+          </button>
+        </div>
         <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
-          {t("Click one to drop it on the canvas. Icons take their colour from a theme token, like any other layer.")}
+          {showIconLib
+            ? t("Thousands of Lucide & Font Awesome icons — search, then click to place. Each takes its colour from a theme token.")
+            : t("Click one to drop it on the canvas. Icons take their colour from a theme token, like any other layer.")}
         </p>
-        {ICON_GROUPS.map(({ group, names }) => (
+        {showIconLib && (
+          <IconLibraryBrowser
+            onPick={(ic) =>
+              addLayer("icon", { symbol: ic.id, body: ic.body, iconW: ic.w, iconH: ic.h } as Partial<Layer>)
+            }
+          />
+        )}
+        {!showIconLib && ICON_GROUPS.map(({ group, names }) => (
           <div key={group} className="mb-3">
             <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-zinc-600">{t(group)}</p>
             <div className="grid grid-cols-6 gap-1.5">
