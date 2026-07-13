@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LayoutGrid, Palette as PaletteIcon, PenTool, Search, Upload } from "lucide-react";
+import { LayoutGrid, Palette as PaletteIcon, PenTool, Search, Star, Upload } from "lucide-react";
 import { DESIGNS } from "@/lib/designs";
 import type { Design } from "@/lib/designs";
 import { ClientOverlayStage } from "@/components/overlay/ClientOverlayStage";
@@ -16,6 +16,7 @@ import { useClock } from "@/lib/useClock";
 import { isStingerMotion, previewClock, settledTime, timelineDuration } from "@/lib/animation";
 import { useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
+import { useFavorites } from "@/store/favorites";
 import { useT } from "@/lib/i18n";
 import type { Collection } from "@/lib/types";
 
@@ -37,6 +38,8 @@ export default function DesignsPage() {
   const importRef = useRef<HTMLInputElement>(null);
   const [collection, setCollection] = useState<Collection | "all">("all");
   const [query, setQuery] = useState("");
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const favorites = useFavorites((s) => s.designs);
 
   const openBlank = () => {
     const project = createDraft("blank");
@@ -63,6 +66,7 @@ export default function DesignsPage() {
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     return DESIGNS.filter((d) => {
+      if (onlyFavorites && !favorites[d.key]) return false;
       if (collection !== "all" && d.collection !== collection) return false;
       if (!q) return true;
       return (
@@ -71,7 +75,7 @@ export default function DesignsPage() {
         (d.cover.tags ?? []).some((tag) => tag.toLowerCase().includes(q))
       );
     });
-  }, [collection, query]);
+  }, [collection, query, onlyFavorites, favorites]);
 
   return (
     <div className="app-bg min-h-screen">
@@ -140,6 +144,10 @@ export default function DesignsPage() {
               {t(f.label)}
             </Chip>
           ))}
+          <Chip active={onlyFavorites} onClick={() => setOnlyFavorites((v) => !v)}>
+            <Star className={cx("size-3", onlyFavorites && "fill-current")} />
+            {t("Favorites")}
+          </Chip>
         </div>
 
         {shown.length === 0 ? (
@@ -162,6 +170,8 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
   const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
   const reduceMotion = usePrefersReducedMotion();
+  const toggleDesign = useFavorites((s) => s.toggleDesign);
+  const fav = useFavorites((s) => !!s.designs[design.key]);
   const theme = getPalette(design.coverPalette).theme;
   const hasBackdrop = design.cover.layers.some((l) => l.type === "background");
 
@@ -204,6 +214,22 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
             width={size.width}
           />
         )}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleDesign(design.key);
+          }}
+          title={fav ? t("Remove from favorites") : t("Add to favorites")}
+          className={cx(
+            "absolute right-2 top-2 z-10 rounded-full border p-1.5 backdrop-blur transition-colors",
+            fav
+              ? "border-amber-400/50 bg-black/50 text-amber-400"
+              : "border-white/15 bg-black/40 text-zinc-300 opacity-0 hover:text-white group-hover:opacity-100",
+          )}
+        >
+          <Star className={cx("size-3.5", fav && "fill-current")} />
+        </button>
       </div>
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="min-w-0">

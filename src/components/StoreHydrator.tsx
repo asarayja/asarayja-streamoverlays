@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useProfileStore } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
+import { useFavorites } from "@/store/favorites";
 
 /**
  * The persisted stores are created with `skipHydration` so that the server
@@ -13,6 +14,7 @@ export function StoreHydrator() {
   useEffect(() => {
     void useProfileStore.persist.rehydrate();
     void useProjectsStore.persist.rehydrate();
+    void useFavorites.persist.rehydrate();
   }, []);
   return null;
 }
