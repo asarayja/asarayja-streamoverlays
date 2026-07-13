@@ -15,6 +15,7 @@
     "@iconify-json/lucide": "^1.2.116",
     "@iconify-json/mdi": "^1.2.3",
     "@iconify-json/ph": "^1.2.2",
+    "@iconify-json/tabler": "^1.2.35",
     "konva": "^10.3.0",
     "lucide-react": "^1.24.0",
     "nanoid": "^5.1.16",

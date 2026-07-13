@@ -8,7 +8,7 @@
  * dynamically imported only when the picker is opened, never in the base bundle.
  */
 
-export type IconSource = "lucide" | "fa-solid" | "fa-brands" | "phosphor" | "mdi" | "game";
+export type IconSource = "lucide" | "fa-solid" | "fa-brands" | "phosphor" | "mdi" | "game" | "tabler";
 
 export interface LibIcon {
   /** Stable id, e.g. "lucide:heart". */
@@ -29,6 +29,7 @@ export const ICON_SOURCES: Array<{ id: IconSource; label: string }> = [
   { id: "phosphor", label: "Phosphor" },
   { id: "mdi", label: "Material" },
   { id: "game", label: "Game" },
+  { id: "tabler", label: "Tabler" },
 ];
 
 interface IconifyJson {
@@ -53,6 +54,8 @@ async function loadRaw(source: IconSource): Promise<IconifyJson> {
       return (await import("@iconify-json/mdi/icons.json")).default as IconifyJson;
     case "game":
       return (await import("@iconify-json/game-icons/icons.json")).default as IconifyJson;
+    case "tabler":
+      return (await import("@iconify-json/tabler/icons.json")).default as IconifyJson;
   }
 }
 

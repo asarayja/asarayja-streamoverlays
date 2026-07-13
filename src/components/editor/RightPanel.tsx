@@ -992,26 +992,41 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
       const ico = layer as IconLayer;
       return (
         <Section title={t("Icon")}>
-          <Field label={t("Symbol")}>
-            <Select value={ico.symbol} onChange={(e) => commit({ symbol: e.target.value })}>
-              {ICON_GROUPS.map(({ group, names }) => (
-                <optgroup key={group} label={group}>
-                  {names.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
+          {/* Library icons (Lucide / FA / …) carry their own artwork; the built-in
+              symbol picker only applies to the built-in set. */}
+          {!ico.body && (
+            <>
+              <Field label={t("Symbol")}>
+                <Select value={ico.symbol} onChange={(e) => commit({ symbol: e.target.value })}>
+                  {ICON_GROUPS.map(({ group, names }) => (
+                    <optgroup key={group} label={group}>
+                      {names.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
-                </optgroup>
-              ))}
-            </Select>
-          </Field>
-          <IconPreview symbol={ico.symbol} colour={resolveColor(ico.fill, theme)} />
+                </Select>
+              </Field>
+              <IconPreview symbol={ico.symbol} colour={resolveColor(ico.fill, theme)} />
+            </>
+          )}
           <ColorField
             label={t("Colour")}
             theme={theme}
             value={ico.fill}
             onChange={(fill) => live({ fill })}
             onCommit={(fill) => commit({ fill })}
+          />
+          <Slider
+            label={t("Size")}
+            suffix=" px"
+            min={16}
+            max={800}
+            value={Math.round(Math.max(ico.width, ico.height))}
+            onBegin={beginGesture}
+            onChange={(s) => live({ width: s, height: s })}
           />
           <Slider
             label={t("Outline weight")}

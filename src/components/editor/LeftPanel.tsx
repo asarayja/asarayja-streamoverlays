@@ -1023,7 +1023,7 @@ function AddTab() {
         </div>
         <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
           {showIconLib
-            ? t("Thousands of Lucide, Font Awesome, Phosphor (incl. duotone), Material & Game icons — search, then click to place. Each takes its colour from a theme token.")
+            ? t("Thousands of Lucide, Tabler, Font Awesome, Phosphor (incl. duotone), Material & Game icons — search, then click to place. Each takes its colour from a theme token.")
             : t("Click one to drop it on the canvas. Icons take their colour from a theme token, like any other layer.")}
         </p>
         {showIconLib && (
