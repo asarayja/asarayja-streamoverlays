@@ -14,6 +14,8 @@ import {
   Maximize,
   Monitor,
   MousePointer2,
+  Keyboard,
+  X,
   PaintBucket,
   Palette,
   Pencil,
@@ -96,6 +98,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const [panTool, setPanTool] = useState(false);
   const [drawTool, setDrawTool] = useState(false);
   const [bucketTool, setBucketTool] = useState(false);
+  const [showKeys, setShowKeys] = useState(false);
   // The editor needs a real workspace — gate it to bigger screens so phones
   // don't mount the (unusable) canvas. "unknown" until the client measures.
   const [device, setDevice] = useState<"unknown" | "small" | "ok">("unknown");
@@ -385,6 +388,12 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           <Maximize className="size-4" />
         </ToolButton>
 
+        <div className="mx-2 h-6 w-px bg-white/8" />
+
+        <ToolButton onClick={() => setShowKeys(true)} title={t("Keyboard shortcuts")}>
+          <Keyboard className="size-4" />
+        </ToolButton>
+
         <div className="ml-auto flex items-center gap-2">
           <Button onClick={() => setTheme(brandTheme)} title={t("Apply the colours from your channel profile")}>
             <Palette className="size-3.5" />
@@ -481,6 +490,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           }}
         />
       )}
+      {showKeys && <ShortcutsDialog onClose={() => setShowKeys(false)} />}
     </div>
   );
 }
@@ -589,6 +599,76 @@ function DrawSettings() {
         title={t("Brush width")}
       />
       <span className="w-5 text-center font-mono text-[10px] text-zinc-500">{drawWidth}</span>
+    </div>
+  );
+}
+
+/** A quick reference of the editor's keyboard shortcuts. */
+function ShortcutsDialog({ onClose }: { onClose: () => void }) {
+  const t = useT();
+  const mod =
+    typeof navigator !== "undefined" && navigator.platform.toLowerCase().includes("mac") ? "⌘" : "Ctrl";
+  const groups: Array<{ title: string; items: Array<[string, string]> }> = [
+    {
+      title: t("Edit"),
+      items: [
+        [`${mod} Z`, t("Undo")],
+        [`⇧ ${mod} Z`, t("Redo")],
+        [`${mod} C`, t("Copy")],
+        [`${mod} X`, t("Cut")],
+        [`${mod} V`, t("Paste")],
+        [`${mod} D`, t("Duplicate")],
+        [`${mod} A`, t("Select all")],
+        [t("Delete / Backspace"), t("Delete selection")],
+      ],
+    },
+    {
+      title: t("Tools"),
+      items: [
+        ["V", t("Select")],
+        [`H / ${t("Space")}`, t("Pan")],
+        ["B", t("Draw (pencil)")],
+        ["G", t("Fill bucket")],
+      ],
+    },
+    {
+      title: t("Move"),
+      items: [
+        [t("Arrow keys"), t("Nudge 1px")],
+        [`⇧ ${t("Arrow keys")}`, t("Nudge 10px")],
+      ],
+    },
+  ];
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-6" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-2xl border border-white/10 bg-ink-900 p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-white">{t("Keyboard shortcuts")}</h2>
+          <button onClick={onClose} className="text-zinc-500 transition-colors hover:text-white">
+            <X className="size-4" />
+          </button>
+        </div>
+        <div className="space-y-4">
+          {groups.map((g) => (
+            <div key={g.title}>
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{g.title}</p>
+              <div className="space-y-1">
+                {g.items.map(([keys, label]) => (
+                  <div key={label} className="flex items-center justify-between gap-4 text-[13px]">
+                    <span className="text-zinc-300">{label}</span>
+                    <kbd className="shrink-0 rounded border border-white/15 bg-white/[0.04] px-2 py-0.5 font-mono text-[11px] text-zinc-300">
+                      {keys}
+                    </kbd>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
