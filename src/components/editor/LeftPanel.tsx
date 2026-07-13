@@ -360,6 +360,24 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
   { label: "Rounded square", patch: { shape: "rect", x: 700, y: 340, width: 400, height: 400, cornerRadius: 64, fill: "@primary" } },
   { label: "Cross", patch: { shape: "cross", x: 760, y: 340, width: 360, height: 360, fill: "@accent" } },
   { label: "Gear", patch: { shape: "gear", x: 760, y: 340, width: 380, height: 380, fill: "@accent" } },
+  { label: "Heart", patch: { shape: "heart", x: 760, y: 340, width: 380, height: 360, fill: "@accent" } },
+  { label: "Checkmark", patch: { shape: "check", x: 760, y: 360, width: 340, height: 340, fill: "@accent" } },
+  { label: "Progress ring", patch: { shape: "ring", x: 760, y: 340, width: 380, height: 380, cornerRadius: 74, fill: "@accent" } },
+  {
+    label: "Badge",
+    patch: {
+      shape: "burst",
+      x: 760,
+      y: 340,
+      width: 380,
+      height: 380,
+      fill: "@accent",
+      effects: { ...DEFAULT_EFFECTS, border: { enabled: true, color: "@text", width: 4, radius: 0 } },
+    },
+  },
+  { label: "Arrow up", patch: { shape: "arrow", x: 810, y: 300, width: 300, height: 300, rotation: -90, fill: "@accent" } },
+  { label: "Arrow down", patch: { shape: "arrow", x: 810, y: 300, width: 300, height: 300, rotation: 90, fill: "@accent" } },
+  { label: "Arrow left", patch: { shape: "arrow", x: 760, y: 400, width: 400, height: 300, rotation: 180, fill: "@accent" } },
   {
     label: "Spotlight",
     patch: {
@@ -565,6 +583,8 @@ const DECOR_GROUP: Record<string, DecorCategory> = {
   "Diagonal split": "Blocks & splits", "Zigzag split": "Blocks & splits", "Split — gradient": "Blocks & splits",
   "Split — plasma": "Blocks & splits",
   "Circle": "Shapes", "Rounded square": "Shapes", "Cross": "Shapes", "Gear": "Shapes",
+  "Heart": "Shapes", "Checkmark": "Shapes", "Progress ring": "Shapes", "Badge": "Shapes",
+  "Arrow up": "Shapes", "Arrow down": "Shapes", "Arrow left": "Shapes",
   "Rectangle": "Shapes", "Ellipse": "Shapes", "Triangle": "Shapes", "Hexagon": "Shapes",
   "Shard": "Shapes", "Star": "Shapes", "Sunburst": "Shapes", "Arrow": "Shapes", "Lightning": "Shapes",
   "Banner": "Shapes", "Speech bubble": "Shapes", "Diamond plate": "Shapes", "Gem — glow": "Shapes",

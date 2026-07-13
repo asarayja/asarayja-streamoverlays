@@ -1411,6 +1411,41 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     );
   }
 
+  if (layer.shape === "check") {
+    // A checkmark reads as a rounded stroke, not a filled blob — draw it as a
+    // line in the fill colour.
+    const t = Math.min(w, h) * 0.18;
+    return (
+      <Line
+        points={[w * 0.1, h * 0.54, w * 0.4, h * 0.82, w * 0.9, h * 0.2]}
+        stroke={fill}
+        strokeWidth={t}
+        lineCap="round"
+        lineJoin="round"
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+      />
+    );
+  }
+
+  if (layer.shape === "ring") {
+    return (
+      <KonvaShape
+        {...paint}
+        sceneFunc={(c, shape) => {
+          const cx = w / 2;
+          const cy = h / 2;
+          const R = Math.min(w, h) / 2;
+          const r = R * (layer.cornerRadius ? Math.min(0.9, layer.cornerRadius / 100) : 0.62);
+          c.beginPath();
+          c.arc(cx, cy, R, 0, Math.PI * 2, false);
+          c.moveTo(cx + r, cy);
+          c.arc(cx, cy, r, 0, Math.PI * 2, true);
+          c.fillStrokeShape(shape);
+        }}
+      />
+    );
+  }
+
   return <Line closed points={polygonPoints(layer.shape, w, h)} {...paint} />;
 }
 

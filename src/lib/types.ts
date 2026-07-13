@@ -473,6 +473,10 @@ export type ShapeKind =
   | "cross"
   /** A cog wheel: toothed rim around a centre hole. */
   | "gear"
+  /** A tick / checkmark, drawn as a rounded stroke. */
+  | "check"
+  /** A ring / annulus — a filled disc with a centre hole (a progress ring). */
+  | "ring"
   /** A lightning bolt. */
   | "bolt"
   /** A title ribbon/banner with forked ends. */
