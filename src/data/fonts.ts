@@ -139,36 +139,18 @@ export const FONT_FAMILIES = FONTS.map((f) => f.family);
  * family still streams from Google Fonts and needs a connection. Keep this in
  * sync with the download list in the offline-font step.
  */
-export const OFFLINE_FONT_FAMILIES = new Set([
-  // sans
-  "Inter", "Space Grotesk", "Poppins", "Montserrat", "Roboto", "Open Sans", "Lato", "Nunito",
-  "Work Sans", "Raleway", "Rubik", "DM Sans", "Manrope", "Josefin Sans", "Quicksand", "Comfortaa", "Outfit", "Jost",
-  // display
-  "Bebas Neue", "Anton", "Oswald", "Teko", "Fredoka", "Baloo 2", "Lobster", "Pacifico", "Bangers",
-  "Alfa Slab One", "Righteous", "Staatliches", "Fjalla One", "Archivo Black",
-  // gaming
-  "Orbitron", "Rajdhani", "Chakra Petch", "Audiowide", "Michroma", "Press Start 2P", "Iceland",
-  // serif
-  "Playfair Display", "Cinzel", "Merriweather", "Lora", "Cormorant Garamond", "EB Garamond", "DM Serif Display", "PT Serif",
-  // handwriting
-  "Creepster", "Permanent Marker", "Caveat", "Dancing Script", "Great Vibes", "Satisfy", "Amatic SC",
-  // mono
-  "JetBrains Mono", "Space Mono",
-  // gothic
-  "Cinzel Decorative", "Grenze Gotisch", "MedievalSharp", "Pirata One",
-]);
+// Every catalogue family is now bundled as local woff2, so the whole app works
+// offline. (Adding a font means re-running the offline-font download so its
+// woff2 land in public/fonts/.)
+export const OFFLINE_FONT_FAMILIES = new Set(FONT_FAMILIES);
 
-/** `https://fonts.googleapis.com/css2?...` — only the families NOT bundled
-    locally, so the bundled set never double-loads over the network. */
+/** `https://fonts.googleapis.com/css2?...` for any family NOT bundled locally.
+    With all families bundled this is empty, so the layout skips the link. */
 export function googleFontsHref(): string {
   const families = FONTS.filter((f) => !OFFLINE_FONT_FAMILIES.has(f.family))
-    .map((f) => {
-      const name = f.family.replace(/ /g, "+");
-      const weights = f.weights.join(";");
-      return `family=${name}:wght@${weights}`;
-    })
+    .map((f) => `family=${f.family.replace(/ /g, "+")}:wght@${f.weights.join(";")}`)
     .join("&");
-  return `https://fonts.googleapis.com/css2?${families}&display=swap`;
+  return families ? `https://fonts.googleapis.com/css2?${families}&display=swap` : "";
 }
 
 /**

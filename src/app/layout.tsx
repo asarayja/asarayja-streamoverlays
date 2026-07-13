@@ -31,12 +31,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             against its own path, so the same file works under the Pages basePath
             and at the desktop root. */}
         <link rel="stylesheet" href={`${basePath}/fonts/offline-fonts.css`} />
-        {/* Every other family streams from Google Fonts (needs a connection).
-            Loaded document-wide because Konva paints text onto a canvas and can
-            only use families the document has already loaded. */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href={googleFontsHref()} />
+        {/* Any family not bundled locally streams from Google Fonts. With the
+            whole catalogue bundled this is empty and skipped entirely. */}
+        {googleFontsHref() && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link rel="stylesheet" href={googleFontsHref()} />
+          </>
+        )}
       </head>
       <body className="min-h-full">
         <StoreHydrator />
