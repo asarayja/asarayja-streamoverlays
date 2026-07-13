@@ -696,6 +696,11 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             checked={!!(text.fillStripes && text.fillStripes.length)}
             onChange={(on) => commit({ fillStripes: on ? MULTI_LETTER_COLORS : undefined })}
           />
+          {!(text.fillStripes && text.fillStripes.length) && (
+            <p className="-mt-1 text-[11px] leading-relaxed text-zinc-600">
+              {t("Turn on to colour letters individually — pick a palette, or tap any single letter below to recolour just it. Add as many colours as you like.")}
+            </p>
+          )}
           {text.fillStripes && text.fillStripes.length > 0 && (
             <>
               <div className="grid grid-cols-2 gap-1.5">
@@ -841,6 +846,17 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
           )}
           {FACET_SHAPES.has(shape.shape) && (
             <FacetColours colors={shape.facetColors ?? []} theme={theme} live={live} commit={commit} />
+          )}
+          {shape.shape === "freehand" && (shape.drawStyle ?? "line") !== "fill" && (
+            <Slider
+              label={t("Thickness")}
+              suffix=" px"
+              min={1}
+              max={80}
+              value={Math.round(shape.strokeWidth ?? 6)}
+              onBegin={beginGesture}
+              onChange={(strokeWidth) => live({ strokeWidth })}
+            />
           )}
           {shape.shape === "rect" && (
             <Slider

@@ -1317,21 +1317,23 @@ function TextTab() {
           </Field>
         )}
 
-        <div>
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-            {t("Profile placeholders")}
-          </p>
-          <p className="mb-2.5 text-[11px] leading-relaxed text-zinc-600">
-            {t("These resolve from your channel profile every time the overlay renders.")}
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {PLACEHOLDERS.filter((p) => !["{{LOGO}}", "{{PROFILE_IMAGE}}"].includes(p.token)).map((p) => (
-              <Chip key={p.token} onClick={() => insert(p.token)}>
-                {t(p.label)}
-              </Chip>
-            ))}
+        {isText && (
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+              {t("Profile placeholders")}
+            </p>
+            <p className="mb-2.5 text-[11px] leading-relaxed text-zinc-600">
+              {t("Optional — insert one into the selected text (any text layer, not just 3D) and it auto-fills from your channel profile on every render. Leave them out for plain text.")}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {PLACEHOLDERS.filter((p) => !["{{LOGO}}", "{{PROFILE_IMAGE}}"].includes(p.token)).map((p) => (
+                <Chip key={p.token} onClick={() => insert(p.token)}>
+                  {t(p.label)}
+                </Chip>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           <div className="mb-2 flex items-center justify-between">
