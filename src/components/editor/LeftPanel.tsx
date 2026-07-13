@@ -354,6 +354,11 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
   { label: "Diagonal split", patch: { shape: "diagonalsplit", x: 0, y: 0, width: 1920, height: 1080, fill: "@primary", cornerRadius: 240 } },
   { label: "Zigzag split", patch: { shape: "zigzagsplit", x: 0, y: 430, width: 1920, height: 650, fill: "@primary", cornerRadius: 60 } },
   { label: "Circle", patch: { shape: "ellipse", x: 660, y: 300, width: 600, height: 600, fill: "@primary" } },
+  { label: "Triangle", patch: { shape: "triangle", x: 760, y: 340, width: 400, height: 400, fill: "@primary" } },
+  { label: "Hexagon", patch: { shape: "hexagon", x: 760, y: 340, width: 400, height: 400, fill: "@primary" } },
+  { label: "Diamond", patch: { shape: "diamond", x: 760, y: 340, width: 400, height: 400, fill: "@primary" } },
+  { label: "Star", patch: { shape: "star", x: 760, y: 340, width: 400, height: 400, fill: "@accent" } },
+  { label: "Line", patch: { shape: "line", x: 560, y: 520, width: 800, height: 12, fill: "@accent" } },
   {
     label: "Spotlight",
     patch: {

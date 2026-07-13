@@ -229,17 +229,22 @@ export function EditorCanvas({
     let clip: ShapeLayer["clip"];
     const cams = (useEditorStore.getState().project?.layers ?? []).filter(isCameraLayer);
     if (cams.length) {
+      // Only mask a stroke to the webcam when it actually STARTS on the camera —
+      // then paint hugs the frame, the intended look. A stroke that begins
+      // anywhere else draws freely across the whole canvas (no cams[0] fallback,
+      // which used to clip every drawing to the first camera).
       const sx = pts[0], sy = pts[1];
-      const cam =
-        cams.find(
-          (l) => sx >= l.x - MARGIN && sx <= l.x + l.width + MARGIN && sy >= l.y - MARGIN && sy <= l.y + l.height + MARGIN,
-        ) ?? cams[0];
-      clip = {
-        x: cam.x - MARGIN - minX,
-        y: cam.y - MARGIN - minY,
-        width: cam.width + 2 * MARGIN,
-        height: cam.height + 2 * MARGIN,
-      };
+      const cam = cams.find(
+        (l) => sx >= l.x - MARGIN && sx <= l.x + l.width + MARGIN && sy >= l.y - MARGIN && sy <= l.y + l.height + MARGIN,
+      );
+      if (cam) {
+        clip = {
+          x: cam.x - MARGIN - minX,
+          y: cam.y - MARGIN - minY,
+          width: cam.width + 2 * MARGIN,
+          height: cam.height + 2 * MARGIN,
+        };
+      }
     }
 
     const layer: ShapeLayer = {

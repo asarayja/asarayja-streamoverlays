@@ -556,6 +556,29 @@ function DrawSettings() {
           style={{ background: theme ? resolveColor(tok, theme) : "#fff" }}
         />
       ))}
+      {/* Any RGB colour, not just the theme tokens. The swatch shows a custom
+          pick; otherwise a rainbow hints that this opens the full picker. */}
+      <label
+        title={t("Custom colour")}
+        className={cx(
+          "relative size-4 shrink-0 cursor-pointer overflow-hidden rounded-full ring-1 ring-white/20 transition",
+          !DRAW_TOKENS.includes(drawColor) && "ring-2 ring-white",
+        )}
+        style={{
+          background: !DRAW_TOKENS.includes(drawColor)
+            ? theme
+              ? resolveColor(drawColor, theme)
+              : drawColor
+            : "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)",
+        }}
+      >
+        <input
+          type="color"
+          value={theme ? resolveColor(drawColor, theme) : "#ffffff"}
+          onChange={(e) => setDrawColor(e.target.value)}
+          className="absolute inset-0 cursor-pointer opacity-0"
+        />
+      </label>
       <input
         type="range"
         min={1}

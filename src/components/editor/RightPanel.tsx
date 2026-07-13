@@ -54,8 +54,12 @@ import type {
   Theme,
 } from "@/lib/types";
 
-const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "line", "moon", "crescent", "coffin", "plaque", "scanlines", "web", "drip", "graveyard", "chain", "shard", "hexmesh", "wave", "chamfer", "carbon"];
+const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "diamond", "star", "gem", "arrow", "banner", "bubble", "line", "moon", "crescent", "coffin", "plaque", "scanlines", "web", "drip", "graveyard", "chain", "shard", "hexmesh", "wave", "chamfer", "carbon", "flagarc", "flagwave", "flaground", "flagrays", "flagzig"];
 const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs", "ghosts", "bokeh"];
+// Shapes coloured by a list of `facetColors` (a pride flag, a gradient) rather
+// than a single fill. The pure flag bands ignore `fill` entirely.
+const FLAG_SHAPES = new Set<ShapeKind>(["flagarc", "flagwave", "flaground", "flagrays", "flagzig"]);
+const FACET_SHAPES = new Set<ShapeKind>([...FLAG_SHAPES, "flagwaves", "glasssheet", "auroraField", "bloomVeil"]);
 import { useEditorStore, useSelectedLayer } from "@/store/editor";
 import { useT } from "@/lib/i18n";
 
@@ -545,6 +549,60 @@ function RunnerControl({
   );
 }
 
+/** The colour list for a facet shape — a pride band, a gradient sheet. Edit each
+    colour, remove, or add; empty falls back to the shape's own rainbow default. */
+function FacetColours({
+  colors,
+  theme,
+  live,
+  commit,
+}: {
+  colors: string[];
+  theme: Theme;
+  live: (patch: LayerPatch) => void;
+  commit: (patch: LayerPatch) => void;
+}) {
+  const t = useT();
+  const setCol = (index: number, value: string, discrete: boolean) => {
+    const next = colors.slice();
+    next[index] = value;
+    (discrete ? commit : live)({ facetColors: next } as LayerPatch);
+  };
+  return (
+    <>
+      <Field label={t("Colours")} hint={colors.length ? t("{n} colours", { n: colors.length }) : undefined}>
+        {colors.length > 0 && (
+          <div className="space-y-1.5">
+            {colors.map((c, index) => (
+              <div key={index} className="flex items-center gap-1.5">
+                <ColorInput
+                  value={c}
+                  resolved={resolveColor(c, theme)}
+                  onChange={(value) => setCol(index, value, false)}
+                  onCommit={(value) => setCol(index, value, true)}
+                />
+                <button
+                  title={t("Remove colour")}
+                  onClick={() => commit({ facetColors: colors.filter((_, i) => i !== index) } as LayerPatch)}
+                  className="shrink-0 rounded p-1 text-zinc-600 transition-colors hover:bg-white/10 hover:text-red-400"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Field>
+      <button
+        onClick={() => commit({ facetColors: [...colors, colors.at(-1) ?? "@accent"] } as LayerPatch)}
+        className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-white/20"
+      >
+        {t("+ Add colour")}
+      </button>
+    </>
+  );
+}
+
 function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionProps) {
   const t = useT();
   switch (layer.type) {
@@ -772,13 +830,18 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
               ))}
             </Select>
           </Field>
-          <ColorField
-            label={t("Fill")}
-            theme={theme}
-            value={shape.fill}
-            onChange={(fill) => live({ fill })}
-            onCommit={(fill) => commit({ fill })}
-          />
+          {!FLAG_SHAPES.has(shape.shape) && (
+            <ColorField
+              label={t("Fill")}
+              theme={theme}
+              value={shape.fill}
+              onChange={(fill) => live({ fill })}
+              onCommit={(fill) => commit({ fill })}
+            />
+          )}
+          {FACET_SHAPES.has(shape.shape) && (
+            <FacetColours colors={shape.facetColors ?? []} theme={theme} live={live} commit={commit} />
+          )}
           {shape.shape === "rect" && (
             <Slider
               label={t("Corner radius")}

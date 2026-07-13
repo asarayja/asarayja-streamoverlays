@@ -643,6 +643,7 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     const n = cols.length;
     return (
       <KonvaShape
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         listening={false}
         sceneFunc={(c) => {
           const th = (h / n) * 1.3; // slight overlap so the band reads as one flow
@@ -1005,14 +1006,16 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
   if (layer.shape === "flagarc") {
     // Flag stripes bent into parallel arcs — a curved pride band, any direction
     // via the layer's rotation.
-    const cols =
+    const cols = (
       layer.facetColors && layer.facetColors.length
         ? layer.facetColors
-        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"]
+    ).map((c) => resolveColor(c, ctx.theme));
     const n = cols.length;
     const bend = layer.cornerRadius ?? 0;
     return (
       <KonvaShape
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         listening={false}
         sceneFunc={(c) => {
           const steps = 40;
@@ -1041,15 +1044,17 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
 
   if (layer.shape === "flagwave") {
     // Flag stripes bent into parallel waves — a wavy pride band.
-    const cols =
+    const cols = (
       layer.facetColors && layer.facetColors.length
         ? layer.facetColors
-        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"]
+    ).map((c) => resolveColor(c, ctx.theme));
     const n = cols.length;
     const amp = layer.cornerRadius ?? 40;
     const peaks = 2;
     return (
       <KonvaShape
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         listening={false}
         sceneFunc={(c) => {
           const steps = 48;
@@ -1078,13 +1083,15 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
 
   if (layer.shape === "flaground") {
     // Flag stripes as concentric rings — a round pride burst.
-    const cols =
+    const cols = (
       layer.facetColors && layer.facetColors.length
         ? layer.facetColors
-        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"]
+    ).map((c) => resolveColor(c, ctx.theme));
     const n = cols.length;
     return (
       <KonvaShape
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         listening={false}
         sceneFunc={(c) => {
           const cx = w / 2, cy = h / 2;
@@ -1102,14 +1109,16 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
 
   if (layer.shape === "flagrays") {
     // Flag colours as wedges radiating from the centre — a sunburst.
-    const cols =
+    const cols = (
       layer.facetColors && layer.facetColors.length
         ? layer.facetColors
-        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"]
+    ).map((c) => resolveColor(c, ctx.theme));
     const n = cols.length;
     const rays = n * 2;
     return (
       <KonvaShape
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         listening={false}
         sceneFunc={(c) => {
           const cx = w / 2, cy = h / 2;
@@ -1129,10 +1138,11 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
 
   if (layer.shape === "flagzig") {
     // Flag stripes bent into parallel zigzags.
-    const cols =
+    const cols = (
       layer.facetColors && layer.facetColors.length
         ? layer.facetColors
-        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"];
+        : ["#E40303", "#FF8C00", "#FFED00", "#008026", "#24408E", "#732982"]
+    ).map((c) => resolveColor(c, ctx.theme));
     const n = cols.length;
     const amp = layer.cornerRadius ?? 40;
     const teeth = 8;
@@ -1142,6 +1152,7 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
     };
     return (
       <KonvaShape
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         listening={false}
         sceneFunc={(c) => {
           const steps = teeth * 2;
