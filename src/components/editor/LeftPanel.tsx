@@ -6,6 +6,7 @@ import {
   ArrowDown,
   ArrowUp,
   Bell,
+  ChevronLeft,
   Copy,
   Eye,
   EyeOff,
@@ -48,7 +49,7 @@ import { resolveColor } from "@/lib/theme";
 import { fileToDataUrl } from "@/lib/image";
 import { PLACEHOLDERS } from "@/lib/placeholders";
 import { ANIMATION_PRESETS, DEFAULT_ANIMATION, DEFAULT_EFFECTS } from "@/lib/types";
-import type { AnimationPreset, Layer, LayerPatch, LayerType, TextLayer } from "@/lib/types";
+import type { AnimationPreset, Layer, LayerPatch, LayerType, TextLayer, Theme } from "@/lib/types";
 import { SETTLED_TIME, useEditorStore, useSelectedLayer } from "@/store/editor";
 import { useProjectsStore } from "@/store/projects";
 import { useRenderProfile } from "@/store/profile";
@@ -354,11 +355,6 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
   { label: "Diagonal split", patch: { shape: "diagonalsplit", x: 0, y: 0, width: 1920, height: 1080, fill: "@primary", cornerRadius: 240 } },
   { label: "Zigzag split", patch: { shape: "zigzagsplit", x: 0, y: 430, width: 1920, height: 650, fill: "@primary", cornerRadius: 60 } },
   { label: "Circle", patch: { shape: "ellipse", x: 660, y: 300, width: 600, height: 600, fill: "@primary" } },
-  { label: "Triangle", patch: { shape: "triangle", x: 760, y: 340, width: 400, height: 400, fill: "@primary" } },
-  { label: "Hexagon", patch: { shape: "hexagon", x: 760, y: 340, width: 400, height: 400, fill: "@primary" } },
-  { label: "Diamond", patch: { shape: "diamond", x: 760, y: 340, width: 400, height: 400, fill: "@primary" } },
-  { label: "Star", patch: { shape: "star", x: 760, y: 340, width: 400, height: 400, fill: "@accent" } },
-  { label: "Line", patch: { shape: "line", x: 560, y: 520, width: 800, height: 12, fill: "@accent" } },
   {
     label: "Spotlight",
     patch: {
@@ -553,6 +549,56 @@ const DECOR_PRESETS: Array<{ label: string; patch: LayerPatch; type?: LayerType 
   ]),
 ];
 
+// The decor list is long, so it is grouped: the panel first shows category
+// buttons, and opening one reveals just that group's pieces — each rendered as a
+// little live preview so you see what you get before placing it.
+const DECOR_CATEGORIES = ["Shapes", "Blocks & splits", "Glow", "Gothic", "Textures", "Paint", "Pride"] as const;
+type DecorCategory = (typeof DECOR_CATEGORIES)[number];
+
+const DECOR_GROUP: Record<string, DecorCategory> = {
+  "Colour fill": "Blocks & splits", "Curved split": "Blocks & splits", "Wave split": "Blocks & splits",
+  "Diagonal split": "Blocks & splits", "Zigzag split": "Blocks & splits", "Split — gradient": "Blocks & splits",
+  "Split — plasma": "Blocks & splits",
+  "Circle": "Shapes", "Rectangle": "Shapes", "Ellipse": "Shapes", "Triangle": "Shapes", "Hexagon": "Shapes",
+  "Shard": "Shapes", "Star": "Shapes", "Sunburst": "Shapes", "Arrow": "Shapes", "Lightning": "Shapes",
+  "Banner": "Shapes", "Speech bubble": "Shapes", "Diamond plate": "Shapes", "Gem — glow": "Shapes",
+  "Gem — inset": "Shapes", "Gem — drop shadow": "Shapes", "Line": "Shapes",
+  "Spotlight": "Glow", "Energy wave": "Glow",
+  "Moon": "Gothic", "Crescent": "Gothic", "Spiderweb": "Gothic", "Chain": "Gothic", "Coffin": "Gothic",
+  "Graveyard": "Gothic", "Drip panel": "Gothic", "Plaque": "Gothic", "Harlequin": "Gothic",
+  "Hex mesh": "Textures", "Scanlines": "Textures", "Carbon": "Textures", "Chamfer panel": "Textures",
+  "Concrete wall": "Textures", "Liquid glass panel": "Textures",
+  "Paint splat": "Paint", "Spray splat": "Paint",
+};
+const decorCategoryOf = (label: string): DecorCategory =>
+  label.startsWith("Pride —") ? "Pride" : DECOR_GROUP[label] ?? "Shapes";
+
+/** A decor piece rendered small over the family ground, so it's picked by sight. */
+function DecorPreview({
+  preset,
+  theme,
+  profile,
+}: {
+  preset: { patch: LayerPatch; type?: LayerType };
+  theme: Theme;
+  profile: ReturnType<typeof useRenderProfile>;
+}) {
+  const layers = useMemo<Layer[]>(() => {
+    const base = {
+      id: "d", name: "d", x: 0, y: 0, width: 400, height: 200, rotation: 0, opacity: 1,
+      visible: true, locked: false, effects: structuredClone(DEFAULT_EFFECTS), animation: { ...DEFAULT_ANIMATION },
+    };
+    const bg = { ...base, id: "bg", type: "background", shape: "rect", fill: "@background", cornerRadius: 0, width: 1920, height: 1080 } as Layer;
+    const item = { ...base, type: preset.type ?? "shape", shape: "rect", fill: "@primary", cornerRadius: 0, ...preset.patch } as Layer;
+    return [bg, item];
+  }, [preset]);
+  return (
+    <div className="checker relative aspect-video w-full overflow-hidden">
+      <ClientOverlayStage layers={layers} theme={theme} profile={profile} time={SETTLED_TIME} mode="preview" width={148} />
+    </div>
+  );
+}
+
 /** h 0..360, s/l 0..1 → #rrggbb. */
 function hslHex(h: number, s: number, l: number): string {
   const a = s * Math.min(l, 1 - l);
@@ -686,6 +732,9 @@ function AddTab() {
   const addLayer = useEditorStore((s) => s.addLayer);
   const insertLayer = useEditorStore((s) => s.insertLayer);
   const insertStarter = useEditorStore((s) => s.insertStarter);
+  const theme = useEditorStore((s) => s.project?.theme);
+  const profile = useRenderProfile();
+  const [openDecor, setOpenDecor] = useState<DecorCategory | null>(null);
   const t = useT();
   const imgInput = useRef<HTMLInputElement>(null);
 
@@ -797,21 +846,56 @@ function AddTab() {
       </div>
 
       <div className="border-t border-white/[0.06] px-4 py-4">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{t("Decor")}</p>
-        <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
-          {t("Shapes with their own geometry. Every one takes its colour from a theme token, and the moon has a phase and craters you can edit.")}
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {DECOR_PRESETS.map(({ label, patch, type }) => (
+        <div className="mb-2 flex items-center gap-2">
+          {openDecor && (
             <button
-              key={label}
-              onClick={() => addLayer(type ?? "shape", patch as Partial<Layer>)}
-              className="rounded-xl border border-white/[0.06] bg-white/[0.02] py-2.5 text-[11px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
+              onClick={() => setOpenDecor(null)}
+              className="text-zinc-400 transition-colors hover:text-white"
+              title={t("All categories")}
             >
-              {t(label)}
+              <ChevronLeft className="size-4" />
             </button>
-          ))}
+          )}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+            {t("Decor")}
+            {openDecor && <span className="text-zinc-400"> · {t(openDecor)}</span>}
+          </p>
         </div>
+
+        {!openDecor ? (
+          <>
+            <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
+              {t("Pick a category to see its pieces as previews, then place one.")}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {DECOR_CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setOpenDecor(cat)}
+                  className="rounded-xl border border-white/[0.06] bg-white/[0.02] py-3 text-[11px] font-medium text-zinc-300 transition-colors hover:border-brand-400/40 hover:bg-brand-500/10 hover:text-white"
+                >
+                  {t(cat)}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {DECOR_PRESETS.filter((p) => decorCategoryOf(p.label) === openDecor).map((preset) => (
+              <button
+                key={preset.label}
+                onClick={() => addLayer(preset.type ?? "shape", preset.patch as Partial<Layer>)}
+                className="group/decor overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] transition-colors hover:border-brand-400/40 hover:bg-brand-500/10"
+                title={t("Add {name}", { name: t(preset.label) })}
+              >
+                {theme && <DecorPreview preset={preset} theme={theme} profile={profile} />}
+                <span className="block truncate px-1.5 py-1 text-[11px] font-medium text-zinc-300 group-hover/decor:text-white">
+                  {t(preset.label)}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="border-t border-white/[0.06] px-4 py-4">
