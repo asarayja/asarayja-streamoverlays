@@ -4172,17 +4172,22 @@ function circuitTrace(prefix: string, pts: [number, number][], color: string, de
   for (let i = 0; i < pts.length - 1; i++) {
     const [x0, y0] = pts[i];
     const [x1, y1] = pts[i + 1];
+    // Pulse each segment's glow, staggered along the path so light appears to
+    // travel down the trace like data flowing through the circuit.
+    const segAnim = anim("glow", { duration: 2600, delay: delay + i * 180, intensity: 0.85 });
     if (y0 === y1) {
       out.push(shape(`${prefix} s${i}`, { x: Math.min(x0, x1), y: y0 - thick / 2, width: Math.abs(x1 - x0), height: thick }, {
         shape: "rect",
         fill: color,
         effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+        animation: segAnim,
       }));
     } else {
       out.push(shape(`${prefix} s${i}`, { x: x0 - thick / 2, y: Math.min(y0, y1), width: thick, height: Math.abs(y1 - y0) }, {
         shape: "rect",
         fill: color,
         effects: { glow: { enabled: true, color: "@glow", strength: 12 } },
+        animation: segAnim,
       }));
     }
   }
