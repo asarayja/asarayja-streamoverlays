@@ -29,13 +29,41 @@ function buildChroma(img: HTMLImageElement, key: string, tol: number): HTMLCanva
   const data = ctx.getImageData(0, 0, w, h);
   const px = data.data;
   const [kr, kg, kb] = hexToRgb(key);
-  // 442 ≈ max RGB distance; tolerance is a 0..100 fraction of it.
-  const thresh = (Math.max(0, Math.min(100, tol)) / 100) * 442;
+
+  // 442 ≈ max RGB distance. `inner` is a hard cut; between inner and outer the
+  // alpha feathers, so anti-aliased edges fade instead of leaving a hard rim.
+  const inner = (Math.max(0, Math.min(100, tol)) / 100) * 442;
+  const outer = inner + 70;
+  const despillMax = outer * 2.2;
+
+  // If the key is dominated by one channel (green- or blue-screen), suppress
+  // that channel's spill on kept edge pixels — clamp it to the other two so a
+  // green fringe doesn't survive. Ambiguous keys (e.g. magenta) skip despill.
+  const maxc = Math.max(kr, kg, kb);
+  const single =
+    kg === maxc && kg - Math.max(kr, kb) > 40
+      ? 1
+      : kr === maxc && kr - Math.max(kg, kb) > 40
+        ? 0
+        : kb === maxc && kb - Math.max(kr, kg) > 40
+          ? 2
+          : -1;
+  const others = single === 0 ? [1, 2] : single === 1 ? [0, 2] : [0, 1];
+
   for (let i = 0; i < px.length; i += 4) {
     const dr = px[i] - kr;
     const dg = px[i + 1] - kg;
     const db = px[i + 2] - kb;
-    if (Math.sqrt(dr * dr + dg * dg + db * db) <= thresh) px[i + 3] = 0;
+    const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+    if (dist <= inner) {
+      px[i + 3] = 0;
+      continue;
+    }
+    if (dist < outer) px[i + 3] = Math.round(px[i + 3] * ((dist - inner) / (outer - inner)));
+    if (single >= 0 && dist < despillMax) {
+      const cap = Math.max(px[i + others[0]], px[i + others[1]]);
+      if (px[i + single] > cap) px[i + single] = cap;
+    }
   }
   ctx.putImageData(data, 0, 0);
   return cv;

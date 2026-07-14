@@ -42,7 +42,7 @@ function toHex(n: number): string {
  * magenta-key / flat-colour sheet), return it so the background auto-clears.
  */
 function detectChroma(cv: HTMLCanvasElement): { removeBg: boolean; chromaKey: string; chromaTolerance: number } {
-  const off = { removeBg: false, chromaKey: "#ff00ff", chromaTolerance: 16 };
+  const off = { removeBg: false, chromaKey: "#ff00ff", chromaTolerance: 18 };
   const ctx = cv.getContext("2d");
   if (!ctx || cv.width < 2 || cv.height < 2) return off;
   const w = cv.width;
@@ -60,7 +60,7 @@ function detectChroma(cv: HTMLCanvasElement): { removeBg: boolean; chromaKey: st
     (c) => c[3] > 200 && Math.abs(c[0] - r) < 24 && Math.abs(c[1] - g) < 24 && Math.abs(c[2] - b) < 24,
   );
   if (!uniform) return off;
-  return { removeBg: true, chromaKey: `#${toHex(r)}${toHex(g)}${toHex(b)}`, chromaTolerance: 16 };
+  return { removeBg: true, chromaKey: `#${toHex(r)}${toHex(g)}${toHex(b)}`, chromaTolerance: 18 };
 }
 
 function analyze(src: string): Promise<{ w: number; h: number; chroma: ReturnType<typeof detectChroma> }> {
