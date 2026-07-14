@@ -22,10 +22,25 @@ export function useElementSize<T extends HTMLElement>() {
   return [ref, size] as const;
 }
 
-/** Whether the viewer has asked for reduced motion. Autoplay respects it. */
+/** True when running inside the Tauri desktop shell (any version). */
+function inDesktopApp(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    ("__TAURI_INTERNALS__" in window || "isTauri" in window || "__TAURI__" in window)
+  );
+}
+
+/** Whether the viewer has asked for reduced motion. Autoplay respects it —
+    except in the desktop app, which is a deliberate animation-design tool:
+    WebView2 mirrors Windows' "animation effects" accessibility toggle, and if
+    that's off every preview would freeze. There we always animate. */
 export function usePrefersReducedMotion(): boolean {
   const [reduce, setReduce] = useState(false);
   useEffect(() => {
+    if (inDesktopApp()) {
+      setReduce(false);
+      return;
+    }
     const m = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReduce(m.matches);
     const on = () => setReduce(m.matches);
