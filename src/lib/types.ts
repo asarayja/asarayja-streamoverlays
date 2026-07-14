@@ -148,6 +148,7 @@ export const ANIMATION_PRESETS = [
   "sway",
   "wobble",
   "orbit",
+  "drift",
   "breathe",
   // One-shot entrances / accents.
   "flip",

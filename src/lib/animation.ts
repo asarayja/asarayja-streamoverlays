@@ -100,6 +100,7 @@ const CONTINUOUS = new Set([
   "sway",
   "wobble",
   "orbit",
+  "drift",
   "breathe",
 ]);
 
@@ -203,6 +204,15 @@ export function sample(anim: Animation, t: number): AnimationSample {
         const r = 9 * k;
         return { ...IDENTITY, dx: Math.cos(phase * tau) * r, dy: Math.sin(phase * tau) * r };
       }
+      case "drift":
+        // A slow sideways glide with a gentle vertical bob — seamless (pure
+        // sine, no reset), so decor "moves along" without ever snapping back to
+        // a start pose. Distance scales with intensity, pace with duration.
+        return {
+          ...IDENTITY,
+          dx: Math.sin(phase * tau) * 60 * k,
+          dy: Math.sin(phase * tau * 0.5 + 1) * 10 * k,
+        };
       case "breathe":
         // A slow fade in and out — calmer than flicker, no motion.
         return { ...IDENTITY, opacity: 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(phase * tau)) };
