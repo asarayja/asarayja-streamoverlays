@@ -556,16 +556,20 @@ function RunnerControl({
             label={t("Edge light colours")}
             hint={colors.length ? t("{n} colours", { n: colors.length }) : t("Accent")}
           >
-            {colors.length > 0 && (
-              <div className="space-y-1.5">
-                {colors.map((c, index) => (
-                  <div key={index} className="flex items-center gap-1.5">
-                    <ColorInput
-                      value={c}
-                      resolved={resolveColor(c, theme)}
-                      onChange={(value) => setColor(index, value, false)}
-                      onCommit={(value) => setColor(index, value, true)}
-                    />
+            {/* Empty means "the accent" — show it as an editable swatch so the
+                colour can be changed straight away, without adding one first.
+                Editing it writes the first entry; the × only appears once the
+                list is real, so the accent default can't be deleted to nothing. */}
+            <div className="space-y-1.5">
+              {(colors.length ? colors : ["@accent"]).map((c, index) => (
+                <div key={index} className="flex items-center gap-1.5">
+                  <ColorInput
+                    value={c}
+                    resolved={resolveColor(c, theme)}
+                    onChange={(value) => setColor(index, value, false)}
+                    onCommit={(value) => setColor(index, value, true)}
+                  />
+                  {colors.length > 0 && (
                     <button
                       title={t("Remove colour")}
                       onClick={() => commit({ runnerColors: colors.filter((_, i) => i !== index) } as LayerPatch)}
@@ -573,22 +577,17 @@ function RunnerControl({
                     >
                       ×
                     </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                  )}
+                </div>
+              ))}
+            </div>
           </Field>
           <button
-            onClick={() => commit({ runnerColors: [...colors, colors.at(-1) ?? "@accent"] } as LayerPatch)}
+            onClick={() => commit({ runnerColors: [...(colors.length ? colors : ["@accent"]), "@accent"] } as LayerPatch)}
             className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-white/20"
           >
             {t("+ Add colour")}
           </button>
-          {colors.length === 0 && (
-            <p className="text-[11px] leading-relaxed text-zinc-600">
-              {t("Using the accent colour — add one or more to customise the light.")}
-            </p>
-          )}
         </>
       )}
     </>
