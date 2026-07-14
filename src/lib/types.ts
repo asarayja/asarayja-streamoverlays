@@ -706,6 +706,13 @@ export interface SpriteLayer extends LayerBase {
   motionSpeed: number;
   /** Mirror the sprite to face its travel direction (walk/cross). */
   faceDirection: boolean;
+  /** Knock out a solid background colour (magenta-key sheets, etc.) so the
+      sprite is transparent over the stream. */
+  removeBg: boolean;
+  /** The colour treated as transparent when `removeBg` is on. */
+  chromaKey: string;
+  /** How close a pixel must be to `chromaKey` to be knocked out (0..100). */
+  chromaTolerance: number;
 }
 
 /** A decorative frame, or a transparent hole for the webcam feed. */

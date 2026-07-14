@@ -1214,6 +1214,30 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onBegin={beginGesture}
             onChange={(fps) => live({ fps })}
           />
+          <Toggle
+            label={t("Remove background")}
+            checked={sprite.removeBg}
+            onChange={(removeBg) => commit({ removeBg })}
+          />
+          {sprite.removeBg && (
+            <>
+              <ColorField
+                label={t("Background colour")}
+                theme={theme}
+                value={sprite.chromaKey}
+                onChange={(chromaKey) => live({ chromaKey })}
+                onCommit={(chromaKey) => commit({ chromaKey })}
+              />
+              <Slider
+                label={t("Tolerance")}
+                min={0}
+                max={100}
+                value={Math.round(sprite.chromaTolerance)}
+                onBegin={beginGesture}
+                onChange={(chromaTolerance) => live({ chromaTolerance })}
+              />
+            </>
+          )}
           <Field label={t("Movement")}>
             <Select value={sprite.motion} onChange={(e) => commit({ motion: e.target.value as SpriteMotion })}>
               {SPRITE_MOTIONS.map((m) => (

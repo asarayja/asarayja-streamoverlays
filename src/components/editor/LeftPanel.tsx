@@ -863,6 +863,9 @@ function AddTab() {
         fps: s.fps,
         width: s.width,
         height: s.height,
+        removeBg: s.removeBg,
+        chromaKey: s.chromaKey,
+        chromaTolerance: s.chromaTolerance,
       });
     } catch {
       /* undecodable file — skip */

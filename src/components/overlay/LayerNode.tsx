@@ -44,6 +44,7 @@ import type {
 import { noise } from "@/lib/animation";
 import { SocialGlyph, formatHandle } from "./SocialGlyph";
 import { useKonvaImage } from "./useKonvaImage";
+import { useSpriteImage } from "./useSpriteImage";
 
 /** `edit` draws helper fills; `live` keeps the camera hole fully transparent. */
 export type RenderMode = "edit" | "preview" | "live";
@@ -3183,7 +3184,12 @@ function spriteMotionOffset(
 }
 
 function SpriteContent({ layer, ctx, glowBoost }: { layer: SpriteLayer; ctx: RenderContext; glowBoost: number }) {
-  const [image, status] = useKonvaImage(layer.src);
+  const { source: image, width: iw, height: ih, status } = useSpriteImage(
+    layer.src,
+    layer.removeBg,
+    layer.chromaKey,
+    layer.chromaTolerance,
+  );
   const { width: w, height: h } = layer;
 
   if (status !== "loaded" || !image || !layer.src) {
@@ -3216,8 +3222,8 @@ function SpriteContent({ layer, ctx, glowBoost }: { layer: SpriteLayer; ctx: Ren
   const cols = Math.max(1, Math.floor(layer.cols));
   const rows = Math.max(1, Math.floor(layer.rows));
   const total = Math.max(1, Math.min(Math.floor(layer.frameCount), cols * rows));
-  const fw = image.width / cols;
-  const fh = image.height / rows;
+  const fw = iw / cols;
+  const fh = ih / rows;
 
   const frame =
     layer.playing && total > 1

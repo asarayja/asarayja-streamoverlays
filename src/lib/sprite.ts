@@ -27,6 +27,55 @@ export interface SpriteImport {
   width: number;
   height: number;
   name: string;
+  removeBg: boolean;
+  chromaKey: string;
+  chromaTolerance: number;
+}
+
+function toHex(n: number): string {
+  return Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+}
+
+/**
+ * Guess a solid key colour to knock out. Samples the four corners: if they're
+ * already transparent, nothing to do; if they agree on one opaque colour (a
+ * magenta-key / flat-colour sheet), return it so the background auto-clears.
+ */
+function detectChroma(cv: HTMLCanvasElement): { removeBg: boolean; chromaKey: string; chromaTolerance: number } {
+  const off = { removeBg: false, chromaKey: "#ff00ff", chromaTolerance: 16 };
+  const ctx = cv.getContext("2d");
+  if (!ctx || cv.width < 2 || cv.height < 2) return off;
+  const w = cv.width;
+  const h = cv.height;
+  const corners = [
+    [0, 0],
+    [w - 1, 0],
+    [0, h - 1],
+    [w - 1, h - 1],
+  ].map(([x, y]) => ctx.getImageData(x, y, 1, 1).data);
+
+  if (corners.every((c) => c[3] < 16)) return off; // already transparent
+  const [r, g, b] = corners[0];
+  const uniform = corners.every(
+    (c) => c[3] > 200 && Math.abs(c[0] - r) < 24 && Math.abs(c[1] - g) < 24 && Math.abs(c[2] - b) < 24,
+  );
+  if (!uniform) return off;
+  return { removeBg: true, chromaKey: `#${toHex(r)}${toHex(g)}${toHex(b)}`, chromaTolerance: 16 };
+}
+
+function analyze(src: string): Promise<{ w: number; h: number; chroma: ReturnType<typeof detectChroma> }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement("canvas");
+      cv.width = img.naturalWidth;
+      cv.height = img.naturalHeight;
+      cv.getContext("2d")!.drawImage(img, 0, 0);
+      resolve({ w: img.naturalWidth, h: img.naturalHeight, chroma: detectChroma(cv) });
+    };
+    img.onerror = () => reject(new Error("image load failed"));
+    img.src = src;
+  });
 }
 
 type DecoderCtor = new (init: { data: ArrayBuffer; type: string }) => {
@@ -56,15 +105,6 @@ function readDataUrl(file: File): Promise<string> {
     r.onload = () => resolve(r.result as string);
     r.onerror = () => reject(r.error);
     r.readAsDataURL(file);
-  });
-}
-
-function loadDimensions(src: string): Promise<{ w: number; h: number }> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
-    img.onerror = () => reject(new Error("image load failed"));
-    img.src = src;
   });
 }
 
@@ -128,6 +168,7 @@ async function packAnimated(file: File): Promise<SpriteImport | null> {
     fps,
     ...displayBox(cellW, cellH),
     name: file.name.replace(/\.[^.]+$/, "") || "Sprite",
+    ...detectChroma(canvas),
   };
 }
 
@@ -145,7 +186,7 @@ export async function importSprite(file: File): Promise<SpriteImport> {
 
   // Static image: keep it as the sheet, single cell — the user sets the grid.
   const src = await readDataUrl(file);
-  const { w, h } = await loadDimensions(src);
+  const { w, h, chroma } = await analyze(src);
   return {
     src,
     cols: 1,
@@ -154,5 +195,6 @@ export async function importSprite(file: File): Promise<SpriteImport> {
     fps: 12,
     ...displayBox(w, h),
     name: file.name.replace(/\.[^.]+$/, "") || "Sprite",
+    ...chroma,
   };
 }

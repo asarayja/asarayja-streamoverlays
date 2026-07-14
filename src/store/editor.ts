@@ -343,6 +343,9 @@ function makeLayer(type: LayerType, index: number): Layer {
         motion: "none",
         motionSpeed: 1,
         faceDirection: true,
+        removeBg: false,
+        chromaKey: "#ff00ff",
+        chromaTolerance: 16,
       };
     case "frame":
     case "camera":
