@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Konva from "konva";
-import { Group, Layer as KonvaLayer, Line, Rect, Stage, Transformer } from "react-konva";
+import { Group, Layer as KonvaLayer, Line, Rect, Stage, Text, Transformer } from "react-konva";
 import { LayerNode } from "@/components/overlay/LayerNode";
 import { useFontsReady } from "@/components/overlay/OverlayStage";
 import { resolveColor } from "@/lib/theme";
@@ -19,6 +19,70 @@ const GRID_STEP = 60;
 interface Guide {
   axis: "x" | "y";
   position: number;
+}
+
+/** Photoshop-style readout while dragging: the gap from each edge of the box to
+    the matching canvas edge. When a pair is equal (centred on that axis) it
+    turns green, so "the same on both sides" is obvious at a glance. */
+function MeasureOverlay({
+  box,
+  cw,
+  ch,
+  zoom,
+}: {
+  box: { x: number; y: number; w: number; h: number };
+  cw: number;
+  ch: number;
+  zoom: number;
+}) {
+  const { x, y, w, h } = box;
+  const left = Math.max(0, Math.round(x));
+  const right = Math.max(0, Math.round(cw - (x + w)));
+  const top = Math.max(0, Math.round(y));
+  const bottom = Math.max(0, Math.round(ch - (y + h)));
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  const s = 1 / zoom;
+  const cX = Math.abs(left - right) <= 1 ? "#22c55e" : "#38bdf8";
+  const cY = Math.abs(top - bottom) <= 1 ? "#22c55e" : "#38bdf8";
+
+  const seg = (pts: number[], color: string, key: string) => (
+    <Line key={key} points={pts} stroke={color} strokeWidth={s} dash={[5 * s, 4 * s]} listening={false} />
+  );
+  const label = (text: string, mx: number, my: number, color: string, key: string) => {
+    const fs = 12 * s;
+    const pad = 4 * s;
+    const tw = text.length * fs * 0.64 + pad * 2;
+    const th = fs + pad * 1.6;
+    return (
+      <Group key={key} x={mx - tw / 2} y={my - th / 2} listening={false}>
+        <Rect width={tw} height={th} cornerRadius={3 * s} fill={color} />
+        <Text
+          text={text}
+          width={tw}
+          height={th}
+          align="center"
+          verticalAlign="middle"
+          fontSize={fs}
+          fontStyle="bold"
+          fill="#0b1020"
+        />
+      </Group>
+    );
+  };
+
+  return (
+    <>
+      {seg([0, cy, x, cy], cX, "sl")}
+      {seg([x + w, cy, cw, cy], cX, "sr")}
+      {seg([cx, 0, cx, y], cY, "st")}
+      {seg([cx, y + h, cx, ch], cY, "sb")}
+      {label(`${left}`, x / 2, cy, cX, "ll")}
+      {label(`${right}`, (x + w + cw) / 2, cy, cX, "lr")}
+      {label(`${top}`, cx, y / 2, cY, "lt")}
+      {label(`${bottom}`, cx, (y + h + ch) / 2, cY, "lb")}
+    </>
+  );
 }
 
 const SPLIT_SHAPES = ["arcsplit", "wavesplit", "diagonalsplit", "zigzagsplit"];
@@ -79,6 +143,8 @@ export function EditorCanvas({
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
+  /** Box (canvas coords) being dragged — drives the distance-to-edge readout. */
+  const [measure, setMeasure] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const fontsReady = useFontsReady();
   // While Ctrl/Cmd is held during a resize, lock to a single axis so only one
   // side moves — the rest stays put.
@@ -466,6 +532,7 @@ export function EditorCanvas({
       };
 
       if (!snap) {
+        setMeasure(showGuides ? { x: rawX, y: rawY, w: layer.width, h: layer.height } : null);
         apply(rawX, rawY);
         return;
       }
@@ -494,6 +561,7 @@ export function EditorCanvas({
       const y = fit(rawY, targets.y, "y");
 
       setGuides(showGuides ? found : []);
+      setMeasure(showGuides ? { x, y, w: layer.width, h: layer.height } : null);
       apply(x, y);
     },
     [project?.layers, snap, snapTargets, zoom, updateLayer, showGuides, selectedIds, moveSelected],
@@ -601,6 +669,7 @@ export function EditorCanvas({
                     onDragMove={handleDragMove}
                     onDragEnd={(id, x, y) => {
                       setGuides([]);
+                      setMeasure(null);
                       updateLayer(id, { x, y }, false);
                     }}
                     onTransformEnd={handleTransformEnd}
@@ -698,6 +767,8 @@ export function EditorCanvas({
                   listening={false}
                 />
               ))}
+
+              {measure && <MeasureOverlay box={measure} cw={cw} ch={ch} zoom={zoom} />}
             </Group>
 
             <Transformer
