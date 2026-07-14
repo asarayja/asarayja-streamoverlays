@@ -1836,7 +1836,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     ]),
 
     base("webcam", "Webcam Frame", "Webcam Frames", [
-      ...(f.overlayDecor?.() ?? []),
+      // A webcam frame is a transparent overlay for the camera only — no ambient
+      // scene decor (bats, ghosts, web). That lives on the scene screens.
       camera("Camera", { x: 320, y: 120, width: 1280, height: 720 }),
       ...flagBar({ x: 660, y: 862, width: 600, height: 12 }),
       plate("Name plate", { x: 660, y: 880, width: 600, height: 72 }),
@@ -1851,7 +1852,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     ]),
 
     base("chatbox", "Chat Box", "Chat Boxes", [
-      ...(f.overlayDecor?.() ?? []),
+      // Chat box only — a transparent overlay piece. Ambient scene decor stays
+      // on the scene screens that are meant to carry it.
       ...flagBar({ x: 1400, y: 96, width: 460, height: 14 }),
       chat("Chat", { x: 1400, y: 120, width: 460, height: 840 }, 10),
     ]),
