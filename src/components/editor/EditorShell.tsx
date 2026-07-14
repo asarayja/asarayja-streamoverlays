@@ -181,6 +181,12 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         if (!st.project) return;
         e.preventDefault();
         st.select(st.project.layers.filter((l) => !l.locked).map((l) => l.id));
+      } else if (mod && key === "g") {
+        // Combine the selected layers into one movable unit — a "layer" that
+        // holds several things. Shift+Cmd/Ctrl+G breaks it apart again.
+        e.preventDefault();
+        if (e.shiftKey) useEditorStore.getState().ungroupSelected();
+        else useEditorStore.getState().groupSelected();
       } else if (mod) {
         // Any other modifier combo (copy shortcuts on other layouts, browser
         // chrome) — leave it to the browser rather than swallowing a tool key.
