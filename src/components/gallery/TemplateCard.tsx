@@ -29,7 +29,9 @@ export function TemplateCard({ template, profile, theme, onOpen }: TemplateCardP
   const t = useT();
   const [viewRef, inView] = useInView<HTMLDivElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
-  const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
+  // Play only in the central band of the viewport so a gallery doesn't animate
+  // every visible card at once; they activate as you scroll them into focus.
+  const [screenRef, onScreen] = useOnScreen<HTMLDivElement>("-25% 0px -25% 0px");
   const [hovered, setHovered] = useState(false);
   const reduceMotion = usePrefersReducedMotion();
 

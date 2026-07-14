@@ -98,7 +98,9 @@ function ProjectCard({ pack, profile }: { pack: PackView; profile: ReturnType<ty
   const router = useRouter();
   const [viewRef, inView] = useInView<HTMLDivElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
-  const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
+  // Play only in the central band of the viewport so a grid doesn't animate all
+  // at once; cards activate as you scroll them into focus.
+  const [screenRef, onScreen] = useOnScreen<HTMLDivElement>("-25% 0px -25% 0px");
   const reduceMotion = usePrefersReducedMotion();
   const [hovered, setHovered] = useState(false);
   const duplicate = useProjectsStore((s) => s.duplicate);

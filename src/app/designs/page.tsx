@@ -168,7 +168,10 @@ function DesignCard({ design, profile }: { design: Design; profile: ReturnType<t
   const t = useT();
   const [viewRef, inView] = useInView<HTMLAnchorElement>();
   const [sizeRef, size] = useElementSize<HTMLDivElement>();
-  const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
+  // Only play while the card is in the central band of the viewport, so a full
+  // screenful of covers doesn't all animate at once — they light up as you
+  // scroll each one into focus.
+  const [screenRef, onScreen] = useOnScreen<HTMLDivElement>("-25% 0px -25% 0px");
   const reduceMotion = usePrefersReducedMotion();
   const toggleDesign = useFavorites((s) => s.toggleDesign);
   const fav = useFavorites((s) => !!s.designs[design.key]);
