@@ -63,7 +63,102 @@ function detectChroma(cv: HTMLCanvasElement): { removeBg: boolean; chromaKey: st
   return { removeBg: true, chromaKey: `#${toHex(r)}${toHex(g)}${toHex(b)}`, chromaTolerance: 18 };
 }
 
-function analyze(src: string): Promise<{ w: number; h: number; chroma: ReturnType<typeof detectChroma> }> {
+function hexRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h || "ff00ff", 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/**
+ * Guess the frame grid of a sheet. Builds an "is this a background pixel" test
+ * from the detected key (or alpha for an already-transparent sheet), then reads
+ * the horizontal and vertical projection profiles: full-length empty runs are
+ * the gutters *between* frames, so the count of content bands is cols / rows.
+ * Cells are then probed to count the frames that actually carry art.
+ */
+function detectGrid(
+  cv: HTMLCanvasElement,
+  chroma: ReturnType<typeof detectChroma>,
+): { cols: number; rows: number; frameCount: number } {
+  const fail = { cols: 1, rows: 1, frameCount: 1 };
+  const ctx = cv.getContext("2d");
+  if (!ctx || cv.width < 4 || cv.height < 4) return fail;
+  const w = cv.width;
+  const h = cv.height;
+  const d = ctx.getImageData(0, 0, w, h).data;
+
+  const [kr, kg, kb] = hexRgb(chroma.chromaKey);
+  const keyThr = (chroma.chromaTolerance / 100) * 442;
+  const isBg = (i: number): boolean => {
+    if (d[i + 3] < 16) return true;
+    if (!chroma.removeBg) return false;
+    const dr = d[i] - kr;
+    const dg = d[i + 1] - kg;
+    const db = d[i + 2] - kb;
+    return Math.sqrt(dr * dr + dg * dg + db * db) < keyThr;
+  };
+
+  const colCount = new Int32Array(w);
+  const rowCount = new Int32Array(h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (!isBg((y * w + x) * 4)) {
+        colCount[x]++;
+        rowCount[y]++;
+      }
+    }
+  }
+
+  // Count content bands between empty gutters, trimming outer margins.
+  const bands = (counts: Int32Array, cross: number): number => {
+    const thr = Math.max(1, Math.floor(cross * 0.004));
+    let start = 0;
+    while (start < counts.length && counts[start] <= thr) start++;
+    let end = counts.length - 1;
+    while (end >= 0 && counts[end] <= thr) end--;
+    if (start > end) return 0;
+    let count = 0;
+    let inBand = false;
+    for (let i = start; i <= end; i++) {
+      const filled = counts[i] > thr;
+      if (filled && !inBand) count++;
+      inBand = filled;
+    }
+    return count;
+  };
+
+  const cols = Math.min(16, Math.max(1, bands(colCount, h)));
+  const rows = Math.min(16, Math.max(1, bands(rowCount, w)));
+  if (cols === 1 && rows === 1) return fail;
+
+  // Count cells that actually carry art (a trailing partial row may be empty).
+  const cw = w / cols;
+  const ch = h / rows;
+  let filled = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x0 = Math.floor(c * cw + cw * 0.25);
+      const x1 = Math.floor(c * cw + cw * 0.75);
+      const y0 = Math.floor(r * ch + ch * 0.15);
+      const y1 = Math.floor(r * ch + ch * 0.9);
+      let has = false;
+      for (let y = y0; y < y1 && !has; y += 3) {
+        for (let x = x0; x < x1; x += 3) {
+          if (!isBg((y * w + x) * 4)) {
+            has = true;
+            break;
+          }
+        }
+      }
+      if (has) filled++;
+    }
+  }
+  return { cols, rows, frameCount: Math.max(1, filled) };
+}
+
+function analyze(
+  src: string,
+): Promise<{ w: number; h: number; chroma: ReturnType<typeof detectChroma>; grid: ReturnType<typeof detectGrid> }> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -71,7 +166,8 @@ function analyze(src: string): Promise<{ w: number; h: number; chroma: ReturnTyp
       cv.width = img.naturalWidth;
       cv.height = img.naturalHeight;
       cv.getContext("2d")!.drawImage(img, 0, 0);
-      resolve({ w: img.naturalWidth, h: img.naturalHeight, chroma: detectChroma(cv) });
+      const chroma = detectChroma(cv);
+      resolve({ w: img.naturalWidth, h: img.naturalHeight, chroma, grid: detectGrid(cv, chroma) });
     };
     img.onerror = () => reject(new Error("image load failed"));
     img.src = src;
@@ -184,16 +280,17 @@ export async function importSprite(file: File): Promise<SpriteImport> {
     }
   }
 
-  // Static image: keep it as the sheet, single cell — the user sets the grid.
+  // Static image: keep it as the sheet. Auto-detect the frame grid from the
+  // gutters; the display box follows one frame's shape (not the whole sheet).
   const src = await readDataUrl(file);
-  const { w, h, chroma } = await analyze(src);
+  const { w, h, chroma, grid } = await analyze(src);
   return {
     src,
-    cols: 1,
-    rows: 1,
-    frameCount: 1,
+    cols: grid.cols,
+    rows: grid.rows,
+    frameCount: grid.frameCount,
     fps: 12,
-    ...displayBox(w, h),
+    ...displayBox(w / grid.cols, h / grid.rows),
     name: file.name.replace(/\.[^.]+$/, "") || "Sprite",
     ...chroma,
   };
