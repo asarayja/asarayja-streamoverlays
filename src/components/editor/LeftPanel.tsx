@@ -170,6 +170,7 @@ function ScreensTab() {
   const projects = useProjectsStore((s) => s.projects);
   const upsert = useProjectsStore((s) => s.upsert);
   const addScreenToPack = useProjectsStore((s) => s.addScreenToPack);
+  const duplicateScreen = useProjectsStore((s) => s.duplicateScreen);
   const removeScreenFromPack = useProjectsStore((s) => s.removeScreenFromPack);
   const profile = useRenderProfile();
   const router = useRouter();
@@ -191,6 +192,12 @@ function ScreensTab() {
     if (!packId) return;
     upsert(project);
     const created = addScreenToPack(packId, "blank");
+    if (created) router.replace(`/editor?id=${created.id}`);
+  };
+
+  const duplicate = (id: string) => {
+    upsert(project); // persist current edits so duplicating the active screen copies them
+    const created = duplicateScreen(id);
     if (created) router.replace(`/editor?id=${created.id}`);
   };
 
@@ -234,15 +241,24 @@ function ScreensTab() {
                   {s.name}
                   {active && <span className="ml-1.5 text-[10px] text-brand-400">• {t("editing")}</span>}
                 </span>
-                {siblings.length > 1 && (
+                <div className="flex shrink-0 items-center gap-2">
                   <button
-                    onClick={() => remove(s.id)}
-                    className="shrink-0 text-zinc-600 transition-colors hover:text-red-400"
-                    title={t("Remove screen")}
+                    onClick={() => duplicate(s.id)}
+                    className="text-zinc-600 transition-colors hover:text-brand-400"
+                    title={t("Duplicate screen")}
                   >
-                    <Trash2 className="size-3.5" />
+                    <Copy className="size-3.5" />
                   </button>
-                )}
+                  {siblings.length > 1 && (
+                    <button
+                      onClick={() => remove(s.id)}
+                      className="text-zinc-600 transition-colors hover:text-red-400"
+                      title={t("Remove screen")}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );

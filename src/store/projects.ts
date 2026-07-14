@@ -45,6 +45,8 @@ interface ProjectsState {
   /** Clone a whole pack into a fresh linked pack; returns the new cover to open. */
   duplicatePack: (packId: string) => Project | null;
   addScreenToPack: (packId: string, templateId: string) => Project | null;
+  /** Clone one screen in place, right after its source, keeping it in the pack. */
+  duplicateScreen: (id: string) => Project | null;
   removeScreenFromPack: (id: string) => void;
   reorderPackScreen: (packId: string, id: string, toIndex: number) => void;
   renamePack: (packId: string, name: string) => void;
@@ -250,6 +252,36 @@ export const useProjectsStore = create<ProjectsState>()(
         };
         set((s) => ({ projects: [project, ...s.projects] }));
         return project;
+      },
+
+      duplicateScreen: (id) => {
+        const source = get().projects.find((p) => p.id === id);
+        if (!source) return null;
+        const now = Date.now();
+        const copy: Project = {
+          ...structuredClone(source),
+          id: uid(),
+          name: `${source.name} copy`,
+          obsCode: obsCode(),
+          createdAt: now,
+          updatedAt: now,
+          favorite: false,
+          // Stay in the pack, slotted just after the source; integer orders are
+          // restored below.
+          packOrder: source.packOrder + 0.5,
+        };
+        set((s) => {
+          const projects = [copy, ...s.projects];
+          if (!source.packId) return { projects };
+          const order = projects
+            .filter((p) => p.packId === source.packId)
+            .sort((a, b) => a.packOrder - b.packOrder);
+          const rank = new Map(order.map((p, i) => [p.id, i]));
+          return {
+            projects: projects.map((p) => (rank.has(p.id) ? { ...p, packOrder: rank.get(p.id)! } : p)),
+          };
+        });
+        return copy;
       },
 
       removeScreenFromPack: (id) =>
