@@ -735,6 +735,8 @@ export interface FrameLayer extends LayerBase {
   runner?: boolean;
   /** Pride palettes colour the runner with the flag instead of a flat accent. */
   runnerColors?: string[];
+  /** Edge-light travel speed multiplier (~0.25..3). */
+  runnerSpeed?: number;
 }
 
 export interface ChatBoxLayer extends LayerBase {
@@ -752,6 +754,8 @@ export interface ChatBoxLayer extends LayerBase {
   runner?: boolean;
   /** Pride palettes colour that runner with the flag instead of a flat accent. */
   runnerColors?: string[];
+  /** Edge-light travel speed multiplier (~0.25..3). */
+  runnerSpeed?: number;
 }
 
 export interface AlertLayer extends LayerBase {
@@ -797,6 +801,8 @@ export interface GoalLayer extends LayerBase {
   runner?: boolean;
   /** Pride palettes colour the runner with the flag instead of a flat accent. */
   runnerColors?: string[];
+  /** Edge-light travel speed multiplier (~0.25..3). */
+  runnerSpeed?: number;
 }
 
 export interface SocialLayer extends LayerBase {

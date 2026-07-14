@@ -3397,8 +3397,9 @@ function runnerProps(opts: {
   w: number;
   h: number;
   colors?: string[];
+  speed?: number;
 }) {
-  const { perim, time, strokeWidth, accent, glow, w, h, colors } = opts;
+  const { perim, time, strokeWidth, accent, glow, w, h, colors, speed = 1 } = opts;
   const flag = colors && colors.length > 1;
   // A shorter lit band (was 0.44) leaves a clear dark gap, so the flag runner
   // reads as a light travelling AROUND the frame — not a static rainbow border.
@@ -3406,7 +3407,7 @@ function runnerProps(opts: {
   const base = {
     strokeWidth: Math.max(2, strokeWidth),
     dash: [seg, perim - seg],
-    dashOffset: -(((time / 1000) * perim * 0.3) % perim),
+    dashOffset: -(((time / 1000) * perim * 0.3 * speed) % perim),
     lineCap: "round" as const,
     shadowColor: glow,
     shadowBlur: 20,
@@ -3439,6 +3440,7 @@ function CameraRunner({ layer, ctx, accent }: { layer: FrameLayer; ctx: RenderCo
     w,
     h,
     colors: layer.runnerColors?.map((c) => resolveColor(c, ctx.theme)),
+          speed: layer.runnerSpeed ?? 1,
   });
   if (layer.frameShape === "ellipse") {
     return <Ellipse x={w / 2} y={h / 2} radiusX={w / 2} radiusY={h / 2} {...runner} />;
@@ -3581,6 +3583,7 @@ function ChatBoxContent({ layer, ctx, glowBoost }: { layer: ChatBoxLayer; ctx: R
           w,
           h,
           colors: layer.runnerColors?.map((c) => resolveColor(c, ctx.theme)),
+          speed: layer.runnerSpeed ?? 1,
         });
         return coffin ? (
           <KonvaShape {...run} sceneFunc={(c, s) => { coffinPath(c, w, h); c.strokeShape(s); }} />
@@ -3761,6 +3764,7 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
               w,
               h,
               colors: layer.runnerColors?.map((c) => resolveColor(c, ctx.theme)),
+              speed: layer.runnerSpeed ?? 1,
             })}
             sceneFunc={(c, s) => {
               c.beginPath();
@@ -3865,6 +3869,7 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
           w,
           h,
           colors: layer.runnerColors?.map((c) => resolveColor(c, ctx.theme)),
+          speed: layer.runnerSpeed ?? 1,
         });
         if (coffin) {
           return <KonvaShape {...run} sceneFunc={(c, s) => { coffinPathH(c, w, h); c.strokeShape(s); }} />;

@@ -526,11 +526,13 @@ function RunnerControl({
   theme,
   live,
   commit,
+  beginGesture,
 }: {
   layer: FrameLayer | ChatBoxLayer | GoalLayer;
   theme: Theme;
   live: (patch: LayerPatch) => void;
   commit: (patch: LayerPatch) => void;
+  beginGesture: () => void;
 }) {
   const t = useT();
   const isCamera = layer.type === "camera";
@@ -588,6 +590,16 @@ function RunnerControl({
           >
             {t("+ Add colour")}
           </button>
+          <Slider
+            label={t("Edge light speed")}
+            suffix="×"
+            min={25}
+            max={300}
+            step={5}
+            value={Math.round((layer.runnerSpeed ?? 1) * 100)}
+            onBegin={beginGesture}
+            onChange={(v) => live({ runnerSpeed: v / 100 } as LayerPatch)}
+          />
         </>
       )}
     </>
@@ -1317,7 +1329,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             checked={frame.corners}
             onChange={(corners) => commit({ corners })}
           />
-          <RunnerControl layer={frame} theme={theme} live={live} commit={commit} />
+          <RunnerControl layer={frame} theme={theme} live={live} commit={commit} beginGesture={beginGesture} />
           {layer.type === "camera" && (
             <p className="text-[11px] leading-relaxed text-zinc-600">
               {t("The fill is a studio placeholder only. In OBS the interior stays transparent so your webcam shows through.")}
@@ -1386,7 +1398,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onBegin={beginGesture}
             onChange={(cornerRadius) => live({ cornerRadius })}
           />
-          <RunnerControl layer={chat} theme={theme} live={live} commit={commit} />
+          <RunnerControl layer={chat} theme={theme} live={live} commit={commit} beginGesture={beginGesture} />
         </Section>
       );
     }
@@ -1504,7 +1516,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onChange={(labelColor) => live({ labelColor })}
             onCommit={(labelColor) => commit({ labelColor })}
           />
-          <RunnerControl layer={g} theme={theme} live={live} commit={commit} />
+          <RunnerControl layer={g} theme={theme} live={live} commit={commit} beginGesture={beginGesture} />
         </Section>
       );
     }
