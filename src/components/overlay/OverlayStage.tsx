@@ -37,7 +37,7 @@ export const OverlayStage = forwardRef<Konva.Stage, OverlayStageProps>(function 
   const scale = width / cw;
   const height = ch * scale;
   const fontsReady = useFontsReady();
-  const ctx = { theme, profile, time, mode };
+  const ctx = { theme, profile, time, mode, canvasWidth: cw, canvasHeight: ch };
 
   return (
     <Stage

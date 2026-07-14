@@ -26,7 +26,7 @@ import {
   cx,
 } from "@/components/ui";
 import { resolveColor } from "@/lib/theme";
-import { ANIMATION_PRESETS, EASINGS } from "@/lib/types";
+import { ANIMATION_PRESETS, EASINGS, SPRITE_MOTIONS } from "@/lib/types";
 import { ICON_GROUPS, ICONS } from "@/data/icons";
 import type { IconName } from "@/data/icons";
 import type {
@@ -50,10 +50,21 @@ import type {
   ShapeKind,
   ShapeLayer,
   SocialLayer,
+  SpriteLayer,
+  SpriteMotion,
   Text3D,
   TextLayer,
   Theme,
 } from "@/lib/types";
+
+const SPRITE_MOTION_LABELS: Record<SpriteMotion, string> = {
+  none: "None (stay put)",
+  "walk-lr": "Walk left / right",
+  cross: "March across & loop",
+  bob: "Bob in place",
+  float: "Float in place",
+  "drift-up": "Drift upward",
+};
 
 const SHAPE_KINDS: ShapeKind[] = ["rect", "ellipse", "triangle", "hexagon", "diamond", "star", "gem", "cross", "gear", "heart", "check", "ring", "arrow", "banner", "bubble", "line", "moon", "crescent", "coffin", "plaque", "scanlines", "web", "drip", "graveyard", "chain", "shard", "hexmesh", "wave", "chamfer", "carbon", "flagarc", "flagwave", "flaground", "flagrays", "flagzig"];
 const PARTICLE_KINDS: ParticleKind[] = ["dots", "stars", "embers", "snow", "bubbles", "bats", "moths", "petals", "fog", "confetti", "hearts", "rays", "clouds", "shootingStars", "blobs", "ghosts", "bokeh"];
@@ -1158,6 +1169,81 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
             onBegin={beginGesture}
             onChange={(cornerRadius) => live({ cornerRadius })}
           />
+        </Section>
+      );
+    }
+
+    case "sprite": {
+      const sprite = layer as SpriteLayer;
+      const grid = Math.max(1, Math.floor(sprite.cols) * Math.floor(sprite.rows));
+      const travels = sprite.motion === "walk-lr" || sprite.motion === "cross";
+      return (
+        <Section title={t("Sprite")}>
+          {!sprite.src && (
+            <p className="text-[11px] leading-relaxed text-zinc-500">
+              {t("Use “Import sprite / GIF” in the Add panel to load a sheet.")}
+            </p>
+          )}
+          <div className="grid grid-cols-3 gap-2">
+            <NumberField
+              label={t("Cols")}
+              value={sprite.cols}
+              min={1}
+              onChange={(cols) => commit({ cols: Math.max(1, Math.round(cols)) })}
+            />
+            <NumberField
+              label={t("Rows")}
+              value={sprite.rows}
+              min={1}
+              onChange={(rows) => commit({ rows: Math.max(1, Math.round(rows)) })}
+            />
+            <NumberField
+              label={t("Frames")}
+              value={sprite.frameCount}
+              min={1}
+              onChange={(frameCount) => commit({ frameCount: Math.max(1, Math.min(Math.round(frameCount), grid)) })}
+            />
+          </div>
+          <Toggle label={t("Play animation")} checked={sprite.playing} onChange={(playing) => commit({ playing })} />
+          <Slider
+            label={t("Speed")}
+            suffix=" fps"
+            min={1}
+            max={30}
+            value={Math.round(sprite.fps)}
+            onBegin={beginGesture}
+            onChange={(fps) => live({ fps })}
+          />
+          <Field label={t("Movement")}>
+            <Select value={sprite.motion} onChange={(e) => commit({ motion: e.target.value as SpriteMotion })}>
+              {SPRITE_MOTIONS.map((m) => (
+                <option key={m} value={m}>
+                  {t(SPRITE_MOTION_LABELS[m])}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {sprite.motion !== "none" && (
+            <>
+              <Slider
+                label={t("Movement speed")}
+                suffix="×"
+                min={25}
+                max={300}
+                step={5}
+                value={Math.round(sprite.motionSpeed * 100)}
+                onBegin={beginGesture}
+                onChange={(v) => live({ motionSpeed: v / 100 })}
+              />
+              {travels && (
+                <Toggle
+                  label={t("Face direction")}
+                  checked={sprite.faceDirection}
+                  onChange={(faceDirection) => commit({ faceDirection })}
+                />
+              )}
+            </>
+          )}
         </Section>
       );
     }

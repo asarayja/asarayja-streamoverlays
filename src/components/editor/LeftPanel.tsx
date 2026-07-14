@@ -36,6 +36,7 @@ import {
   Wind,
 } from "lucide-react";
 import { FONTS } from "@/data/fonts";
+import { importSprite } from "@/lib/sprite";
 import { STARTERS, TEMPLATES } from "@/data/templates";
 import { ICONS, ICON_GROUPS } from "@/data/icons";
 import type { IconName } from "@/data/icons";
@@ -88,6 +89,7 @@ const LAYER_ICONS: Record<LayerType, typeof Square> = {
   goal: Target,
   particle: Sparkles,
   video: Video,
+  sprite: Film,
 };
 
 const ADDABLE: LayerType[] = [
@@ -845,6 +847,27 @@ function AddTab() {
   const [showIconLib, setShowIconLib] = useState(false);
   const t = useT();
   const imgInput = useRef<HTMLInputElement>(null);
+  const spriteInput = useRef<HTMLInputElement>(null);
+
+  const uploadSprite = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    try {
+      const s = await importSprite(file);
+      addLayer("sprite", {
+        name: s.name,
+        src: s.src,
+        cols: s.cols,
+        rows: s.rows,
+        frameCount: s.frameCount,
+        fps: s.fps,
+        width: s.width,
+        height: s.height,
+      });
+    } catch {
+      /* undecodable file — skip */
+    }
+  };
 
   const uploadImages = async (files: FileList | null) => {
     if (!files) return;
@@ -928,6 +951,21 @@ function AddTab() {
         </Button>
         <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-600">
           {t("Your own images stay in your browser — nothing is uploaded to a server.")}
+        </p>
+
+        <input
+          ref={spriteInput}
+          type="file"
+          accept="image/gif,image/apng,image/webp,image/png,image/*"
+          className="hidden"
+          onChange={(e) => void uploadSprite(e.target.files)}
+        />
+        <Button className="mt-2 w-full" onClick={() => spriteInput.current?.click()}>
+          <Sparkles className="size-4" />
+          {t("Import sprite / GIF")}
+        </Button>
+        <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-600">
+          {t("Drop an animated GIF (auto-split into frames) or a sprite sheet. Set the grid, speed and movement on the right.")}
         </p>
       </div>
 

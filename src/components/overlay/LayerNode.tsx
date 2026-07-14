@@ -33,6 +33,7 @@ import type {
   WindowLayer,
   Gradient,
   ImageLayer,
+  SpriteLayer,
   Layer,
   ParticleLayer,
   ShapeLayer,
@@ -53,6 +54,9 @@ export interface RenderContext {
   /** Milliseconds since the overlay started playing. */
   time: number;
   mode: RenderMode;
+  /** Logical canvas size, so roaming sprites can travel across the page. */
+  canvasWidth: number;
+  canvasHeight: number;
 }
 
 /** A blank profile field must never reach a live stream as its own label. */
@@ -3134,6 +3138,112 @@ function ImageContent({ layer, ctx, glowBoost }: { layer: ImageLayer; ctx: Rende
   );
 }
 
+/** Roaming offset for a sprite, on top of its home position. Traveling motions
+    (walk/cross) move in absolute canvas space; the rest wobble in place. */
+function spriteMotionOffset(
+  layer: SpriteLayer,
+  time: number,
+  canvasW: number,
+  canvasH: number,
+): { dx: number; dy: number; flip: boolean } {
+  const s = Math.max(0.05, layer.motionSpeed);
+  const w = layer.width;
+  const pxPerSec = 160 * s;
+  switch (layer.motion) {
+    case "walk-lr": {
+      const travel = Math.max(1, canvasW - w);
+      const legMs = (travel / pxPerSec) * 1000;
+      const phase = (time % (legMs * 2)) / legMs; // 0..2
+      const p = phase <= 1 ? phase : 2 - phase; // triangle 0..1..0
+      const targetX = p * travel;
+      return { dx: targetX - layer.x, dy: 0, flip: phase > 1 };
+    }
+    case "cross": {
+      const dist = canvasW + w;
+      const period = (dist / pxPerSec) * 1000;
+      const targetX = -w + ((time % period) / period) * dist;
+      return { dx: targetX - layer.x, dy: 0, flip: false };
+    }
+    case "bob": {
+      const amp = Math.min(24, layer.height * 0.12);
+      return { dx: 0, dy: Math.sin((time / 1000) * 2.2 * s) * amp, flip: false };
+    }
+    case "float": {
+      const t = (time / 1000) * s;
+      return { dx: Math.sin(t * 1.3) * 22, dy: Math.sin(t * 2.1) * 14, flip: false };
+    }
+    case "drift-up": {
+      const span = canvasH + layer.height;
+      const dy = -((time * 0.05 * s) % span);
+      return { dx: Math.sin((time / 1000) * s) * 10, dy, flip: false };
+    }
+    default:
+      return { dx: 0, dy: 0, flip: false };
+  }
+}
+
+function SpriteContent({ layer, ctx, glowBoost }: { layer: SpriteLayer; ctx: RenderContext; glowBoost: number }) {
+  const [image, status] = useKonvaImage(layer.src);
+  const { width: w, height: h } = layer;
+
+  if (status !== "loaded" || !image || !layer.src) {
+    if (ctx.mode !== "edit") return null;
+    return (
+      <Group listening={false}>
+        <Rect
+          width={w}
+          height={h}
+          cornerRadius={8}
+          fill={resolveColor("@background/50", ctx.theme)}
+          stroke={resolveColor("@border", ctx.theme)}
+          strokeWidth={2}
+          dash={[8, 6]}
+        />
+        <Text
+          text={status === "failed" ? "Sprite failed" : "Sprite"}
+          width={w}
+          height={h}
+          align="center"
+          verticalAlign="middle"
+          fontFamily="Inter"
+          fontSize={Math.max(11, Math.min(20, w * 0.12))}
+          fill={resolveColor("@border", ctx.theme)}
+        />
+      </Group>
+    );
+  }
+
+  const cols = Math.max(1, Math.floor(layer.cols));
+  const rows = Math.max(1, Math.floor(layer.rows));
+  const total = Math.max(1, Math.min(Math.floor(layer.frameCount), cols * rows));
+  const fw = image.width / cols;
+  const fh = image.height / rows;
+
+  const frame =
+    layer.playing && total > 1
+      ? Math.floor(ctx.time / (1000 / Math.max(1, layer.fps))) % total
+      : 0;
+  const cropX = (frame % cols) * fw;
+  const cropY = Math.floor(frame / cols) * fh;
+
+  const { dx, dy, flip } = spriteMotionOffset(layer, ctx.time, ctx.canvasWidth, ctx.canvasHeight);
+  const mirror = flip && layer.faceDirection;
+
+  return (
+    <Group x={dx + (mirror ? w : 0)} y={dy} scaleX={mirror ? -1 : 1}>
+      <KonvaImage
+        image={image}
+        x={0}
+        y={0}
+        width={w}
+        height={h}
+        crop={{ x: cropX, y: cropY, width: fw, height: fh }}
+        {...shadowProps(layer.effects, ctx.theme, glowBoost)}
+      />
+    </Group>
+  );
+}
+
 /** The frame's interior, as a path. Used both to fill it and to punch it out. */
 function framePath(c: Konva.Context, layer: FrameLayer, w: number, h: number) {
   c.beginPath();
@@ -4600,6 +4710,8 @@ function Content({ layer, ctx, reveal, glowBoost }: { layer: Layer; ctx: RenderC
     case "logo":
     case "video":
       return <ImageContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
+    case "sprite":
+      return <SpriteContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;
     case "frame":
     case "camera":
       return <FrameContent layer={layer} ctx={ctx} glowBoost={glowBoost} />;

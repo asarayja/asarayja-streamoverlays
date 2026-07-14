@@ -532,7 +532,7 @@ export function EditorCanvas({
 
   if (!project) return null;
 
-  const ctx = { theme: project.theme, profile, time, mode: "edit" as const };
+  const ctx = { theme: project.theme, profile, time, mode: "edit" as const, canvasWidth: cw, canvasHeight: ch };
   const backgroundHint = resolveColor("@background", project.theme);
 
   return (

@@ -328,6 +328,22 @@ function makeLayer(type: LayerType, index: number): Layer {
     case "logo":
     case "video":
       return { ...base, type, src: type === "logo" ? "{{LOGO}}" : "", fit: "contain", cornerRadius: 0 };
+    case "sprite":
+      return {
+        ...base,
+        type: "sprite",
+        width: 200,
+        height: 200,
+        src: "",
+        cols: 1,
+        rows: 1,
+        frameCount: 1,
+        fps: 12,
+        playing: true,
+        motion: "none",
+        motionSpeed: 1,
+        faceDirection: true,
+      };
     case "frame":
     case "camera":
       return {

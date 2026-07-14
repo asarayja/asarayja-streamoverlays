@@ -337,6 +337,7 @@ export const LAYER_TYPES = [
   "goal",
   "particle",
   "video",
+  "sprite",
 ] as const;
 
 export type LayerType = (typeof LAYER_TYPES)[number];
@@ -671,6 +672,42 @@ export interface ImageLayer extends LayerBase {
   cornerRadius: number;
 }
 
+/** Directional movement a sprite can carry, on top of its frame animation. */
+export const SPRITE_MOTIONS = [
+  "none",
+  "walk-lr", // paces left/right across the page, facing its direction
+  "cross", // marches all the way across and loops back to the start
+  "bob", // stays put, bobbing up and down
+  "float", // gentle drifting figure-eight in place
+  "drift-up", // rises and wraps (bubbles, embers, ghosts)
+] as const;
+export type SpriteMotion = (typeof SPRITE_MOTIONS)[number];
+
+/**
+ * A sprite sheet played frame-by-frame like a game character, optionally
+ * roaming the overlay. The sheet is one image laid out in a `cols`×`rows`
+ * grid; the frame index is derived from the render clock so playback is
+ * deterministic and captured by both video and PNG-sequence export.
+ */
+export interface SpriteLayer extends LayerBase {
+  type: "sprite";
+  /** The packed sprite sheet as a data URL. */
+  src: string;
+  cols: number;
+  rows: number;
+  /** Frames actually used (the last grid cells may be blank). */
+  frameCount: number;
+  /** Playback speed in frames per second. */
+  fps: number;
+  /** Freeze on the first frame (preview/pose) instead of animating. */
+  playing: boolean;
+  motion: SpriteMotion;
+  /** Movement speed multiplier, ~0.25..3. */
+  motionSpeed: number;
+  /** Mirror the sprite to face its travel direction (walk/cross). */
+  faceDirection: boolean;
+}
+
 /** A decorative frame, or a transparent hole for the webcam feed. */
 export type FrameShape = "rect" | "ellipse" | "hexagon";
 
@@ -817,6 +854,7 @@ export type Layer =
   | ChipLayer
   | TextLayer
   | ImageLayer
+  | SpriteLayer
   | FrameLayer
   | ChatBoxLayer
   | AlertLayer
@@ -846,6 +884,7 @@ export type LayerPatch = Partial<
     Fields<ChipLayer> &
     Fields<TextLayer> &
     Fields<ImageLayer> &
+    Fields<SpriteLayer> &
     Fields<FrameLayer> &
     Fields<ChatBoxLayer> &
     Fields<AlertLayer> &
