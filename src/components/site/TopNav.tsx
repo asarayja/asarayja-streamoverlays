@@ -26,14 +26,7 @@ export function TopNav() {
     <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-950/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-3 sm:gap-6 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <Image
-            src="/icon.png"
-            alt="Asarayja"
-            width={32}
-            height={32}
-            priority
-            className="size-8 rounded-lg shadow-[0_4px_16px_-4px_rgba(139,92,246,0.8)]"
-          />
+          <Image src="/icon.png" alt="Asarayja" width={36} height={36} priority className="size-9" />
           <span className="text-[15px] font-semibold tracking-tight text-white">
             Asarayja <span className="hidden text-zinc-500 sm:inline">Stream Overlays</span>
           </span>
