@@ -207,19 +207,26 @@ export default function EditorShell({ projectId }: { projectId: string }) {
       } else if (e.key === " ") {
         e.preventDefault();
         setPanTool(true);
-      } else if (key === "v") {
+      } else if (e.altKey && e.code === "KeyV") {
+        // Tools live on Alt+… (Ctrl+V and Ctrl+G are already paste and group, so
+        // Alt keeps all four tool keys consistent and collision-free). e.code is
+        // layout-independent, so Alt's special characters don't matter.
+        e.preventDefault();
         setPanTool(false);
         setDrawTool(false);
         setBucketTool(false);
-      } else if (key === "h") {
+      } else if (e.altKey && e.code === "KeyH") {
+        e.preventDefault();
         setPanTool(true);
         setDrawTool(false);
         setBucketTool(false);
-      } else if (key === "b") {
+      } else if (e.altKey && e.code === "KeyB") {
+        e.preventDefault();
         setDrawTool(true);
         setPanTool(false);
         setBucketTool(false);
-      } else if (key === "g") {
+      } else if (e.altKey && e.code === "KeyG") {
+        e.preventDefault();
         setBucketTool(true);
         setDrawTool(false);
         setPanTool(false);
@@ -331,7 +338,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setBucketTool(false);
           }}
           active={!panTool && !drawTool && !bucketTool}
-          title={t("Select") + " (V)"}
+          title={t("Select") + " (Alt+V)"}
         >
           <MousePointer2 className="size-4" />
         </ToolButton>
@@ -342,7 +349,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setBucketTool(false);
           }}
           active={panTool}
-          title={t("Pan") + " (H " + t("or hold Space") + ")"}
+          title={t("Pan") + " (Alt+H " + t("or hold Space") + ")"}
         >
           <Hand className="size-4" />
         </ToolButton>
@@ -353,7 +360,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setBucketTool(false);
           }}
           active={drawTool}
-          title={t("Draw") + " (B) — " + t("freehand pencil")}
+          title={t("Draw") + " (Alt+B) — " + t("freehand pencil")}
         >
           <Pencil className="size-4" />
         </ToolButton>
@@ -364,7 +371,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setPanTool(false);
           }}
           active={bucketTool}
-          title={t("Fill") + " (G) — " + t("click a region you drew to fill it with the chosen colour")}
+          title={t("Fill") + " (Alt+G) — " + t("click a region you drew to fill it with the chosen colour")}
         >
           <PaintBucket className="size-4" />
         </ToolButton>
@@ -643,8 +650,9 @@ function DrawSettings() {
 /** A quick reference of the editor's keyboard shortcuts. */
 function ShortcutsDialog({ onClose }: { onClose: () => void }) {
   const t = useT();
-  const mod =
-    typeof navigator !== "undefined" && navigator.platform.toLowerCase().includes("mac") ? "⌘" : "Ctrl";
+  const mac = typeof navigator !== "undefined" && navigator.platform.toLowerCase().includes("mac");
+  const mod = mac ? "⌘" : "Ctrl";
+  const alt = mac ? "⌥" : "Alt";
   const groups: Array<{ title: string; items: Array<[string, string]> }> = [
     {
       title: t("Edit"),
@@ -656,16 +664,19 @@ function ShortcutsDialog({ onClose }: { onClose: () => void }) {
         [`${mod} V`, t("Paste")],
         [`${mod} D`, t("Duplicate")],
         [`${mod} A`, t("Select all")],
+        [`${mod} G`, t("Group")],
+        [`⇧ ${mod} G`, t("Ungroup")],
+        [`${mod} N`, t("New drawing layer")],
         [t("Delete / Backspace"), t("Delete selection")],
       ],
     },
     {
       title: t("Tools"),
       items: [
-        ["V", t("Select")],
-        [`H / ${t("Space")}`, t("Pan")],
-        ["B", t("Draw (pencil)")],
-        ["G", t("Fill bucket")],
+        [`${alt} V`, t("Select")],
+        [`${alt} H / ${t("Space")}`, t("Pan")],
+        [`${alt} B`, t("Draw (pencil)")],
+        [`${alt} G`, t("Fill bucket")],
       ],
     },
     {
