@@ -427,6 +427,11 @@ export function RightPanel() {
           </Select>
         </Field>
 
+        {layer.type === "particle" && (
+          <p className="text-[11px] leading-relaxed text-zinc-500">
+            {t("This decor already moves on its own — set its pace and amount under Particles above. A preset here adds an extra entrance/loop on top.")}
+          </p>
+        )}
         {GLOW_ANIM_PRESETS.has(layer.animation.preset) && !layer.effects.glow.enabled && (
           <p className="text-[11px] leading-relaxed text-amber-400/80">
             {t("This preset pulses the glow effect, which is currently off. Enable Glow under Effects to see it.")}
