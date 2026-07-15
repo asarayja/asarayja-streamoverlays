@@ -375,6 +375,137 @@ function applyTransform(text: string, transform: TextLayer["textTransform"]): st
 /*                              Layer contents                                */
 /* -------------------------------------------------------------------------- */
 
+/** Render one stroke of a multi-stroke drawing layer, in its own style. Points
+    are already in the layer's local space. */
+function renderStroke(
+  pts: number[],
+  s: {
+    color: string;
+    width: number;
+    drawStyle: "line" | "fill" | "spray" | "sketch";
+    dash?: number[];
+    rainbow?: boolean;
+    glow?: number;
+    opacity?: number;
+    clip?: { x: number; y: number; width: number; height: number };
+  },
+  key: string,
+): ReactNode {
+  const col = s.color;
+  const sw = s.width || 8;
+  const op = s.opacity ?? 1;
+  const shadow = s.glow ? { shadowColor: col, shadowBlur: s.glow, shadowOpacity: 1 } : {};
+  let el: ReactNode;
+
+  if (s.drawStyle === "fill") {
+    el = <Line points={pts} closed fill={col} opacity={op} {...shadow} listening={false} />;
+  } else if (s.drawStyle === "spray") {
+    el = (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) => {
+          const TAU = Math.PI * 2;
+          c.setAttr("fillStyle", col);
+          let k = 0;
+          for (let i = 0; i + 3 < pts.length; i += 2) {
+            const x0 = pts[i], y0 = pts[i + 1], x1 = pts[i + 2], y1 = pts[i + 3];
+            const segLen = Math.hypot(x1 - x0, y1 - y0);
+            const dots = Math.min(50, Math.max(2, Math.floor(segLen / 3.5)));
+            for (let d = 0; d < dots; d++) {
+              const t = d / dots;
+              const bx = x0 + (x1 - x0) * t, by = y0 + (y1 - y0) * t;
+              const ang = noise(k * 1.7) * TAU;
+              const rad = Math.sqrt(noise(k * 3.1 + 1)) * sw;
+              const dr = 0.6 + noise(k * 5.3 + 2) * 1.8;
+              c.setAttr("globalAlpha", (0.35 + noise(k * 7.9 + 3) * 0.4) * op);
+              c.beginPath();
+              c.arc(bx + Math.cos(ang) * rad, by + Math.sin(ang) * rad, dr, 0, TAU);
+              c.fill();
+              k++;
+            }
+          }
+          c.setAttr("globalAlpha", 1);
+        }}
+      />
+    );
+  } else if (s.drawStyle === "sketch") {
+    el = (
+      <KonvaShape
+        listening={false}
+        sceneFunc={(c) => {
+          c.setAttr("strokeStyle", col);
+          c.setAttr("lineCap", "round");
+          c.setAttr("lineJoin", "round");
+          c.setAttr("lineWidth", sw);
+          for (let pass = 0; pass < 3; pass++) {
+            const jx = (noise(pass * 3.1) - 0.5) * sw * 1.5;
+            const jy = (noise(pass * 5.7 + 1) - 0.5) * sw * 1.5;
+            c.setAttr("globalAlpha", 0.5 * op);
+            c.beginPath();
+            for (let i = 0; i + 1 < pts.length; i += 2) {
+              const x = pts[i] + jx + (noise(i * 0.7 + pass) - 0.5) * sw * 0.6;
+              const y = pts[i + 1] + jy + (noise(i * 0.9 + pass + 2) - 0.5) * sw * 0.6;
+              if (i === 0) c.moveTo(x, y);
+              else c.lineTo(x, y);
+            }
+            c.stroke();
+          }
+          c.setAttr("globalAlpha", 1);
+        }}
+      />
+    );
+  } else if (s.rainbow) {
+    let minX = Infinity, maxX = -Infinity;
+    for (let i = 0; i < pts.length; i += 2) {
+      minX = Math.min(minX, pts[i]);
+      maxX = Math.max(maxX, pts[i]);
+    }
+    el = (
+      <Line
+        points={pts}
+        strokeLinearGradientStartPoint={{ x: minX, y: 0 }}
+        strokeLinearGradientEndPoint={{ x: maxX, y: 0 }}
+        strokeLinearGradientColorStops={[
+          0, "#ff2d55", 0.17, "#ff8c00", 0.34, "#ffe000", 0.5, "#00c853",
+          0.67, "#00b0ff", 0.84, "#7c4dff", 1, "#ff2d55",
+        ]}
+        strokeWidth={sw}
+        lineCap="round"
+        lineJoin="round"
+        tension={0.4}
+        dash={s.dash}
+        opacity={op}
+        listening={false}
+      />
+    );
+  } else {
+    el = (
+      <Line
+        points={pts}
+        stroke={col}
+        strokeWidth={sw}
+        lineCap="round"
+        lineJoin="round"
+        tension={0.4}
+        dash={s.dash}
+        opacity={op}
+        {...shadow}
+        listening={false}
+      />
+    );
+  }
+
+  return s.clip ? (
+    <Group key={key} listening={false} clipX={s.clip.x} clipY={s.clip.y} clipWidth={s.clip.width} clipHeight={s.clip.height}>
+      {el}
+    </Group>
+  ) : (
+    <Group key={key} listening={false}>
+      {el}
+    </Group>
+  );
+}
+
 function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: RenderContext; glowBoost: number }) {
   const { width: w, height: h } = layer;
   const fill = layer.effects.gradient.enabled
@@ -757,6 +888,31 @@ function ShapeContent({ layer, ctx, glowBoost }: { layer: ShapeLayer; ctx: Rende
   }
 
   if (layer.shape === "freehand") {
+    // A multi-stroke drawing layer: render every stroke in its own style. Points
+    // and clips are layer-local, so they move with the layer when it's dragged.
+    if (layer.strokes && layer.strokes.length) {
+      return (
+        <>
+          {layer.strokes.map((st, i) =>
+            renderStroke(
+              st.points,
+              {
+                color: resolveColor(st.color, ctx.theme),
+                width: st.width,
+                drawStyle: st.drawStyle,
+                dash: st.dash,
+                rainbow: st.rainbow,
+                glow: st.glow,
+                opacity: st.opacity,
+                clip: st.clip,
+              },
+              `st${i}`,
+            ),
+          )}
+        </>
+      );
+    }
+
     const pts = layer.points ?? [];
     const col = resolveColor(layer.fill, ctx.theme);
     // A stroke can be masked to a rect (the webcam-frame band): only the part

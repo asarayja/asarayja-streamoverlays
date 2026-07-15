@@ -177,7 +177,7 @@ export function EditorCanvas({
   const toggleSelect = useEditorStore((s) => s.toggleSelect);
   const updateLayer = useEditorStore((s) => s.updateLayer);
   const moveSelected = useEditorStore((s) => s.moveSelected);
-  const insertDrawing = useEditorStore((s) => s.insertDrawing);
+  const addStroke = useEditorStore((s) => s.addStroke);
   const insertFillLayer = useEditorStore((s) => s.insertFillLayer);
   const eraseStrokes = useEditorStore((s) => s.eraseStrokes);
   const beginGesture = useEditorStore((s) => s.beginGesture);
@@ -233,8 +233,7 @@ export function EditorCanvas({
     let opacity = 1;
     let dash: number[] | undefined;
     let rainbow = false;
-    const effects = structuredClone(DEFAULT_EFFECTS);
-    let pad = drawWidth;
+    let glow: number | undefined;
 
     if (drawBrush === "fill") {
       // Close the hand-drawn boundary down to the canvas floor → a filled region
@@ -243,7 +242,6 @@ export function EditorCanvas({
       const firstX = pts[0];
       renderPts = [...pts, lastX, ch, firstX, ch];
       drawStyle = "fill";
-      pad = 2;
     } else if (drawBrush === "ink" || drawBrush === "calligraphy" || drawBrush === "ribbon") {
       // Variable-width filled strokes via perfect-freehand.
       const opts =
@@ -256,91 +254,57 @@ export function EditorCanvas({
       for (let i = 0; i < pts.length; i += 2) input.push([pts[i], pts[i + 1]]);
       renderPts = getStroke(input, opts).flat();
       drawStyle = "fill";
-      pad = 2;
     } else if (drawBrush === "spray" || drawBrush === "crayon") {
       drawStyle = "spray";
       opacity = 0.9;
       strokeWidth = drawBrush === "crayon" ? Math.max(3, drawWidth * 0.6) : drawWidth;
-      pad = strokeWidth * 3;
     } else if (drawBrush === "sketch") {
       drawStyle = "sketch";
       strokeWidth = Math.max(2, drawWidth * 0.7);
-      pad = strokeWidth * 2;
     } else if (drawBrush === "rainbow") {
       rainbow = true;
       strokeWidth = drawWidth;
-      pad = drawWidth + 2;
     } else {
       const bs = brushStyle(drawBrush, drawWidth);
       strokeWidth = bs.strokeWidth;
       opacity = bs.opacity;
       dash = bs.dash;
-      pad = bs.strokeWidth + (bs.glow ?? 0);
-      if (bs.glow) effects.glow = { ...effects.glow, enabled: true, color: drawColor, strength: bs.glow };
+      if (bs.glow) glow = bs.glow;
     }
     if (renderPts.length < 4) return;
 
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (let i = 0; i < renderPts.length; i += 2) {
-      minX = Math.min(minX, renderPts[i]);
-      maxX = Math.max(maxX, renderPts[i]);
-      minY = Math.min(minY, renderPts[i + 1]);
-      maxY = Math.max(maxY, renderPts[i + 1]);
-    }
-    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
-    const local = renderPts.map((v, i) => (i % 2 === 0 ? v - minX : v - minY));
-
     // With a webcam frame present, mask the stroke to a band around it — like
     // drawing inside a Photoshop marquee — so paint never spills far outside the
-    // frame (and the camera hole below cuts the inside).
+    // frame (and the camera hole below cuts the inside). Absolute coords.
     const MARGIN = 90;
     let clip: ShapeLayer["clip"];
     const cams = (useEditorStore.getState().project?.layers ?? []).filter(isCameraLayer);
     if (cams.length) {
       // Only mask a stroke to the webcam when it actually STARTS on the camera —
-      // then paint hugs the frame, the intended look. A stroke that begins
-      // anywhere else draws freely across the whole canvas (no cams[0] fallback,
-      // which used to clip every drawing to the first camera).
+      // then paint hugs the frame, the intended look.
       const sx = pts[0], sy = pts[1];
       const cam = cams.find(
         (l) => sx >= l.x - MARGIN && sx <= l.x + l.width + MARGIN && sy >= l.y - MARGIN && sy <= l.y + l.height + MARGIN,
       );
       if (cam) {
-        clip = {
-          x: cam.x - MARGIN - minX,
-          y: cam.y - MARGIN - minY,
-          width: cam.width + 2 * MARGIN,
-          height: cam.height + 2 * MARGIN,
-        };
+        clip = { x: cam.x - MARGIN, y: cam.y - MARGIN, width: cam.width + 2 * MARGIN, height: cam.height + 2 * MARGIN };
       }
     }
 
-    const layer: ShapeLayer = {
-      id: uid(),
-      name: "Drawing",
-      type: "shape",
-      shape: "freehand",
-      x: minX,
-      y: minY,
-      width: maxX - minX,
-      height: maxY - minY,
-      rotation: 0,
-      opacity,
-      visible: true,
-      locked: false,
-      fill: drawColor,
-      cornerRadius: 0,
-      points: local,
-      strokeWidth,
+    // One stroke, absolute coords, its own style — the store appends it to the
+    // active drawing layer (or starts a new one), so many strokes share a layer.
+    addStroke({
+      points: renderPts,
+      color: drawColor,
+      width: strokeWidth,
+      drawStyle: drawStyle ?? "line",
       dash,
-      drawStyle,
       rainbow,
+      glow,
+      opacity,
       clip,
-      effects,
-      animation: { ...DEFAULT_ANIMATION },
-    };
-    insertDrawing(layer);
-  }, [stroke, drawWidth, drawBrush, drawColor, ch, insertDrawing, eraseStrokes]);
+    });
+  }, [stroke, drawWidth, drawBrush, drawColor, ch, addStroke, eraseStrokes]);
 
   // Bucket fill: flood the clicked region, bounded by the freehand strokes, and
   // drop it in as an image layer below the lines — fill in the sides you drew.

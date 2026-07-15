@@ -100,6 +100,11 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const [drawTool, setDrawTool] = useState(false);
   const [bucketTool, setBucketTool] = useState(false);
   const [showKeys, setShowKeys] = useState(false);
+  // Leaving the pencil ends the current drawing layer, so picking the brush
+  // again starts a fresh one (Ctrl+N also breaks to a new layer mid-drawing).
+  useEffect(() => {
+    if (!drawTool) useEditorStore.getState().newDrawLayer();
+  }, [drawTool]);
   // The editor needs a real workspace — gate it to bigger screens so phones
   // don't mount the (unusable) canvas. "unknown" until the client measures.
   const [device, setDevice] = useState<"unknown" | "small" | "ok">("unknown");
@@ -187,6 +192,11 @@ export default function EditorShell({ projectId }: { projectId: string }) {
         e.preventDefault();
         if (e.shiftKey) useEditorStore.getState().ungroupSelected();
         else useEditorStore.getState().groupSelected();
+      } else if (mod && key === "n") {
+        // Start a fresh drawing layer — the next pen stroke won't join the
+        // current one. (preventDefault so the browser doesn't open a new window.)
+        e.preventDefault();
+        useEditorStore.getState().newDrawLayer();
       } else if (mod) {
         // Any other modifier combo (copy shortcuts on other layouts, browser
         // chrome) — leave it to the browser rather than swallowing a tool key.

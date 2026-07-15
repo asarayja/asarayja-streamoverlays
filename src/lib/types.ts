@@ -557,6 +557,28 @@ export interface ShapeLayer extends LayerBase {
   /** For `shape: "freehand"`. Clip the stroke to this rect (layer-local coords)
       — used to keep webcam-frame drawings in a band around the frame. */
   clip?: { x: number; y: number; width: number; height: number };
+  /** For `shape: "freehand"`. A drawing layer that holds many pen strokes, each
+      with its own style (so different brushes/colours mix in one layer). When
+      present, this is rendered instead of the single-stroke `points`. Stroke
+      points are in absolute canvas coordinates. */
+  strokes?: Stroke[];
+}
+
+/** One pen stroke inside a multi-stroke drawing layer. Carries its own look so
+    a single layer can mix brushes and colours. Points are absolute canvas
+    coordinates. */
+export interface Stroke {
+  points: number[];
+  color: ColorValue;
+  width: number;
+  drawStyle: "line" | "fill" | "spray" | "sketch";
+  dash?: number[];
+  rainbow?: boolean;
+  /** Glow blur in px; the glow colour is the stroke colour. */
+  glow?: number;
+  opacity?: number;
+  /** Mask rect in absolute canvas coordinates (webcam-band drawings). */
+  clip?: { x: number; y: number; width: number; height: number };
 }
 
 /**

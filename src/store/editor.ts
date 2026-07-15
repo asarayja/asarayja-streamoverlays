@@ -5,7 +5,7 @@ import { getPalette } from "@/data/palettes";
 import { cloneLayers, getTemplate } from "@/data/templates";
 import { uid } from "@/lib/id";
 import { DEFAULT_ANIMATION, DEFAULT_EFFECTS } from "@/lib/types";
-import type { Layer, LayerPatch, LayerType, Project, Theme, ThemeToken } from "@/lib/types";
+import type { Layer, LayerPatch, LayerType, Project, ShapeLayer, Stroke, Theme, ThemeToken } from "@/lib/types";
 
 interface Snapshot {
   layers: Layer[];
@@ -86,6 +86,33 @@ export function brushStyle(
   }
 }
 
+/** Bounding box (with a little padding for stroke width/glow) around every
+    stroke of a drawing layer — the layer's hit/transform box. */
+function strokesBBox(strokes: Stroke[]): { x: number; y: number; width: number; height: number } {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity, pad = 4;
+  for (const s of strokes) {
+    pad = Math.max(pad, (s.width || 8) + (s.glow ?? 0));
+    for (let i = 0; i < s.points.length; i += 2) {
+      minX = Math.min(minX, s.points[i]);
+      maxX = Math.max(maxX, s.points[i]);
+      minY = Math.min(minY, s.points[i + 1]);
+      maxY = Math.max(maxY, s.points[i + 1]);
+    }
+  }
+  if (!Number.isFinite(minX)) return { x: 0, y: 0, width: 0, height: 0 };
+  return { x: minX - pad, y: minY - pad, width: maxX - minX + 2 * pad, height: maxY - minY + 2 * pad };
+}
+
+/** Translate every stroke's points (and clip) by (dx, dy). */
+function shiftStrokes(strokes: Stroke[], dx: number, dy: number): Stroke[] {
+  if (dx === 0 && dy === 0) return strokes;
+  return strokes.map((st) => ({
+    ...st,
+    points: st.points.map((v, i) => (i % 2 === 0 ? v + dx : v + dy)),
+    clip: st.clip ? { ...st.clip, x: st.clip.x + dx, y: st.clip.y + dy } : undefined,
+  }));
+}
+
 interface EditorState {
   project: Project | null;
   selectedIds: string[];
@@ -137,6 +164,13 @@ interface EditorState {
   /** Insert a drawing just below the first camera layer so the webcam hole cuts
       through it (draw around, never over, the camera). Appends if no camera. */
   insertDrawing: (layer: Layer) => void;
+  /** The drawing layer new pen strokes append to. Null → the next stroke starts
+      a fresh drawing layer. */
+  activeDrawLayerId: string | null;
+  /** Add a pen stroke: append to the active drawing layer, or start a new one. */
+  addStroke: (stroke: Stroke) => void;
+  /** Start a new drawing layer — the next stroke won't join the current one. */
+  newDrawLayer: () => void;
   /** Insert a bucket-fill just below the first freehand stroke so the drawn
       lines stay on top of the fill. Appends if there are no strokes. */
   insertFillLayer: (layer: Layer) => void;
@@ -468,6 +502,7 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     drawColor: "@accent",
     drawWidth: 8,
     drawBrush: "pen",
+    activeDrawLayerId: null,
     clipboard: [],
     styleClipboard: null,
     // Paused at a settled frame: entry animations have finished, so what you
@@ -562,6 +597,60 @@ export const useEditorStore = create<EditorState>()((set, get) => {
         return next;
       });
       set({ selectedIds: [layer.id] });
+    },
+
+    newDrawLayer: () => set({ activeDrawLayerId: null }),
+
+    addStroke: (stroke) => {
+      // `stroke` arrives in absolute canvas coords. Strokes are stored
+      // layer-local (so the drawing moves when the layer is dragged), so we
+      // rebase the whole set to the new bounding box each time.
+      pushHistory();
+      const s = get();
+      const layers = s.project?.layers ?? [];
+      const activeId = s.activeDrawLayerId;
+      const active = activeId
+        ? (layers.find(
+            (l) => l.id === activeId && l.type === "shape" && (l as ShapeLayer).shape === "freehand" && !l.locked,
+          ) as ShapeLayer | undefined)
+        : undefined;
+
+      const box = active
+        ? strokesBBox([...shiftStrokes(active.strokes ?? [], active.x, active.y), stroke])
+        : strokesBBox([stroke]);
+      const absStrokes = active ? [...shiftStrokes(active.strokes ?? [], active.x, active.y), stroke] : [stroke];
+      const local = shiftStrokes(absStrokes, -box.x, -box.y);
+
+      if (active) {
+        mapLayers((ls) => ls.map((l) => (l.id === activeId ? ({ ...l, strokes: local, ...box } as Layer) : l)));
+        return;
+      }
+
+      const layer: ShapeLayer = {
+        id: uid(),
+        name: "Drawing",
+        type: "shape",
+        shape: "freehand",
+        rotation: 0,
+        opacity: 1,
+        visible: true,
+        locked: false,
+        fill: "@accent",
+        cornerRadius: 0,
+        strokes: local,
+        effects: structuredClone(DEFAULT_EFFECTS),
+        animation: { ...DEFAULT_ANIMATION },
+        ...box,
+      };
+      // Sit below the webcam so the camera hole always shows through the paint.
+      mapLayers((ls) => {
+        const camIdx = ls.findIndex(isCameraLayer);
+        if (camIdx === -1) return [...ls, layer];
+        const next = ls.slice();
+        next.splice(camIdx, 0, layer);
+        return next;
+      });
+      set({ activeDrawLayerId: layer.id });
     },
 
     insertFillLayer: (layer) => {
@@ -856,22 +945,47 @@ export const useEditorStore = create<EditorState>()((set, get) => {
       const { project } = get();
       if (!project) return;
       const r2 = radius * radius;
-      const hit = (l: Layer) => {
-        if (l.type !== "shape" || l.shape !== "freehand" || !l.points || l.locked) return false;
-        for (let i = 0; i < l.points.length; i += 2) {
-          const ax = l.x + l.points[i], ay = l.y + l.points[i + 1];
-          for (let j = 0; j < erasePts.length; j += 2) {
-            const dx = ax - erasePts[j], dy = ay - erasePts[j + 1];
-            if (dx * dx + dy * dy < r2) return true;
-          }
+      const nearErase = (ax: number, ay: number) => {
+        for (let j = 0; j < erasePts.length; j += 2) {
+          const dx = ax - erasePts[j], dy = ay - erasePts[j + 1];
+          if (dx * dx + dy * dy < r2) return true;
         }
         return false;
       };
-      const remove = new Set(project.layers.filter(hit).map((l) => l.id));
-      if (remove.size === 0) return;
+      const strokeHit = (pts: number[], ox = 0, oy = 0) => {
+        for (let i = 0; i < pts.length; i += 2) if (nearErase(pts[i] + ox, pts[i + 1] + oy)) return true;
+        return false;
+      };
+
+      let changed = false;
+      const next: Layer[] = [];
+      for (const l of project.layers) {
+        if (l.type === "shape" && l.shape === "freehand" && !l.locked) {
+          const sl = l as ShapeLayer;
+          if (sl.strokes && sl.strokes.length) {
+            // Multi-stroke: drop only the strokes the eraser crosses (points are
+            // layer-local); remove the layer once its last stroke is gone.
+            const kept = sl.strokes.filter((st) => !strokeHit(st.points, l.x, l.y));
+            if (kept.length !== sl.strokes.length) {
+              changed = true;
+              if (kept.length === 0) continue;
+              const abs = shiftStrokes(kept, l.x, l.y);
+              const box = strokesBBox(abs);
+              next.push({ ...l, strokes: shiftStrokes(abs, -box.x, -box.y), ...box } as Layer);
+              continue;
+            }
+          } else if (sl.points && strokeHit(sl.points, l.x, l.y)) {
+            // Legacy single-stroke layer: remove the whole layer.
+            changed = true;
+            continue;
+          }
+        }
+        next.push(l);
+      }
+      if (!changed) return;
       pushHistory();
-      mapLayers((layers) => layers.filter((l) => !remove.has(l.id)));
-      set((s) => ({ selectedIds: s.selectedIds.filter((id) => !remove.has(id)) }));
+      mapLayers(() => next);
+      set((s) => ({ selectedIds: s.selectedIds.filter((id) => next.some((l) => l.id === id)) }));
     },
 
     undo: () => {
