@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { FolderOpen, Shapes, UserRound, Zap } from "lucide-react";
+import { FolderOpen, Shapes, UserRound } from "lucide-react";
 import { cx } from "@/components/ui";
 import { useProfileStore } from "@/store/profile";
 import { useT } from "@/lib/i18n";
@@ -25,9 +26,14 @@ export function TopNav() {
     <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-950/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-3 sm:gap-6 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-glow shadow-[0_4px_16px_-4px_rgba(139,92,246,0.8)]">
-            <Zap className="size-4 fill-white text-white" />
-          </span>
+          <Image
+            src="/icon.png"
+            alt="Asarayja"
+            width={32}
+            height={32}
+            priority
+            className="size-8 rounded-lg shadow-[0_4px_16px_-4px_rgba(139,92,246,0.8)]"
+          />
           <span className="text-[15px] font-semibold tracking-tight text-white">
             Asarayja <span className="hidden text-zinc-500 sm:inline">Stream Overlays</span>
           </span>

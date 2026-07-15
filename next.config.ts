@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   basePath: onPages ? repo : undefined,
   assetPrefix: onPages ? repo : undefined,
+  // Static export can't run the image optimizer; serve images as-is. next/image
+  // still prepends basePath/assetPrefix, so the logo resolves under Pages.
+  images: { unoptimized: true },
 };
 
 export default nextConfig;
