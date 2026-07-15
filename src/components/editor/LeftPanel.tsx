@@ -119,7 +119,9 @@ function flagSwatch(stripes: string[]): string {
 }
 
 export function LeftPanel() {
-  const [tab, setTab] = useState<Tab>("layers");
+  // Tab lives in the store so keybinds can open a panel.
+  const tab = useEditorStore((s) => s.leftTab);
+  const setTab = useEditorStore((s) => s.setLeftTab);
   const t = useT();
 
   return (

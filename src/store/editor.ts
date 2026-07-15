@@ -48,6 +48,17 @@ export const BRUSH_KINDS: { id: BrushKind; label: string }[] = [
   { id: "eraser", label: "Eraser" },
 ];
 
+/** The left panel's tabs. Lifted into the store so keybinds can open a panel. */
+export type LeftTab =
+  | "screens"
+  | "templates"
+  | "add"
+  | "layers"
+  | "colors"
+  | "text"
+  | "animate"
+  | "uploads";
+
 /** A camera layer punches a transparent hole; drawings sit below it so the
     webcam always shows through (you can't paint over the camera). */
 export function isCameraLayer(l: Layer): boolean {
@@ -129,6 +140,10 @@ interface EditorState {
   drawColor: string;
   drawWidth: number;
   drawBrush: BrushKind;
+
+  /** Active left-panel tab (so keybinds can open a panel). */
+  leftTab: LeftTab;
+  setLeftTab: (tab: LeftTab) => void;
 
   /** Detached copies of layers held for paste — survives screen switches. */
   clipboard: Layer[];
@@ -502,6 +517,8 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     drawColor: "@accent",
     drawWidth: 8,
     drawBrush: "pen",
+    leftTab: "layers",
+    setLeftTab: (leftTab) => set({ leftTab }),
     activeDrawLayerId: null,
     clipboard: [],
     styleClipboard: null,

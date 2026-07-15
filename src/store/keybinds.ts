@@ -20,9 +20,14 @@ export type KeybindAction =
   | "toolSelect"
   | "toolPan"
   | "toolBrush"
-  | "toolBucket";
+  | "toolBucket"
+  | "openLayers"
+  | "openAdd"
+  | "openText"
+  | "openColors"
+  | "openAnimate";
 
-export const KEYBIND_ACTIONS: Array<{ id: KeybindAction; label: string; group: "Edit" | "Tools" }> = [
+export const KEYBIND_ACTIONS: Array<{ id: KeybindAction; label: string; group: "Edit" | "Tools" | "Panels" }> = [
   { id: "undo", label: "Undo", group: "Edit" },
   { id: "redo", label: "Redo", group: "Edit" },
   { id: "copy", label: "Copy", group: "Edit" },
@@ -38,6 +43,11 @@ export const KEYBIND_ACTIONS: Array<{ id: KeybindAction; label: string; group: "
   { id: "toolPan", label: "Pan tool", group: "Tools" },
   { id: "toolBrush", label: "Draw (pencil)", group: "Tools" },
   { id: "toolBucket", label: "Fill bucket", group: "Tools" },
+  { id: "openLayers", label: "Open Layers panel", group: "Panels" },
+  { id: "openAdd", label: "Open Add panel", group: "Panels" },
+  { id: "openText", label: "Open Text panel", group: "Panels" },
+  { id: "openColors", label: "Open Colours panel", group: "Panels" },
+  { id: "openAnimate", label: "Open Animate panel", group: "Panels" },
 ];
 
 export const DEFAULT_BINDINGS: Record<KeybindAction, string> = {
@@ -56,6 +66,11 @@ export const DEFAULT_BINDINGS: Record<KeybindAction, string> = {
   toolPan: "alt+h",
   toolBrush: "alt+b",
   toolBucket: "alt+g",
+  openLayers: "alt+1",
+  openAdd: "alt+2",
+  openText: "alt+3",
+  openColors: "alt+4",
+  openAnimate: "alt+5",
 };
 
 /** The base key of an event, layout-independent where it matters. */

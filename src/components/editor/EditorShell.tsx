@@ -210,12 +210,23 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           break;
         case "group": st.groupSelected(); break;
         case "ungroup": st.ungroupSelected(); break;
-        case "newDrawLayer": st.newDrawLayer(); break;
+        case "newDrawLayer":
+          // Visibly enter draw mode ready for a fresh drawing layer.
+          st.newDrawLayer();
+          setDrawTool(true);
+          setPanTool(false);
+          setBucketTool(false);
+          break;
         case "delete": removeSelected(); break;
         case "toolSelect": setPanTool(false); setDrawTool(false); setBucketTool(false); break;
         case "toolPan": setPanTool(true); setDrawTool(false); setBucketTool(false); break;
         case "toolBrush": setDrawTool(true); setPanTool(false); setBucketTool(false); break;
         case "toolBucket": setBucketTool(true); setDrawTool(false); setPanTool(false); break;
+        case "openLayers": st.setLeftTab("layers"); break;
+        case "openAdd": st.setLeftTab("add"); break;
+        case "openText": st.setLeftTab("text"); break;
+        case "openColors": st.setLeftTab("colors"); break;
+        case "openAnimate": st.setLeftTab("animate"); break;
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
@@ -648,9 +659,10 @@ function ShortcutsDialog({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener("keydown", onKey, true);
   }, [recording, setBinding]);
 
-  const editGroups: Array<{ title: string; group: "Edit" | "Tools" }> = [
+  const editGroups: Array<{ title: string; group: "Edit" | "Tools" | "Panels" }> = [
     { title: t("Edit"), group: "Edit" },
     { title: t("Tools"), group: "Tools" },
+    { title: t("Panels"), group: "Panels" },
   ];
   const kbd = "shrink-0 rounded border border-white/15 bg-white/[0.04] px-2 py-0.5 font-mono text-[11px] text-zinc-400";
 
