@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useProfileStore } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
 import { useFavorites } from "@/store/favorites";
+import { useKeybinds } from "@/store/keybinds";
 
 /**
  * The persisted stores are created with `skipHydration` so that the server
@@ -15,6 +16,7 @@ export function StoreHydrator() {
     void useProfileStore.persist.rehydrate();
     void useProjectsStore.persist.rehydrate();
     void useFavorites.persist.rehydrate();
+    void useKeybinds.persist.rehydrate();
   }, []);
   return null;
 }

@@ -37,6 +37,13 @@ import { packToDesignFile } from "@/lib/design-file";
 import { CANVAS_PRESETS, CANVAS_WIDTH } from "@/lib/types";
 import type { Layer, Theme } from "@/lib/types";
 import { BRUSH_KINDS, useEditorStore } from "@/store/editor";
+import {
+  KEYBIND_ACTIONS,
+  comboFromEvent,
+  comboLabel,
+  useKeybinds,
+  type KeybindAction,
+} from "@/store/keybinds";
 import { useProfileStore, useRenderProfile } from "@/store/profile";
 import { useProjectsStore } from "@/store/projects";
 import { EditorCanvas } from "./EditorCanvas";
@@ -100,6 +107,9 @@ export default function EditorShell({ projectId }: { projectId: string }) {
   const [drawTool, setDrawTool] = useState(false);
   const [bucketTool, setBucketTool] = useState(false);
   const [showKeys, setShowKeys] = useState(false);
+  // Tooltips show the live binding so they stay right after a rebind.
+  const keyBindings = useKeybinds((s) => s.bindings);
+  const isMac = typeof navigator !== "undefined" && navigator.platform.toLowerCase().includes("mac");
   // Leaving the pencil ends the current drawing layer, so picking the brush
   // again starts a fresh one (Ctrl+N also breaks to a new layer mid-drawing).
   useEffect(() => {
@@ -163,76 +173,13 @@ export default function EditorShell({ projectId }: { projectId: string }) {
       const target = e.target as HTMLElement;
       if (target.matches("input, textarea, select, [contenteditable]")) return;
 
-      const mod = e.metaKey || e.ctrlKey;
-      const key = e.key.toLowerCase();
-      if (mod && key === "z") {
+      // Fixed gestures (not rebindable): hold Space to pan, arrows to nudge.
+      if (e.key === " " && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        if (e.shiftKey) redo();
-        else undo();
-      } else if (mod && key === "d") {
-        e.preventDefault();
-        duplicateSelected();
-      } else if (mod && key === "c") {
-        e.preventDefault();
-        useEditorStore.getState().copySelected();
-      } else if (mod && key === "x") {
-        e.preventDefault();
-        useEditorStore.getState().cutSelected();
-      } else if (mod && key === "v") {
-        e.preventDefault();
-        useEditorStore.getState().pasteClipboard();
-      } else if (mod && key === "a") {
-        const st = useEditorStore.getState();
-        if (!st.project) return;
-        e.preventDefault();
-        st.select(st.project.layers.filter((l) => !l.locked).map((l) => l.id));
-      } else if (mod && key === "g") {
-        // Combine the selected layers into one movable unit — a "layer" that
-        // holds several things. Shift+Cmd/Ctrl+G breaks it apart again.
-        e.preventDefault();
-        if (e.shiftKey) useEditorStore.getState().ungroupSelected();
-        else useEditorStore.getState().groupSelected();
-      } else if (mod && key === "n") {
-        // Start a fresh drawing layer — the next pen stroke won't join the
-        // current one. (preventDefault so the browser doesn't open a new window.)
-        e.preventDefault();
-        useEditorStore.getState().newDrawLayer();
-      } else if (mod) {
-        // Any other modifier combo (copy shortcuts on other layouts, browser
-        // chrome) — leave it to the browser rather than swallowing a tool key.
+        setPanTool(true);
         return;
-      } else if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault();
-        removeSelected();
-      } else if (e.key === " ") {
-        e.preventDefault();
-        setPanTool(true);
-      } else if (e.altKey && e.code === "KeyV") {
-        // Tools live on Alt+… (Ctrl+V and Ctrl+G are already paste and group, so
-        // Alt keeps all four tool keys consistent and collision-free). e.code is
-        // layout-independent, so Alt's special characters don't matter.
-        e.preventDefault();
-        setPanTool(false);
-        setDrawTool(false);
-        setBucketTool(false);
-      } else if (e.altKey && e.code === "KeyH") {
-        e.preventDefault();
-        setPanTool(true);
-        setDrawTool(false);
-        setBucketTool(false);
-      } else if (e.altKey && e.code === "KeyB") {
-        e.preventDefault();
-        setDrawTool(true);
-        setPanTool(false);
-        setBucketTool(false);
-      } else if (e.altKey && e.code === "KeyG") {
-        e.preventDefault();
-        setBucketTool(true);
-        setDrawTool(false);
-        setPanTool(false);
-      } else if (e.key.startsWith("Arrow")) {
-        // Nudge the selected layer(s) with the arrow keys — move a layer that
-        // sits behind others without having to reach it on the canvas.
+      }
+      if (e.key.startsWith("Arrow")) {
         const st = useEditorStore.getState();
         if (!st.selectedIds.length || !st.project) return;
         e.preventDefault();
@@ -243,6 +190,32 @@ export default function EditorShell({ projectId }: { projectId: string }) {
           const l = st.project.layers.find((x) => x.id === id);
           if (l && !l.locked) st.updateLayer(id, { x: l.x + dx, y: l.y + dy }, false);
         }
+        return;
+      }
+
+      // Everything else runs off the (user-editable) keybind map.
+      const action = useKeybinds.getState().match(e);
+      if (!action) return;
+      e.preventDefault();
+      const st = useEditorStore.getState();
+      switch (action) {
+        case "undo": undo(); break;
+        case "redo": redo(); break;
+        case "copy": st.copySelected(); break;
+        case "cut": st.cutSelected(); break;
+        case "paste": st.pasteClipboard(); break;
+        case "duplicate": duplicateSelected(); break;
+        case "selectAll":
+          if (st.project) st.select(st.project.layers.filter((l) => !l.locked).map((l) => l.id));
+          break;
+        case "group": st.groupSelected(); break;
+        case "ungroup": st.ungroupSelected(); break;
+        case "newDrawLayer": st.newDrawLayer(); break;
+        case "delete": removeSelected(); break;
+        case "toolSelect": setPanTool(false); setDrawTool(false); setBucketTool(false); break;
+        case "toolPan": setPanTool(true); setDrawTool(false); setBucketTool(false); break;
+        case "toolBrush": setDrawTool(true); setPanTool(false); setBucketTool(false); break;
+        case "toolBucket": setBucketTool(true); setDrawTool(false); setPanTool(false); break;
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
@@ -338,7 +311,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setBucketTool(false);
           }}
           active={!panTool && !drawTool && !bucketTool}
-          title={t("Select") + " (Alt+V)"}
+          title={t("Select") + " (" + comboLabel(keyBindings.toolSelect, isMac) + ")"}
         >
           <MousePointer2 className="size-4" />
         </ToolButton>
@@ -349,7 +322,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setBucketTool(false);
           }}
           active={panTool}
-          title={t("Pan") + " (Alt+H " + t("or hold Space") + ")"}
+          title={t("Pan") + " (" + comboLabel(keyBindings.toolPan, isMac) + " " + t("or hold Space") + ")"}
         >
           <Hand className="size-4" />
         </ToolButton>
@@ -360,7 +333,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setBucketTool(false);
           }}
           active={drawTool}
-          title={t("Draw") + " (Alt+B) — " + t("freehand pencil")}
+          title={t("Draw") + " (" + comboLabel(keyBindings.toolBrush, isMac) + ") — " + t("freehand pencil")}
         >
           <Pencil className="size-4" />
         </ToolButton>
@@ -371,7 +344,7 @@ export default function EditorShell({ projectId }: { projectId: string }) {
             setPanTool(false);
           }}
           active={bucketTool}
-          title={t("Fill") + " (Alt+G) — " + t("click a region you drew to fill it with the chosen colour")}
+          title={t("Fill") + " (" + comboLabel(keyBindings.toolBucket, isMac) + ") — " + t("click a region you drew to fill it with the chosen colour")}
         >
           <PaintBucket className="size-4" />
         </ToolButton>
@@ -651,70 +624,96 @@ function DrawSettings() {
 function ShortcutsDialog({ onClose }: { onClose: () => void }) {
   const t = useT();
   const mac = typeof navigator !== "undefined" && navigator.platform.toLowerCase().includes("mac");
-  const mod = mac ? "⌘" : "Ctrl";
-  const alt = mac ? "⌥" : "Alt";
-  const groups: Array<{ title: string; items: Array<[string, string]> }> = [
-    {
-      title: t("Edit"),
-      items: [
-        [`${mod} Z`, t("Undo")],
-        [`⇧ ${mod} Z`, t("Redo")],
-        [`${mod} C`, t("Copy")],
-        [`${mod} X`, t("Cut")],
-        [`${mod} V`, t("Paste")],
-        [`${mod} D`, t("Duplicate")],
-        [`${mod} A`, t("Select all")],
-        [`${mod} G`, t("Group")],
-        [`⇧ ${mod} G`, t("Ungroup")],
-        [`${mod} N`, t("New drawing layer")],
-        [t("Delete / Backspace"), t("Delete selection")],
-      ],
-    },
-    {
-      title: t("Tools"),
-      items: [
-        [`${alt} V`, t("Select")],
-        [`${alt} H / ${t("Space")}`, t("Pan")],
-        [`${alt} B`, t("Draw (pencil)")],
-        [`${alt} G`, t("Fill bucket")],
-      ],
-    },
-    {
-      title: t("Move"),
-      items: [
-        [t("Arrow keys"), t("Nudge 1px")],
-        [`⇧ ${t("Arrow keys")}`, t("Nudge 10px")],
-      ],
-    },
+  const bindings = useKeybinds((s) => s.bindings);
+  const setBinding = useKeybinds((s) => s.setBinding);
+  const reset = useKeybinds((s) => s.reset);
+  const [recording, setRecording] = useState<KeybindAction | null>(null);
+
+  // While recording, capture the next combo (capture phase so it beats the
+  // editor's own global handler). Esc cancels; bare modifiers are ignored.
+  useEffect(() => {
+    if (!recording) return;
+    const onKey = (e: KeyboardEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.key === "Escape") return void setRecording(null);
+      if (["Shift", "Control", "Alt", "Meta"].includes(e.key)) return;
+      const combo = comboFromEvent(e);
+      if (combo) {
+        setBinding(recording, combo);
+        setRecording(null);
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [recording, setBinding]);
+
+  const editGroups: Array<{ title: string; group: "Edit" | "Tools" }> = [
+    { title: t("Edit"), group: "Edit" },
+    { title: t("Tools"), group: "Tools" },
   ];
+  const kbd = "shrink-0 rounded border border-white/15 bg-white/[0.04] px-2 py-0.5 font-mono text-[11px] text-zinc-400";
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-6" onClick={onClose}>
       <div
         className="w-full max-w-md rounded-2xl border border-white/10 bg-ink-900 p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-white">{t("Keyboard shortcuts")}</h2>
           <button onClick={onClose} className="text-zinc-500 transition-colors hover:text-white">
             <X className="size-4" />
           </button>
         </div>
-        <div className="space-y-4">
-          {groups.map((g) => (
-            <div key={g.title}>
+        <p className="mb-3 text-[11px] leading-relaxed text-zinc-500">
+          {t("Click a shortcut to change it, then press the new combination (Esc to cancel).")}
+        </p>
+        <div className="max-h-[52vh] space-y-4 overflow-y-auto pr-1">
+          {editGroups.map((g) => (
+            <div key={g.group}>
               <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{g.title}</p>
               <div className="space-y-1">
-                {g.items.map(([keys, label]) => (
-                  <div key={label} className="flex items-center justify-between gap-4 text-[13px]">
-                    <span className="text-zinc-300">{label}</span>
-                    <kbd className="shrink-0 rounded border border-white/15 bg-white/[0.04] px-2 py-0.5 font-mono text-[11px] text-zinc-300">
-                      {keys}
-                    </kbd>
+                {KEYBIND_ACTIONS.filter((a) => a.group === g.group).map((a) => (
+                  <div key={a.id} className="flex items-center justify-between gap-4 text-[13px]">
+                    <span className="text-zinc-300">{t(a.label)}</span>
+                    <button
+                      onClick={() => setRecording(a.id)}
+                      className={cx(
+                        "shrink-0 rounded border px-2 py-0.5 font-mono text-[11px] transition-colors",
+                        recording === a.id
+                          ? "border-brand-400 bg-brand-500/20 text-brand-300"
+                          : "border-white/15 bg-white/[0.04] text-zinc-300 hover:border-brand-400/50 hover:text-white",
+                      )}
+                    >
+                      {recording === a.id ? t("Press keys…") : comboLabel(bindings[a.id], mac)}
+                    </button>
                   </div>
                 ))}
               </div>
             </div>
           ))}
+          <div>
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{t("Fixed")}</p>
+            <div className="space-y-1 text-[13px]">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-zinc-300">{t("Pan")}</span>
+                <kbd className={kbd}>{t("Hold Space")}</kbd>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-zinc-300">{t("Nudge / ×10")}</span>
+                <kbd className={kbd}>{`${t("Arrow keys")} / ⇧`}</kbd>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={reset}
+            className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-white/25 hover:text-white"
+          >
+            {t("Reset to defaults")}
+          </button>
         </div>
       </div>
     </div>
