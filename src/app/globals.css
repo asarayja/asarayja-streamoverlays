@@ -95,6 +95,24 @@ input[type="range"] {
   accent-color: #8b5cf6;
 }
 
+/* Native <select> popups: theme every dropdown list to the dark UI with a
+   violet highlight, so a raw <select> matches the styled one. accent-color
+   drives the option highlight where the engine supports it (Chromium); the
+   :checked/:hover rules cover the rest. */
+select {
+  accent-color: #8b5cf6;
+}
+option {
+  background-color: #14141c;
+  color: #f4f4f5;
+}
+option:checked,
+option:hover,
+option:focus {
+  background-color: #8b5cf6;
+  color: #ffffff;
+}
+
 /* The select chevron. It lives here rather than in an arbitrary Tailwind
    value because a data URL contains spaces, and Tailwind splits the class on
    them — the utility silently never matches and no image is emitted. */
