@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   title: "Asarayja Stream Overlays — Professional stream overlays in minutes",
   description:
     "Pick a template, fill in your channel profile once, and export overlays for OBS. Static and animated, with true alpha.",
+  openGraph: {
+    title: "Asarayja Stream Overlays",
+    description: "Professional stream overlays for OBS — static and animated, with true alpha.",
+    images: [`${process.env.GITHUB_PAGES === "true" ? "/asarayja-streamoverlays" : ""}/logo.png`],
+  },
 };
 
 export const viewport: Viewport = {
