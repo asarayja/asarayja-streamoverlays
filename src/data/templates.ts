@@ -367,6 +367,8 @@ function windowBox(
     content?: "empty" | "camera" | "chat";
     chatFontSize?: number;
     rows?: number;
+    usernameColor?: string;
+    messageColor?: string;
   } = {},
 ): LayerSpec {
   return {
@@ -385,8 +387,8 @@ function windowBox(
     ...(o.chromeStyle ? { chromeStyle: o.chromeStyle } : {}),
     content: o.content ?? "empty",
     chatFontSize: o.chatFontSize ?? 20,
-    usernameColor: "@accent",
-    messageColor: "@text",
+    usernameColor: o.usernameColor ?? "@accent",
+    messageColor: o.messageColor ?? "@text",
     rows: o.rows ?? 8,
   };
 }
@@ -1259,6 +1261,14 @@ interface FamilyStyle {
       shift socials clear of fixed scene decor, e.g. Retro 95's copy dialog. */
   socialsX?: number;
   socialsWidth?: number;
+  /** Fixed chrome colours for plates, alerts, panels, goals and event badges —
+      overrides the palette tokens so a fixed-ground family (Retro 95) keeps its
+      look. plateFill = box fill, plateBorder = border, plateTitle = title/accent
+      text + bars, plateText = body text. */
+  plateFill?: string;
+  plateBorder?: string;
+  plateTitle?: string;
+  plateText?: string;
   /** Panels use windows instead of plates. */
   windowChrome?: boolean;
   /** Window chrome colours (camera/chat windows). Default to the theme
@@ -1619,6 +1629,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           titleBarColor: f.windowTitleFill,
           textColor: f.windowTextFill,
           chromeStyle: f.windowChromeStyle,
+          usernameColor: f.plateTitle,
+          messageColor: f.plateText,
           effects: f.frameEffects,
         })
       : chatbox(name, box, {
@@ -1633,10 +1645,10 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
   const plate = (name: string, box: Box, o: Parameters<typeof shape>[2] = {}) =>
     shape(name, box, {
       shape: f.plateShape,
-      fill: f.glass ? "@text/10" : "@surface/90",
+      fill: f.plateFill ?? (f.glass ? "@text/10" : "@surface/90"),
       cornerRadius: f.radius,
       effects: {
-        border: { enabled: true, color: f.glass ? "@text/35" : "@border", width: 1, radius: f.radius },
+        border: { enabled: true, color: f.plateBorder ?? (f.glass ? "@text/35" : "@border"), width: f.plateBorder ? 3 : 1, radius: f.radius },
         ...(f.glass
           ? { gloss: { enabled: true, strength: 0.55, style: f.glassStyle === "liquid" ? "liquid" : f.glassStyle === "reflection" ? "streak" : "sheen" } }
           : {}),
@@ -1676,15 +1688,15 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
         // overlay, not a bright slab pasted over it. The hero (subscriber) is
         // set apart by an accent border and a stronger glow, not by inverting
         // to a near-white fill.
-        fill: f.glass ? "@text/12" : hero ? "@surface/95" : "@surface/92",
-        titleColor: "@accent",
-        subtitleColor: "@text",
+        fill: f.plateFill ?? (f.glass ? "@text/12" : hero ? "@surface/95" : "@surface/92"),
+        titleColor: f.plateTitle ?? "@accent",
+        subtitleColor: f.plateText ?? "@text",
         effects: {
-          glow: { enabled: true, color: "@glow", strength: hero ? 46 : 34 },
+          glow: { enabled: true, color: "@glow", strength: f.plateBorder ? 0 : hero ? 46 : 34 },
           border: {
             enabled: true,
-            color: f.glass ? "@text/40" : hero ? "@accent" : "@border",
-            width: hero ? 2 : 1,
+            color: f.plateBorder ?? (f.glass ? "@text/40" : hero ? "@accent" : "@border"),
+            width: f.plateBorder ? 3 : hero ? 2 : 1,
             radius: f.radius,
           },
         },
@@ -1750,39 +1762,39 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     goal("Follower goal", { x: 150, y: 380, width: 360, height: 360 }, "FOLLOWERS", 847, 1000, {
       goalStyle: "ring",
       fontFamily: f.display,
-      barColor: "@accent",
-      trackColor: "@surface/60",
-      valueColor: "@text",
-      labelColor: "@accent",
+      barColor: f.plateTitle ?? "@accent",
+      trackColor: f.plateFill ?? "@surface/60",
+      valueColor: f.plateText ?? "@text",
+      labelColor: f.plateTitle ?? "@accent",
       runner: true,
-      effects: { glow: { enabled: true, color: "@glow", strength: 26 } },
+      effects: { glow: { enabled: true, color: "@glow", strength: f.plateBorder ? 0 : 26 } },
     }),
     goal("Sub goal", { x: 560, y: 430, width: 760, height: 150 }, "SUB GOAL", 62, 100, {
       goalStyle: "bar",
       barShape: goalShape,
-      fill: "@surface/88",
+      fill: f.plateFill ?? "@surface/88",
       fontFamily: f.display,
-      barColor: "@accent",
-      labelColor: "@accent",
+      barColor: f.plateTitle ?? "@accent",
+      labelColor: f.plateTitle ?? "@accent",
       cornerRadius: f.radius,
       runner: true,
       effects: {
-        glow: { enabled: true, color: "@glow", strength: 22 },
-        border: { enabled: true, color: "@border", width: 1, radius: f.radius },
+        glow: { enabled: true, color: "@glow", strength: f.plateBorder ? 0 : 22 },
+        border: { enabled: true, color: f.plateBorder ?? "@border", width: f.plateBorder ? 3 : 1, radius: f.radius },
       },
     }),
     goal("Donation goal", { x: 560, y: 610, width: 760, height: 150 }, "DONATION GOAL", 340, 500, {
       goalStyle: "bar",
       barShape: goalShape,
-      fill: "@surface/88",
+      fill: f.plateFill ?? "@surface/88",
       fontFamily: f.display,
-      barColor: "@primary",
-      labelColor: "@accent",
+      barColor: f.plateTitle ?? "@primary",
+      labelColor: f.plateTitle ?? "@accent",
       cornerRadius: f.radius,
       runner: true,
       effects: {
-        glow: { enabled: true, color: "@glow", strength: 22 },
-        border: { enabled: true, color: "@border", width: 1, radius: f.radius },
+        glow: { enabled: true, color: "@glow", strength: f.plateBorder ? 0 : 22 },
+        border: { enabled: true, color: f.plateBorder ?? "@border", width: f.plateBorder ? 3 : 1, radius: f.radius },
       },
     }),
   ]);
@@ -1930,7 +1942,10 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           fontFamily: f.body,
           cornerRadius: f.radius,
           split: f.chipSplit,
-          effects: { border: { enabled: true, color: "@border", width: 1, radius: f.radius } },
+          fill: f.plateFill,
+          labelColor: f.plateTitle,
+          valueColor: f.plateText,
+          effects: { border: { enabled: true, color: f.plateBorder ?? "@border", width: f.plateBorder ? 3 : 1, radius: f.radius } },
         }),
       ),
     ]),
@@ -1945,11 +1960,11 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           height: 160,
         }, {
           shape: f.plateShape,
-          fill: f.glass ? "@text/10" : "@surface/92",
+          fill: f.plateFill ?? (f.glass ? "@text/10" : "@surface/92"),
           cornerRadius: f.radius,
           effects: {
-            border: { enabled: true, color: f.glass ? "@text/35" : "@border", width: 1, radius: f.radius },
-            glow: { enabled: true, color: "@glow", strength: 14 },
+            border: { enabled: true, color: f.plateBorder ?? (f.glass ? "@text/35" : "@border"), width: f.plateBorder ? 3 : 1, radius: f.radius },
+            glow: { enabled: true, color: "@glow", strength: f.plateBorder ? 0 : 14 },
             ...(f.glass
               ? {
                   gloss: {
@@ -1984,7 +1999,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           fontSize: 36,
           fontWeight: f.displayWeight,
           align: "center",
-          fill: "@text",
+          fill: f.plateText ?? "@text",
           letterSpacing: Math.max(1, f.displayTracking * 0.4),
         }),
       ),
@@ -6788,6 +6803,12 @@ const RETRO_95: FamilyStyle = {
   socialTextFill: W95.text,
   socialsX: 120,
   socialsWidth: 1160,
+  // Plates, alerts, panels, goals and badges in Win95 chrome: grey face, navy
+  // titles/bars, black body text, hard grey border.
+  plateFill: W95.face,
+  plateBorder: W95.shadow,
+  plateTitle: W95.title,
+  plateText: W95.text,
   scene: () => [
     shape("Backdrop", FULL, { background: true, fill: W95.teal }),
 
