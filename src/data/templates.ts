@@ -104,6 +104,8 @@ function text(
     fill?: string;
     fillStripes?: string[];
     textTransform?: "none" | "uppercase" | "lowercase";
+    cycleTexts?: string[];
+    cycleMs?: number;
   } = {},
 ): LayerSpec {
   return {
@@ -121,6 +123,8 @@ function text(
     fill: o.fill ?? "@text",
     fillStripes: o.fillStripes,
     textTransform: o.textTransform ?? "none",
+    ...(o.cycleTexts ? { cycleTexts: o.cycleTexts } : {}),
+    ...(o.cycleMs ? { cycleMs: o.cycleMs } : {}),
   };
 }
 
@@ -6819,10 +6823,10 @@ const RETRO_95: FamilyStyle = {
       fill: W95.title,
       effects: { gradient: { enabled: true, from: W95.title, to: W95.titleLite, angle: 0 } },
     }),
-    text("Copy — title", { x: CD.x + 16, y: CD.y + 12, width: 320, height: 26 }, "Copying…", {
+    text("Copy — title", { x: CD.x + 16, y: CD.y + 12, width: 320, height: 26 }, "Copying...", {
       fontFamily: "Pixelify Sans",
       fontSize: 24,
-      fontWeight: 700,
+      fontWeight: 400,
       fill: W95.titleText,
     }),
     ...w95Raised("Copy — close", { x: CD.x + CD.w - 42, y: CD.y + 9, width: 30, height: 30 }),
@@ -6843,22 +6847,31 @@ const RETRO_95: FamilyStyle = {
       fill: W95.text,
       animation: anim("convey", { duration: 1500, intensity: 1.3 }),
     }),
-    // The filename types itself out and loops — like files ticking past.
+    // The filename cycles through a list, typing each one out then the next —
+    // like a real copy ticking through files. Add/edit names in the editor.
     text("Copy — filename", { x: CD.x + 22, y: CD.y + 168, width: 456, height: 24 }, "overlay_assets.zip", {
       fontFamily: "Pixelify Sans",
       fontSize: 22,
       fontWeight: 400,
       fill: W95.text,
-      animation: anim("typewriter", { duration: 2600, loop: true }),
+      cycleTexts: [
+        "overlay_assets.zip",
+        "webcam_frame.png",
+        "alerts_pack.zip",
+        "chat_theme.css",
+        "stinger_intro.webm",
+        "panel_icons.zip",
+      ],
+      cycleMs: 1500,
     }),
-    // Classic segmented progress bar: a sunken track of navy blocks. A bright
-    // band sweeps across and wraps around (staggered breathe), like a copy in
-    // progress. Every block is its own layer — editable in the editor.
+    // Classic segmented progress bar: a sunken track of navy blocks that appear
+    // one by one, left to right, until full — then it starts over. Every block
+    // is its own layer, editable in the editor.
     ...w95Sunken("Copy — track", { x: CD.x + 22, y: CD.y + 204, width: 456, height: 32 }),
     ...Array.from({ length: 13 }, (_, i) =>
       shape(`Copy — block ${i}`, { x: CD.x + 30 + i * 33, y: CD.y + 210, width: 24, height: 20 }, {
         fill: W95.block,
-        animation: anim("breathe", { duration: 1600, delay: i * 120, loop: true }),
+        animation: anim("fill", { duration: 3200, delay: Math.round(((i + 1) / 14) * 3200), loop: true }),
       }),
     ),
   ],

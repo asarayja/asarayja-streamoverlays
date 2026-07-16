@@ -126,6 +126,15 @@ export function sample(anim: Animation, t: number): AnimationSample {
   const elapsed = t - anim.delay;
   const k = anim.intensity;
 
+  if (anim.preset === "fill") {
+    // Cumulative progress: the element switches on once the shared cycle passes
+    // its threshold (`delay`), and all reset together at the cycle end. Uses the
+    // absolute clock (not `elapsed`) so a row of blocks with staggered delays
+    // fills one-by-one, left to right, then starts over — a Win95 progress bar.
+    const within = ((t % duration) + duration) % duration;
+    return { ...IDENTITY, opacity: within >= anim.delay ? 1 : 0 };
+  }
+
   if (isContinuous(anim.preset)) {
     if (elapsed < 0) return IDENTITY;
     // phase in turns, so `Math.sin(phase * TAU)` completes one cycle per duration

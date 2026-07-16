@@ -1507,6 +1507,29 @@ function TextTab() {
         )}
 
         {isText && (
+          <Field label={t("Cycling text — one line each")}>
+            <textarea
+              value={((layer as TextLayer).cycleTexts ?? []).join("\n")}
+              onChange={(e) =>
+                updateLayer(
+                  layer.id,
+                  { cycleTexts: e.target.value ? e.target.value.split("\n") : undefined },
+                  false,
+                )
+              }
+              onBlur={(e) =>
+                updateLayer(layer.id, {
+                  cycleTexts: e.target.value.trim() ? e.target.value.split("\n").filter((s) => s.length) : undefined,
+                })
+              }
+              rows={3}
+              placeholder={t("Leave empty for plain text. Each line shows in turn, typed out, then loops.")}
+              className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-brand-500/60 focus:outline-none"
+            />
+          </Field>
+        )}
+
+        {isText && (
           <div>
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
               {t("Profile placeholders")}

@@ -150,6 +150,7 @@ export const ANIMATION_PRESETS = [
   "orbit",
   "drift",
   "convey",
+  "fill",
   "breathe",
   // One-shot entrances / accents.
   "flip",
@@ -687,6 +688,12 @@ export interface TextLayer extends LayerBase {
       (roughly -100…100). Rendered along a path, single-line only. */
   curve?: number;
   textTransform: TextTransform;
+  /** Cycle through several strings, one at a time, typing each out (like a copy
+      dialog ticking through filenames). When set and non-empty, it drives the
+      text instead of `text`; each item shows for `cycleMs`. */
+  cycleTexts?: string[];
+  /** Milliseconds each cycled string is shown before the next. Default 2000. */
+  cycleMs?: number;
 }
 
 export type ImageFit = "cover" | "contain" | "fill";

@@ -3030,11 +3030,22 @@ function IconContent({ layer, ctx, glowBoost }: { layer: IconLayer; ctx: RenderC
 }
 
 function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx: RenderContext; reveal: number; glowBoost: number }) {
-  const resolved = applyTransform(
-    resolveText(layer.text, ctx.profile, missingMode(ctx.mode)),
-    layer.textTransform,
-  );
-  const visible = reveal >= 1 ? resolved : resolved.slice(0, Math.ceil(resolved.length * reveal));
+  // Cycling text: step through the list one item at a time, typing each out and
+  // holding it, then move to the next — self-driven off the clock.
+  const cycle = layer.cycleTexts?.filter((s) => s.trim().length);
+  let resolved: string;
+  let visible: string;
+  if (cycle && cycle.length) {
+    const per = Math.max(200, layer.cycleMs ?? 2000);
+    const idx = Math.floor(ctx.time / per) % cycle.length;
+    const frac = (ctx.time % per) / per;
+    const rev = Math.min(1, frac / 0.55); // type over the first ~55%, then hold
+    resolved = applyTransform(resolveText(cycle[idx], ctx.profile, missingMode(ctx.mode)), layer.textTransform);
+    visible = rev >= 1 ? resolved : resolved.slice(0, Math.ceil(resolved.length * rev));
+  } else {
+    resolved = applyTransform(resolveText(layer.text, ctx.profile, missingMode(ctx.mode)), layer.textTransform);
+    visible = reveal >= 1 ? resolved : resolved.slice(0, Math.ceil(resolved.length * reveal));
+  }
 
   // Auto-fit: placeholder text is unbounded — a channel called
   // THEQUEENOFDARKNESSANDDESPAIR must shrink, not spill out of the design.
