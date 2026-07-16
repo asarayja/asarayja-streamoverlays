@@ -1247,6 +1247,14 @@ interface FamilyStyle {
   /** Social-bar pill colour. Defaults to "@surface/90"; near-black families
       set a light translucent pill so the icons read. */
   socialPill?: string;
+  /** Social-bar icon/text colours. Default to "@accent"/"@text". Override for a
+      fixed ground (e.g. Retro 95's grey Win95 pills with black glyphs). */
+  socialIconFill?: string;
+  socialTextFill?: string;
+  /** Override the scene social bar's x/width (keeps the per-screen y). Use to
+      shift socials clear of fixed scene decor, e.g. Retro 95's copy dialog. */
+  socialsX?: number;
+  socialsWidth?: number;
   /** Panels use windows instead of plates. */
   windowChrome?: boolean;
   /** Window chrome colours (camera/chat windows). Default to the theme
@@ -1555,10 +1563,12 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
 
   // Social bars stay still — no entrance, no motion.
   const socials = (y: number, platforms?: SocialPlatform[]) =>
-    social("Socials", { x: 460, y: y + dy, width: 1000, height: 56 }, {
+    social("Socials", { x: f.socialsX ?? 460, y: y + dy, width: f.socialsWidth ?? 1000, height: 56 }, {
       platforms: platforms ?? ["twitch", "youtube", "discord", "instagram"],
       fontFamily: f.body,
       pillColor: f.socialPill ?? "@surface/90",
+      iconColor: f.socialIconFill,
+      textColor: f.socialTextFill,
     });
 
   /** The camera hole: a chrome window for Y2K, a bracketed frame elsewhere. */
@@ -6765,6 +6775,13 @@ const RETRO_95: FamilyStyle = {
   windowTitleFill: W95.title,
   windowTextFill: W95.titleText,
   windowChromeStyle: "win95",
+  // Socials as grey Win95 pills with navy icons + black handles, shifted left
+  // so they clear the copy dialog in the lower-right.
+  socialPill: W95.face,
+  socialIconFill: W95.title,
+  socialTextFill: W95.text,
+  socialsX: 120,
+  socialsWidth: 1160,
   scene: () => [
     shape("Backdrop", FULL, { background: true, fill: W95.teal }),
 
