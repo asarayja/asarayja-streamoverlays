@@ -6630,38 +6630,83 @@ const SPRING: FamilyStyle = {
   ],
 };
 
-/* MDI icon bodies for the Retro 95 desktop (single paths, recolour with theme). */
-const MDI_MONITOR =
-  '<path fill="currentColor" d="M21 16H3V4h18m0-2H3c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h7v2H8v2h8v-2h-2v-2h7a2 2 0 0 0 2-2V4c0-1.11-.89-2-2-2Z"/>';
-const MDI_FOLDER =
-  '<path fill="currentColor" d="M10 4H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2Z"/>';
-const MDI_TRASH =
-  '<path fill="currentColor" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z"/>';
-const MDI_FILE =
-  '<path fill="currentColor" d="M13 9h5.5L13 3.5V9M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2m9 16v-2H6v2h9m3-4v-2H6v2h12Z"/>';
-const MDI_WINDOWS =
-  '<path fill="currentColor" d="M3 5.1 10.5 4v7.4H3M10.5 12.6V20L3 18.9v-6.3M11.4 3.9 21 2.5v8.9h-9.6M21 12.6v8.9l-9.6-1.4v-7.5"/>';
+/* Authentic Windows 95 palette — hardcoded so the family reads as real Win95
+   regardless of the project palette (its identity is the grey chrome + teal
+   desktop, not the theme). */
+const W95 = {
+  teal: "#008080",
+  face: "#C0C0C0",
+  light: "#FFFFFF",
+  shadow: "#808080",
+  dark: "#3A3A3A",
+  title: "#000082",
+  titleLite: "#1084D0",
+  titleText: "#FFFFFF",
+  text: "#000000",
+  block: "#000082",
+};
 
-/** A single labelled desktop icon: the glyph plus its caption below. */
+/* Hand-drawn pixel recreations of the classic desktop icons — original art in
+   the Win95 colours (not Microsoft's copyrighted bitmaps). 24×24 viewBox. */
+const IC_FOLDER =
+  '<path d="M2 5h7l2 2h11v3H2z" fill="#D9A441"/><rect x="2" y="8" width="20" height="12" fill="#F2C14E" stroke="#7A5C15" stroke-width="0.7"/><rect x="2" y="8" width="20" height="1.6" fill="#F9DE8B"/>';
+const IC_MONITOR =
+  '<rect x="3" y="3" width="16" height="12" fill="#CFCBBE" stroke="#4A4A4A" stroke-width="0.8"/><rect x="5" y="5" width="12" height="8" fill="#1C7FBF"/><rect x="5" y="5" width="12" height="2" fill="#5AB0E0"/><rect x="9" y="15" width="4" height="2" fill="#B8B4A6"/><rect x="2" y="17" width="18" height="4" fill="#DCD8CC" stroke="#4A4A4A" stroke-width="0.8"/><rect x="16.4" y="18.2" width="1.6" height="1.6" fill="#37D067"/>';
+const IC_TRASH =
+  '<rect x="10" y="4.4" width="4" height="1.8" fill="#C0C0C0" stroke="#5A5A5A" stroke-width="0.6"/><rect x="5" y="6" width="14" height="2.4" fill="#DADADA" stroke="#5A5A5A" stroke-width="0.7"/><path d="M6 8h12l-1.4 13H7.4z" fill="#C8C8C8" stroke="#5A5A5A" stroke-width="0.8"/><rect x="9" y="9.5" width="1" height="10" fill="#A6A6A6"/><rect x="13.8" y="9.5" width="1" height="10" fill="#A6A6A6"/>';
+const IC_FLAG =
+  '<rect x="2" y="3.4" width="8" height="7.4" fill="#F35325"/><rect x="11" y="3" width="8" height="7.8" fill="#81BC06"/><rect x="2" y="12" width="8" height="7.4" fill="#05A6F0"/><rect x="11" y="11.8" width="8" height="7.8" fill="#FFBA08"/>';
+const IC_FILE =
+  '<path d="M6 3h8l4 4v14H6z" fill="#FFFFFF" stroke="#5A5A5A" stroke-width="0.8"/><path d="M14 3v4h4z" fill="#C8C8C8"/><rect x="8" y="10" width="8" height="1.4" fill="#3A6EA5"/><rect x="8" y="13" width="8" height="1.4" fill="#3A6EA5"/><rect x="8" y="16" width="6" height="1.4" fill="#3A6EA5"/>';
+
+/** A raised Win95 bevel: white top/left rims, grey bottom/right rims. */
+function w95Raised(name: string, box: Box, face = W95.face): LayerSpec[] {
+  const { x, y, width: w, height: h } = box;
+  return [
+    shape(`${name} face`, box, { fill: face }),
+    shape(`${name} hl-top`, { x, y, width: w, height: 3 }, { fill: W95.light }),
+    shape(`${name} hl-left`, { x, y, width: 3, height: h }, { fill: W95.light }),
+    shape(`${name} sh-bot`, { x, y: y + h - 3, width: w, height: 3 }, { fill: W95.shadow }),
+    shape(`${name} sh-right`, { x: x + w - 3, y, width: 3, height: h }, { fill: W95.shadow }),
+  ];
+}
+
+/** A sunken Win95 bevel (inset): grey top/left, white bottom/right. */
+function w95Sunken(name: string, box: Box, face = W95.face): LayerSpec[] {
+  const { x, y, width: w, height: h } = box;
+  return [
+    shape(`${name} face`, box, { fill: face }),
+    shape(`${name} sh-top`, { x, y, width: w, height: 3 }, { fill: W95.shadow }),
+    shape(`${name} sh-left`, { x, y, width: 3, height: h }, { fill: W95.shadow }),
+    shape(`${name} hl-bot`, { x, y: y + h - 3, width: w, height: 3 }, { fill: W95.light }),
+    shape(`${name} hl-right`, { x: x + w - 3, y, width: 3, height: h }, { fill: W95.light }),
+  ];
+}
+
+/** A labelled desktop icon: the glyph plus its white caption below. */
 function desktopIcon(name: string, x: number, y: number, body: string, label: string): LayerSpec[] {
   return [
-    icon(`Icon — ${name}`, { x: x + 24, y, width: 64, height: 64 }, "window", { body, fill: "@accent" }),
-    text(`Label — ${name}`, { x: x - 16, y: y + 70, width: 144, height: 40 }, label, {
+    icon(`Icon — ${name}`, { x: x + 24, y, width: 68, height: 68 }, "window", { body, fill: W95.text }),
+    text(`Label — ${name}`, { x: x - 20, y: y + 74, width: 156, height: 34 }, label, {
       fontFamily: "Pixelify Sans",
-      fontSize: 20,
+      fontSize: 22,
       fontWeight: 400,
       align: "center",
-      fill: "@text",
+      fill: W95.light,
+      effects: { shadow: { enabled: true, color: "#000000", blur: 0, offsetX: 1, offsetY: 1, opacity: 0.8 } },
     }),
   ];
 }
 
+// The copy dialog geometry (lower-right), reused for its parts.
+const CD = { x: 1360, y: 624, w: 500, h: 272 };
+
 /**
- * Retro 95: a Windows 95-style desktop — beveled grey chrome over a flat
- * themed desktop, a taskbar with a Start button and clock, desktop icons, and
- * the signature "Copying…" file-transfer dialog whose document sheet flies
- * between two folders (drift animation) over a progress bar. Colours follow the
- * palette; the pixel-window identity comes from the shapes.
+ * Retro 95: a genuine Windows 95 desktop — teal ground, grey beveled chrome,
+ * navy title bars — with labelled desktop icons, a taskbar (Start button +
+ * clock) and the signature "Copying…" dialog: a sheet flies between two folders
+ * (drift) over the classic segmented block progress bar, with a working close
+ * button. Uses the authentic Win95 palette; the theme still tints the headline.
  */
 const RETRO_95: FamilyStyle = {
   id: "retro95",
@@ -6678,88 +6723,86 @@ const RETRO_95: FamilyStyle = {
   strokeWidth: 3,
   windowChrome: true,
   frameEffects: {
-    border: { enabled: true, color: "@text/40", width: 3, radius: 0 },
-    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 6, offsetY: 6, opacity: 0.5 },
+    border: { enabled: true, color: W95.shadow, width: 3, radius: 0 },
+    shadow: { enabled: true, color: "#000000", blur: 0, offsetX: 6, offsetY: 6, opacity: 0.4 },
   },
   headlineEffects: {
     shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 5, offsetY: 5, opacity: 0.6 },
   },
   plateShape: "rect",
   scene: () => [
-    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+    shape("Backdrop", FULL, { background: true, fill: W95.teal }),
 
     // Desktop icons, upper-left column.
-    ...desktopIcon("Computer", 56, 70, MDI_MONITOR, "My Computer"),
-    ...desktopIcon("Folder", 56, 220, MDI_FOLDER, "Documents"),
-    ...desktopIcon("Trash", 56, 370, MDI_TRASH, "Recycle Bin"),
+    ...desktopIcon("Computer", 56, 66, IC_MONITOR, "My Computer"),
+    ...desktopIcon("Folder", 56, 224, IC_FOLDER, "Documents"),
+    ...desktopIcon("Trash", 56, 382, IC_TRASH, "Recycle Bin"),
 
-    // Taskbar along the bottom, with a light top rim (raised edge).
-    shape("Taskbar", { x: 0, y: 1016, width: 1920, height: 64 }, { fill: "@surface" }),
-    shape("Taskbar rim", { x: 0, y: 1016, width: 1920, height: 3 }, { fill: "@text/30" }),
-    // Start button.
-    shape("Start button", { x: 12, y: 1024, width: 168, height: 48 }, {
-      fill: "@surface",
-      effects: { border: { enabled: true, color: "@text/40", width: 2, radius: 0 } },
+    // Taskbar: a raised grey bar along the bottom.
+    ...w95Raised("Taskbar", { x: 0, y: 1012, width: 1920, height: 68 }),
+    // Start button (raised).
+    ...w95Raised("Start", { x: 12, y: 1020, width: 176, height: 52 }),
+    icon("Start logo", { x: 26, y: 1030, width: 34, height: 34 }, "window", { body: IC_FLAG, fill: W95.text }),
+    text("Start label", { x: 68, y: 1032, width: 110, height: 32 }, "Start", {
+      fontFamily: "Pixelify Sans",
+      fontSize: 26,
+      fontWeight: 700,
+      fill: W95.text,
     }),
-    icon("Start logo", { x: 24, y: 1032, width: 32, height: 32 }, "window", { body: MDI_WINDOWS, fill: "@accent" }),
-    text("Start label", { x: 64, y: 1034, width: 110, height: 30 }, "Start", {
+    // Clock (sunken well at the right).
+    ...w95Sunken("Clock", { x: 1748, y: 1020, width: 160, height: 52 }),
+    text("Clock time", { x: 1748, y: 1032, width: 160, height: 30 }, "12:00 PM", {
+      fontFamily: "Pixelify Sans",
+      fontSize: 24,
+      fontWeight: 400,
+      align: "center",
+      fill: W95.text,
+    }),
+
+    // The signature file-copy dialog, lower-right — a raised grey window.
+    shape("Copy — drop", { x: CD.x + 6, y: CD.y + 6, width: CD.w, height: CD.h }, { fill: "#00000055" }),
+    ...w95Raised("Copy", { x: CD.x, y: CD.y, width: CD.w, height: CD.h }),
+    // Navy title bar with a light gradient, white title, and a close button.
+    shape("Copy — title bar", { x: CD.x + 5, y: CD.y + 5, width: CD.w - 10, height: 38 }, {
+      fill: W95.title,
+      effects: { gradient: { enabled: true, from: W95.title, to: W95.titleLite, angle: 0 } },
+    }),
+    text("Copy — title", { x: CD.x + 16, y: CD.y + 12, width: 320, height: 26 }, "Copying…", {
       fontFamily: "Pixelify Sans",
       fontSize: 24,
       fontWeight: 700,
-      fill: "@text",
+      fill: W95.titleText,
     }),
-    // Clock, inset at the right.
-    shape("Clock", { x: 1760, y: 1024, width: 148, height: 48 }, {
-      fill: "@surface",
-      effects: { border: { enabled: true, color: "@text/25", width: 2, radius: 0 } },
+    ...w95Raised("Copy — close", { x: CD.x + CD.w - 42, y: CD.y + 9, width: 30, height: 30 }),
+    text("Copy — x", { x: CD.x + CD.w - 42, y: CD.y + 11, width: 30, height: 26 }, "✕", {
+      fontFamily: "Pixelify Sans",
+      fontSize: 22,
+      fontWeight: 700,
+      align: "center",
+      fill: W95.text,
     }),
-    text("Clock time", { x: 1760, y: 1034, width: 148, height: 30 }, "12:00 PM", {
+    // Two folders with a document sheet flying between them (drift = paper fly).
+    icon("Copy — from", { x: CD.x + 44, y: CD.y + 74, width: 82, height: 82 }, "window", { body: IC_FOLDER, fill: W95.text }),
+    icon("Copy — to", { x: CD.x + CD.w - 126, y: CD.y + 74, width: 82, height: 82 }, "window", { body: IC_FOLDER, fill: W95.text }),
+    icon("Copy — sheet", { x: CD.x + CD.w / 2 - 32, y: CD.y + 80, width: 64, height: 64 }, "window", {
+      body: IC_FILE,
+      fill: W95.text,
+      animation: anim("drift", { duration: 1400, intensity: 2.6 }),
+    }),
+    text("Copy — filename", { x: CD.x + 22, y: CD.y + 168, width: 456, height: 24 }, "overlay_assets.zip", {
       fontFamily: "Pixelify Sans",
       fontSize: 22,
       fontWeight: 400,
-      align: "center",
-      fill: "@text",
+      fill: W95.text,
     }),
-
-    // The signature file-copy dialog, lower-right.
-    shape("Copy — shadow", { x: 1376, y: 636, width: 484, height: 258 }, { fill: "@shadow/50" }),
-    shape("Copy — body", { x: 1370, y: 630, width: 484, height: 258 }, {
-      fill: "@surface",
-      effects: { border: { enabled: true, color: "@text/40", width: 3, radius: 0 } },
-    }),
-    shape("Copy — title bar", { x: 1376, y: 636, width: 472, height: 40 }, { fill: "@accent" }),
-    text("Copy — title", { x: 1392, y: 644, width: 300, height: 26 }, "Copying…", {
-      fontFamily: "Pixelify Sans",
-      fontSize: 24,
-      fontWeight: 700,
-      fill: "@background",
-    }),
-    // Two folders with a document sheet flying between them.
-    icon("Copy — from", { x: 1420, y: 700, width: 78, height: 78 }, "window", { body: MDI_FOLDER, fill: "@accent" }),
-    icon("Copy — to", { x: 1726, y: 700, width: 78, height: 78 }, "window", { body: MDI_FOLDER, fill: "@accent" }),
-    icon("Copy — sheet", { x: 1573, y: 706, width: 64, height: 64 }, "window", {
-      body: MDI_FILE,
-      fill: "@text",
-      animation: anim("drift", { duration: 1400, intensity: 2.4 }),
-    }),
-    text("Copy — filename", { x: 1392, y: 796, width: 440, height: 24 }, "overlay_assets.zip", {
-      fontFamily: "Pixelify Sans",
-      fontSize: 20,
-      fontWeight: 400,
-      fill: "@text",
-    }),
-    // Progress bar: track + filled portion.
-    shape("Copy — track", { x: 1392, y: 828, width: 440, height: 26 }, {
-      fill: "@background",
-      effects: { border: { enabled: true, color: "@text/30", width: 2, radius: 0 } },
-    }),
-    shape("Copy — progress", { x: 1394, y: 830, width: 268, height: 22 }, {
-      fill: "@accent",
-      animation: anim("pulse", { duration: 1800, intensity: 0.6 }),
-    }),
+    // Classic segmented progress bar: a sunken track filled with navy blocks.
+    ...w95Sunken("Copy — track", { x: CD.x + 22, y: CD.y + 204, width: 456, height: 32 }),
+    ...Array.from({ length: 9 }, (_, i) =>
+      shape(`Copy — block ${i}`, { x: CD.x + 30 + i * 30, y: CD.y + 210, width: 22, height: 20 }, { fill: W95.block }),
+    ),
   ],
   overlayDecor: () => [
-    icon("Decor — Folder", { x: 90, y: 300, width: 64, height: 64 }, "window", { body: MDI_FOLDER, fill: "@accent", opacity: 0.5 }),
+    icon("Decor — Folder", { x: 90, y: 300, width: 68, height: 68 }, "window", { body: IC_FOLDER, fill: W95.text, opacity: 0.85 }),
   ],
   contentOffsetY: -40,
 };
