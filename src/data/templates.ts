@@ -359,6 +359,7 @@ function windowBox(
     cornerRadius?: number;
     buttons?: boolean;
     gloss?: boolean;
+    chromeStyle?: "dots" | "win95";
     content?: "empty" | "camera" | "chat";
     chatFontSize?: number;
     rows?: number;
@@ -377,6 +378,7 @@ function windowBox(
     cornerRadius: o.cornerRadius ?? 10,
     buttons: o.buttons ?? true,
     gloss: o.gloss ?? true,
+    ...(o.chromeStyle ? { chromeStyle: o.chromeStyle } : {}),
     content: o.content ?? "empty",
     chatFontSize: o.chatFontSize ?? 20,
     usernameColor: "@accent",
@@ -1253,6 +1255,9 @@ interface FamilyStyle {
   windowFill?: string;
   windowTitleFill?: string;
   windowTextFill?: string;
+  /** Title-bar button style for camera/chat windows: "win95" = square raised
+      buttons like the copy dialog. Defaults to the round traffic-lights. */
+  windowChromeStyle?: "dots" | "win95";
   /** Chat panel silhouette. */
   chatShape?: "rect" | "coffin";
   /** Event badges render as two-part pills (icon cap + text block). */
@@ -1571,6 +1576,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           fill: f.windowFill,
           titleBarColor: f.windowTitleFill,
           textColor: f.windowTextFill,
+          chromeStyle: f.windowChromeStyle,
           effects: f.frameEffects,
           animation: anim("glow", { duration: 4200 }),
         })
@@ -1598,6 +1604,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           fill: f.windowFill,
           titleBarColor: f.windowTitleFill,
           textColor: f.windowTextFill,
+          chromeStyle: f.windowChromeStyle,
           effects: f.frameEffects,
         })
       : chatbox(name, box, {
@@ -6752,10 +6759,12 @@ const RETRO_95: FamilyStyle = {
     shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 5, offsetY: 5, opacity: 0.6 },
   },
   plateShape: "rect",
-  // Camera/chat windows in genuine Win95 chrome: grey body, navy title bar.
+  // Camera/chat windows in genuine Win95 chrome: grey body, navy title bar,
+  // square raised buttons (like the copy dialog).
   windowFill: W95.face,
   windowTitleFill: W95.title,
   windowTextFill: W95.titleText,
+  windowChromeStyle: "win95",
   scene: () => [
     shape("Backdrop", FULL, { background: true, fill: W95.teal }),
 

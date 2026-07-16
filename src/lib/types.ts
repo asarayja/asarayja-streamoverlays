@@ -629,6 +629,9 @@ export interface WindowLayer extends LayerBase {
   cornerRadius: number;
   buttons: boolean;
   gloss: boolean;
+  /** Title-bar button style: undefined/"dots" = round traffic-lights (default),
+      "win95" = raised grey square minimise/maximise/close buttons. */
+  chromeStyle?: "dots" | "win95";
   /**
    * What lives inside the frame. `camera` keeps the interior transparent in
    * `live` mode so OBS composites the webcam through it; `chat` paints the

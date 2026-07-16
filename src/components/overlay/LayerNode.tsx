@@ -4180,20 +4180,52 @@ function WindowContent({ layer, ctx, glowBoost }: { layer: WindowLayer; ctx: Ren
         fill={ink}
         wrap="none"
       />
-      {layer.buttons &&
-        [2.4, 1.6, 0.8].map((slot, i) => (
-          <Group key={i} x={w - bar * slot} y={bar / 2}>
-            <Circle radius={btn} stroke={ink} strokeWidth={1.5} />
-            {i === 2 && (
-              <>
-                <Line points={[-btn * 0.45, -btn * 0.45, btn * 0.45, btn * 0.45]} stroke={ink} strokeWidth={1.5} />
-                <Line points={[btn * 0.45, -btn * 0.45, -btn * 0.45, btn * 0.45]} stroke={ink} strokeWidth={1.5} />
-              </>
-            )}
-            {i === 0 && <Line points={[-btn * 0.45, 0, btn * 0.45, 0]} stroke={ink} strokeWidth={1.5} />}
-            {i === 1 && <Rect x={-btn * 0.4} y={-btn * 0.4} width={btn * 0.8} height={btn * 0.8} stroke={ink} strokeWidth={1.5} />}
-          </Group>
-        ))}
+      {layer.buttons && layer.chromeStyle === "win95"
+        ? // Raised grey square buttons with black glyphs — minimise, maximise,
+          // close (✕) — like the copy dialog's close button.
+          (() => {
+            const sz = bar * 0.72;
+            const pad = bar * 0.14;
+            const gap = sz + pad * 0.6;
+            const g = sz * 0.24; // glyph inset
+            const face = "#C0C0C0";
+            const glyph = "#000000";
+            return [0, 1, 2].map((i) => {
+              const bx = w - pad - sz - (2 - i) * gap;
+              const by = (bar - sz) / 2;
+              return (
+                <Group key={i} x={bx} y={by}>
+                  <Rect width={sz} height={sz} fill={face} />
+                  <Rect width={sz} height={2} fill="#FFFFFF" />
+                  <Rect width={2} height={sz} fill="#FFFFFF" />
+                  <Rect y={sz - 2} width={sz} height={2} fill="#808080" />
+                  <Rect x={sz - 2} width={2} height={sz} fill="#808080" />
+                  {i === 0 && <Rect x={g} y={sz - g - 2} width={sz - 2 * g} height={2.5} fill={glyph} />}
+                  {i === 1 && <Rect x={g} y={g} width={sz - 2 * g} height={sz - 2 * g} stroke={glyph} strokeWidth={2} />}
+                  {i === 2 && (
+                    <>
+                      <Line points={[g, g, sz - g, sz - g]} stroke={glyph} strokeWidth={2} />
+                      <Line points={[sz - g, g, g, sz - g]} stroke={glyph} strokeWidth={2} />
+                    </>
+                  )}
+                </Group>
+              );
+            });
+          })()
+        : layer.buttons &&
+          [2.4, 1.6, 0.8].map((slot, i) => (
+            <Group key={i} x={w - bar * slot} y={bar / 2}>
+              <Circle radius={btn} stroke={ink} strokeWidth={1.5} />
+              {i === 2 && (
+                <>
+                  <Line points={[-btn * 0.45, -btn * 0.45, btn * 0.45, btn * 0.45]} stroke={ink} strokeWidth={1.5} />
+                  <Line points={[btn * 0.45, -btn * 0.45, -btn * 0.45, btn * 0.45]} stroke={ink} strokeWidth={1.5} />
+                </>
+              )}
+              {i === 0 && <Line points={[-btn * 0.45, 0, btn * 0.45, 0]} stroke={ink} strokeWidth={1.5} />}
+              {i === 1 && <Rect x={-btn * 0.4} y={-btn * 0.4} width={btn * 0.8} height={btn * 0.8} stroke={ink} strokeWidth={1.5} />}
+            </Group>
+          ))}
       {layer.gloss && (
         <Group
           clipFunc={(c) => {
