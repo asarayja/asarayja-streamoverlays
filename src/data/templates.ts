@@ -1766,7 +1766,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fontFamily: f.display,
       barColor: f.plateTitle ?? "@accent",
       barGradientTo: f.plateBorder ? "#1084D0" : undefined,
-      trackColor: f.plateBorder ? "#4A4A5A" : "@surface/60",
+      trackColor: f.plateBorder ? "#808088" : "@surface/60",
       valueColor: f.plateBorder ? "#FFFFFF" : "@text",
       labelColor: f.plateBorder ? "#FFFFFF" : "@accent",
       runner: true,
@@ -1775,11 +1775,13 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     goal("Sub goal", { x: 560, y: 430, width: 760, height: 150 }, "SUB GOAL", 62, 100, {
       goalStyle: "bar",
       barShape: goalShape,
-      fill: f.plateBorder ? "#000082" : "@surface/88",
+      fill: f.plateFill ?? "@surface/88",
       fontFamily: f.display,
       barColor: f.plateTitle ?? "@accent",
       barGradientTo: f.plateBorder ? "#1084D0" : undefined,
       labelColor: f.plateBorder ? "#FFFFFF" : "@accent",
+      valueColor: f.plateBorder ? "#FFFFFF" : "@text",
+      trackColor: f.plateBorder ? "#808088" : undefined,
       cornerRadius: f.radius,
       runner: true,
       effects: {
@@ -1790,11 +1792,13 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     goal("Donation goal", { x: 560, y: 610, width: 760, height: 150 }, "DONATION GOAL", 340, 500, {
       goalStyle: "bar",
       barShape: goalShape,
-      fill: f.plateBorder ? "#000082" : "@surface/88",
+      fill: f.plateFill ?? "@surface/88",
       fontFamily: f.display,
       barColor: f.plateTitle ?? "@primary",
       barGradientTo: f.plateBorder ? "#1084D0" : undefined,
       labelColor: f.plateBorder ? "#FFFFFF" : "@accent",
+      valueColor: f.plateBorder ? "#FFFFFF" : "@text",
+      trackColor: f.plateBorder ? "#808088" : undefined,
       cornerRadius: f.radius,
       runner: true,
       effects: {

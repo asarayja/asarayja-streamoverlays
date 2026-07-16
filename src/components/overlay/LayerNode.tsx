@@ -3997,6 +3997,20 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         />
       )}
+      {/* Win95 goals get a navy → light-blue title bar behind the label/value,
+          matching the copy dialog; the gray body below holds the progress bar. */}
+      {layer.barGradientTo && (
+        <Rect
+          x={inset}
+          y={inset}
+          width={w - inset * 2}
+          height={h * 0.46}
+          cornerRadius={[layer.cornerRadius, layer.cornerRadius, 0, 0]}
+          fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+          fillLinearGradientEndPoint={{ x: w, y: 0 }}
+          fillLinearGradientColorStops={[0, "#000082", 1, "#1084D0"]}
+        />
+      )}
       <Text
         x={barX}
         y={h * 0.2}
