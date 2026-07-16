@@ -577,94 +577,90 @@ function DrawSettings() {
   }, [open]);
 
   const activeBrush = BRUSH_KINDS.find((b) => b.id === drawBrush)?.label ?? "Pen";
-  const swatch = theme ? resolveColor(drawColor, theme) : "#fff";
 
   return (
-    <div ref={ref} className="relative ml-1">
-      {/* Compact trigger: current brush + colour + size, opens the full panel. */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-lg bg-white/5 px-2 py-1 text-[11px] text-zinc-300 transition-colors hover:bg-white/10"
-        title={t("Brush settings")}
+    <div className="ml-1 flex items-center gap-1.5 rounded-lg bg-white/5 px-2 py-1">
+      {/* Only the brush picker collapses into a dropdown — colour and size stay
+          inline so they're one click away. */}
+      <div ref={ref} className="relative">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium text-zinc-300 transition-colors hover:bg-white/5"
+          title={t("Brush")}
+        >
+          {t(activeBrush)}
+          <ChevronDown className={cx("size-3 text-zinc-500 transition-transform", open && "rotate-180")} />
+        </button>
+        {open && (
+          <div className="absolute left-0 top-full z-50 mt-1.5 w-48 rounded-xl border border-white/10 bg-ink-900 p-1.5 shadow-2xl">
+            <div className="flex flex-wrap gap-1">
+              {BRUSH_KINDS.map((brush) => (
+                <button
+                  key={brush.id}
+                  onClick={() => {
+                    setDrawBrush(brush.id);
+                    setOpen(false);
+                  }}
+                  className={cx(
+                    "rounded px-2 py-1 text-[10px] font-medium transition-colors",
+                    drawBrush === brush.id
+                      ? "bg-brand-500/30 text-brand-300"
+                      : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300",
+                  )}
+                >
+                  {t(brush.label)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <span className="mx-0.5 h-4 w-px bg-white/10" />
+      {DRAW_TOKENS.map((tok) => (
+        <button
+          key={tok}
+          onClick={() => setDrawColor(tok)}
+          title={tok.slice(1)}
+          className={cx(
+            "size-4 rounded-full ring-1 ring-white/20 transition",
+            drawColor === tok && "ring-2 ring-white",
+          )}
+          style={{ background: theme ? resolveColor(tok, theme) : "#fff" }}
+        />
+      ))}
+      {/* Any RGB colour, not just the theme tokens. */}
+      <label
+        title={t("Custom colour")}
+        className={cx(
+          "relative size-4 shrink-0 cursor-pointer overflow-hidden rounded-full ring-1 ring-white/20 transition",
+          !DRAW_TOKENS.includes(drawColor) && "ring-2 ring-white",
+        )}
+        style={{
+          background: !DRAW_TOKENS.includes(drawColor)
+            ? theme
+              ? resolveColor(drawColor, theme)
+              : drawColor
+            : "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)",
+        }}
       >
-        <span className="size-3.5 rounded-full ring-1 ring-white/25" style={{ background: swatch }} />
-        <span className="font-medium">{t(activeBrush)}</span>
-        <span className="font-mono text-[10px] text-zinc-500">{drawWidth}px</span>
-        <ChevronDown className={cx("size-3 text-zinc-500 transition-transform", open && "rotate-180")} />
-      </button>
-
-      {open && (
-        <div className="absolute left-0 top-full z-50 mt-1.5 w-64 rounded-xl border border-white/10 bg-ink-900 p-3 shadow-2xl">
-          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{t("Brush")}</p>
-          <div className="mb-3 flex flex-wrap gap-1">
-            {BRUSH_KINDS.map((brush) => (
-              <button
-                key={brush.id}
-                onClick={() => setDrawBrush(brush.id)}
-                className={cx(
-                  "rounded px-2 py-1 text-[10px] font-medium transition-colors",
-                  drawBrush === brush.id
-                    ? "bg-brand-500/30 text-brand-300"
-                    : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300",
-                )}
-              >
-                {t(brush.label)}
-              </button>
-            ))}
-          </div>
-
-          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{t("Colour")}</p>
-          <div className="mb-3 flex items-center gap-1.5">
-            {DRAW_TOKENS.map((tok) => (
-              <button
-                key={tok}
-                onClick={() => setDrawColor(tok)}
-                title={tok.slice(1)}
-                className={cx(
-                  "size-5 rounded-full ring-1 ring-white/20 transition",
-                  drawColor === tok && "ring-2 ring-white",
-                )}
-                style={{ background: theme ? resolveColor(tok, theme) : "#fff" }}
-              />
-            ))}
-            <label
-              title={t("Custom colour")}
-              className={cx(
-                "relative size-5 shrink-0 cursor-pointer overflow-hidden rounded-full ring-1 ring-white/20 transition",
-                !DRAW_TOKENS.includes(drawColor) && "ring-2 ring-white",
-              )}
-              style={{
-                background: !DRAW_TOKENS.includes(drawColor)
-                  ? theme
-                    ? resolveColor(drawColor, theme)
-                    : drawColor
-                  : "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)",
-              }}
-            >
-              <input
-                type="color"
-                value={theme ? resolveColor(drawColor, theme) : "#ffffff"}
-                onChange={(e) => setDrawColor(e.target.value)}
-                className="absolute inset-0 cursor-pointer opacity-0"
-              />
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{t("Size")}</p>
-            <span className="font-mono text-[10px] text-zinc-400">{drawWidth}px</span>
-          </div>
-          <input
-            type="range"
-            min={1}
-            max={500}
-            value={drawWidth}
-            onChange={(e) => setDrawWidth(Number(e.target.value))}
-            className="mt-1 w-full accent-brand-400"
-            title={t("Brush width")}
-          />
-        </div>
-      )}
+        <input
+          type="color"
+          value={theme ? resolveColor(drawColor, theme) : "#ffffff"}
+          onChange={(e) => setDrawColor(e.target.value)}
+          className="absolute inset-0 cursor-pointer opacity-0"
+        />
+      </label>
+      <input
+        type="range"
+        min={1}
+        max={500}
+        value={drawWidth}
+        onChange={(e) => setDrawWidth(Number(e.target.value))}
+        className="ml-1 w-20 accent-brand-400"
+        title={t("Brush width")}
+      />
+      <span className="w-7 text-center font-mono text-[10px] text-zinc-500">{drawWidth}</span>
     </div>
   );
 }
