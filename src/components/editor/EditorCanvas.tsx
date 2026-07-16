@@ -308,12 +308,50 @@ export function EditorCanvas({
 
   // Bucket fill: flood the clicked region, bounded by the freehand strokes, and
   // drop it in as an image layer below the lines — fill in the sides you drew.
-  const bucketFill = useCallback(() => {
+  const bucketFill = useCallback(async () => {
     const stage = stageRef.current;
     if (!stage || !project) return;
     const ptr = stage.getPointerPosition();
     if (!ptr) return;
     const o = toOverlay(ptr);
+    const hex = resolveColor(drawColor, project.theme);
+
+    // If the click lands on an existing fill, recolour that layer instead of
+    // stacking a new one — filling the same area again just changes its colour.
+    for (let i = project.layers.length - 1; i >= 0; i--) {
+      const l = project.layers[i];
+      if (l.type !== "image" || l.name !== "Fill" || !l.visible || l.locked || !l.src.startsWith("data:")) continue;
+      const img = await new Promise<HTMLImageElement | null>((res) => {
+        const im = new window.Image();
+        im.onload = () => res(im);
+        im.onerror = () => res(null);
+        im.src = l.src;
+      });
+      if (!img) continue;
+      const rc = document.createElement("canvas");
+      rc.width = img.width;
+      rc.height = img.height;
+      const rctx2 = rc.getContext("2d", { willReadFrequently: true });
+      if (!rctx2) continue;
+      rctx2.drawImage(img, 0, 0);
+      const px = Math.floor((o.x / cw) * img.width);
+      const py = Math.floor((o.y / ch) * img.height);
+      if (px < 0 || px >= img.width || py < 0 || py >= img.height) continue;
+      const id = rctx2.getImageData(0, 0, img.width, img.height);
+      if (id.data[(py * img.width + px) * 4 + 3] <= 40) continue; // clicked a hole — not this fill
+      const rgb = hexToRgb(hex);
+      for (let p = 0; p < id.data.length; p += 4) {
+        if (id.data[p + 3] > 0) {
+          id.data[p] = rgb.r;
+          id.data[p + 1] = rgb.g;
+          id.data[p + 2] = rgb.b;
+        }
+      }
+      rctx2.putImageData(id, 0, 0);
+      updateLayer(l.id, { src: rc.toDataURL("image/png") });
+      return;
+    }
+
     const SC = 0.5; // half-res for speed/memory; the image scales back up
     const W = Math.round(cw * SC);
     const H = Math.round(ch * SC);
@@ -387,7 +425,7 @@ export function EditorCanvas({
     const rctx = res.getContext("2d");
     if (!rctx) return;
     const out = rctx.createImageData(W, H);
-    const rgb = hexToRgb(resolveColor(drawColor, project.theme));
+    const rgb = hexToRgb(hex);
     for (const idx of region) {
       const o4 = idx * 4;
       out.data[o4] = rgb.r;
@@ -416,7 +454,7 @@ export function EditorCanvas({
       animation: { ...DEFAULT_ANIMATION },
     };
     insertFillLayer(layer);
-  }, [project, toOverlay, drawColor, insertFillLayer]);
+  }, [project, toOverlay, drawColor, insertFillLayer, cw, ch, updateLayer]);
 
   // Fit when first measured, and again whenever the artboard format changes —
   // but not on ordinary container resizes (the key stays the same).
