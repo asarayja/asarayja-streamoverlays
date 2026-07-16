@@ -10,6 +10,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://asarayja.github.io"),
   title: "Asarayja Stream Overlays — Professional stream overlays in minutes",
   description:
     "Pick a template, fill in your channel profile once, and export overlays for OBS. Static and animated, with true alpha.",

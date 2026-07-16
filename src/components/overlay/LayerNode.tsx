@@ -2958,22 +2958,24 @@ function renderIconEl(
   const strokeWidth = a["stroke-width"] ? Number(a["stroke-width"]) : stroke ? 2 : 0;
   // Duotone icons dim their background layer with an opacity attr.
   const opacity = a.opacity !== undefined ? Number(a.opacity) : a["fill-opacity"] !== undefined ? Number(a["fill-opacity"]) : 1;
-  const common = { key, fill, stroke, strokeWidth, opacity, lineCap: "round" as const, lineJoin: "round" as const, ...shadow };
+  // `key` is passed directly (never spread) — React warns if a key rides inside
+  // a spread props object.
+  const common = { fill, stroke, strokeWidth, opacity, lineCap: "round" as const, lineJoin: "round" as const, ...shadow };
   switch (el.tag) {
     case "path":
-      return <Path {...common} data={a.d} />;
+      return <Path key={key} {...common} data={a.d} />;
     case "circle":
-      return <Circle {...common} x={+a.cx} y={+a.cy} radius={+a.r} />;
+      return <Circle key={key} {...common} x={+a.cx} y={+a.cy} radius={+a.r} />;
     case "ellipse":
-      return <Ellipse {...common} x={+a.cx} y={+a.cy} radiusX={+a.rx} radiusY={+a.ry} />;
+      return <Ellipse key={key} {...common} x={+a.cx} y={+a.cy} radiusX={+a.rx} radiusY={+a.ry} />;
     case "line":
-      return <Line {...common} points={[+a.x1, +a.y1, +a.x2, +a.y2]} />;
+      return <Line key={key} {...common} points={[+a.x1, +a.y1, +a.x2, +a.y2]} />;
     case "rect":
-      return <Rect {...common} x={+a.x || 0} y={+a.y || 0} width={+a.width} height={+a.height} cornerRadius={+a.rx || 0} />;
+      return <Rect key={key} {...common} x={+a.x || 0} y={+a.y || 0} width={+a.width} height={+a.height} cornerRadius={+a.rx || 0} />;
     case "polyline":
-      return <Line {...common} points={parsePoints(a.points)} />;
+      return <Line key={key} {...common} points={parsePoints(a.points)} />;
     case "polygon":
-      return <Line {...common} points={parsePoints(a.points)} closed />;
+      return <Line key={key} {...common} points={parsePoints(a.points)} closed />;
     default:
       return null;
   }
