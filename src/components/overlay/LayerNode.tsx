@@ -3036,10 +3036,14 @@ function TextContent({ layer, ctx, reveal, glowBoost }: { layer: TextLayer; ctx:
   let resolved: string;
   let visible: string;
   if (cycle && cycle.length) {
-    const per = Math.max(200, layer.cycleMs ?? 2000);
+    // A typewriter animation drives the pace (so it shows in the Animation
+    // panel and its Duration edits the per-item time); otherwise self-drive off
+    // cycleMs. Each item shows for `per`, typing out, then the next.
+    const typing = layer.animation.preset === "typewriter";
+    const per = Math.max(200, typing ? layer.animation.duration : layer.cycleMs ?? 2000);
     const idx = Math.floor(ctx.time / per) % cycle.length;
     const frac = (ctx.time % per) / per;
-    const rev = Math.min(1, frac / 0.55); // type over the first ~55%, then hold
+    const rev = typing ? reveal : Math.min(1, frac / 0.55);
     resolved = applyTransform(resolveText(cycle[idx], ctx.profile, missingMode(ctx.mode)), layer.textTransform);
     visible = rev >= 1 ? resolved : resolved.slice(0, Math.ceil(resolved.length * rev));
   } else {
@@ -4178,8 +4182,20 @@ function WindowContent({ layer, ctx, glowBoost }: { layer: WindowLayer; ctx: Ren
         {...borderProps(layer.effects, ctx.theme, w, h)}
         {...shadowProps(layer.effects, ctx.theme, glowBoost)}
       />
-      {/* Title bar: square at the bottom, rounded at the top. */}
-      <Rect width={w} height={bar} cornerRadius={[r, r, 0, 0]} fill={barColor} />
+      {/* Title bar: square at the bottom, rounded at the top. Win95 chrome gets
+          the navy → light-blue gradient (matching the copy dialog). */}
+      {layer.chromeStyle === "win95" ? (
+        <Rect
+          width={w}
+          height={bar}
+          cornerRadius={[r, r, 0, 0]}
+          fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+          fillLinearGradientEndPoint={{ x: w, y: 0 }}
+          fillLinearGradientColorStops={[0, barColor, 1, "#1084D0"]}
+        />
+      ) : (
+        <Rect width={w} height={bar} cornerRadius={[r, r, 0, 0]} fill={barColor} />
+      )}
       <Text
         x={bar * 0.45}
         y={0}

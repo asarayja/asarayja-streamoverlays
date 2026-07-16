@@ -1808,11 +1808,13 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
     base("intermission", "Intermission", "Intermission", [
       ...f.scene(),
       ...flagBar({ x: 120, y: 168, width: 1680, height: 12 }),
-      text("Label", { x: 120, y: 110, width: 700, height: 50 }, "INTERMISSION", {
+      // Centred over the webcam so it clears the left-side desktop icons.
+      text("Label", { x: 120, y: 110, width: 1080, height: 50 }, "INTERMISSION", {
         fontFamily: f.display,
         fontSize: 34,
         fontWeight: f.displayWeight,
-        fill: "@accent",
+        align: "center",
+        fill: f.nameFill ?? "@accent",
         letterSpacing: Math.max(4, f.displayTracking),
       }),
       camera("Webcam", { x: 120, y: 190, width: 1080, height: 608 }),
@@ -6862,7 +6864,7 @@ const RETRO_95: FamilyStyle = {
         "stinger_intro.webm",
         "panel_icons.zip",
       ],
-      cycleMs: 1500,
+      animation: anim("typewriter", { duration: 1500, loop: true }),
     }),
     // Classic segmented progress bar: a sunken track of navy blocks that appear
     // one by one, left to right, until full — then it starts over. Every block
