@@ -1389,6 +1389,8 @@ const STINGER_FORMS: Record<StingerKind, (f: FamilyStyle, dy: number) => LayerSp
 /** Which form each family wears, and the tilt that keeps same-form families
     from matching. Grouped by theme, not by form. */
 const FAMILY_STINGER: Record<string, [StingerKind, number]> = {
+  // Retro computer — glitch bars.
+  retro95: ["glitch", 0],
   // Gothic / fantasy-horror — curtains.
   hallowed: ["veil", 8],
   witch: ["veil", -6],
@@ -6628,7 +6630,142 @@ const SPRING: FamilyStyle = {
   ],
 };
 
+/* MDI icon bodies for the Retro 95 desktop (single paths, recolour with theme). */
+const MDI_MONITOR =
+  '<path fill="currentColor" d="M21 16H3V4h18m0-2H3c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h7v2H8v2h8v-2h-2v-2h7a2 2 0 0 0 2-2V4c0-1.11-.89-2-2-2Z"/>';
+const MDI_FOLDER =
+  '<path fill="currentColor" d="M10 4H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2Z"/>';
+const MDI_TRASH =
+  '<path fill="currentColor" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z"/>';
+const MDI_FILE =
+  '<path fill="currentColor" d="M13 9h5.5L13 3.5V9M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2m9 16v-2H6v2h9m3-4v-2H6v2h12Z"/>';
+const MDI_WINDOWS =
+  '<path fill="currentColor" d="M3 5.1 10.5 4v7.4H3M10.5 12.6V20L3 18.9v-6.3M11.4 3.9 21 2.5v8.9h-9.6M21 12.6v8.9l-9.6-1.4v-7.5"/>';
+
+/** A single labelled desktop icon: the glyph plus its caption below. */
+function desktopIcon(name: string, x: number, y: number, body: string, label: string): LayerSpec[] {
+  return [
+    icon(`Icon — ${name}`, { x: x + 24, y, width: 64, height: 64 }, "window", { body, fill: "@accent" }),
+    text(`Label — ${name}`, { x: x - 16, y: y + 70, width: 144, height: 40 }, label, {
+      fontFamily: "Pixelify Sans",
+      fontSize: 20,
+      fontWeight: 400,
+      align: "center",
+      fill: "@text",
+    }),
+  ];
+}
+
+/**
+ * Retro 95: a Windows 95-style desktop — beveled grey chrome over a flat
+ * themed desktop, a taskbar with a Start button and clock, desktop icons, and
+ * the signature "Copying…" file-transfer dialog whose document sheet flies
+ * between two folders (drift animation) over a progress bar. Colours follow the
+ * palette; the pixel-window identity comes from the shapes.
+ */
+const RETRO_95: FamilyStyle = {
+  id: "retro95",
+  name: "Retro 95",
+  tags: ["Cyberpunk", "Minimal"],
+  display: "Press Start 2P",
+  displayWeight: 400,
+  displayTracking: 2,
+  displayTransform: "uppercase",
+  body: "Pixelify Sans",
+  radius: 0,
+  frameRadius: 0,
+  corners: false,
+  strokeWidth: 3,
+  windowChrome: true,
+  frameEffects: {
+    border: { enabled: true, color: "@text/40", width: 3, radius: 0 },
+    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 6, offsetY: 6, opacity: 0.5 },
+  },
+  headlineEffects: {
+    shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 5, offsetY: 5, opacity: 0.6 },
+  },
+  plateShape: "rect",
+  scene: () => [
+    shape("Backdrop", FULL, { background: true, fill: "@background" }),
+
+    // Desktop icons, upper-left column.
+    ...desktopIcon("Computer", 56, 70, MDI_MONITOR, "My Computer"),
+    ...desktopIcon("Folder", 56, 220, MDI_FOLDER, "Documents"),
+    ...desktopIcon("Trash", 56, 370, MDI_TRASH, "Recycle Bin"),
+
+    // Taskbar along the bottom, with a light top rim (raised edge).
+    shape("Taskbar", { x: 0, y: 1016, width: 1920, height: 64 }, { fill: "@surface" }),
+    shape("Taskbar rim", { x: 0, y: 1016, width: 1920, height: 3 }, { fill: "@text/30" }),
+    // Start button.
+    shape("Start button", { x: 12, y: 1024, width: 168, height: 48 }, {
+      fill: "@surface",
+      effects: { border: { enabled: true, color: "@text/40", width: 2, radius: 0 } },
+    }),
+    icon("Start logo", { x: 24, y: 1032, width: 32, height: 32 }, "window", { body: MDI_WINDOWS, fill: "@accent" }),
+    text("Start label", { x: 64, y: 1034, width: 110, height: 30 }, "Start", {
+      fontFamily: "Pixelify Sans",
+      fontSize: 24,
+      fontWeight: 700,
+      fill: "@text",
+    }),
+    // Clock, inset at the right.
+    shape("Clock", { x: 1760, y: 1024, width: 148, height: 48 }, {
+      fill: "@surface",
+      effects: { border: { enabled: true, color: "@text/25", width: 2, radius: 0 } },
+    }),
+    text("Clock time", { x: 1760, y: 1034, width: 148, height: 30 }, "12:00 PM", {
+      fontFamily: "Pixelify Sans",
+      fontSize: 22,
+      fontWeight: 400,
+      align: "center",
+      fill: "@text",
+    }),
+
+    // The signature file-copy dialog, lower-right.
+    shape("Copy — shadow", { x: 1376, y: 636, width: 484, height: 258 }, { fill: "@shadow/50" }),
+    shape("Copy — body", { x: 1370, y: 630, width: 484, height: 258 }, {
+      fill: "@surface",
+      effects: { border: { enabled: true, color: "@text/40", width: 3, radius: 0 } },
+    }),
+    shape("Copy — title bar", { x: 1376, y: 636, width: 472, height: 40 }, { fill: "@accent" }),
+    text("Copy — title", { x: 1392, y: 644, width: 300, height: 26 }, "Copying…", {
+      fontFamily: "Pixelify Sans",
+      fontSize: 24,
+      fontWeight: 700,
+      fill: "@background",
+    }),
+    // Two folders with a document sheet flying between them.
+    icon("Copy — from", { x: 1420, y: 700, width: 78, height: 78 }, "window", { body: MDI_FOLDER, fill: "@accent" }),
+    icon("Copy — to", { x: 1726, y: 700, width: 78, height: 78 }, "window", { body: MDI_FOLDER, fill: "@accent" }),
+    icon("Copy — sheet", { x: 1573, y: 706, width: 64, height: 64 }, "window", {
+      body: MDI_FILE,
+      fill: "@text",
+      animation: anim("drift", { duration: 1400, intensity: 2.4 }),
+    }),
+    text("Copy — filename", { x: 1392, y: 796, width: 440, height: 24 }, "overlay_assets.zip", {
+      fontFamily: "Pixelify Sans",
+      fontSize: 20,
+      fontWeight: 400,
+      fill: "@text",
+    }),
+    // Progress bar: track + filled portion.
+    shape("Copy — track", { x: 1392, y: 828, width: 440, height: 26 }, {
+      fill: "@background",
+      effects: { border: { enabled: true, color: "@text/30", width: 2, radius: 0 } },
+    }),
+    shape("Copy — progress", { x: 1394, y: 830, width: 268, height: 22 }, {
+      fill: "@accent",
+      animation: anim("pulse", { duration: 1800, intensity: 0.6 }),
+    }),
+  ],
+  overlayDecor: () => [
+    icon("Decor — Folder", { x: 90, y: 300, width: 64, height: 64 }, "window", { body: MDI_FOLDER, fill: "@accent", opacity: 0.5 }),
+  ],
+  contentOffsetY: -40,
+};
+
 const NEW_FAMILIES: FamilyStyle[] = [
+  RETRO_95,
   CHRISTMAS,
   NEW_YEAR,
   SUMMER,
