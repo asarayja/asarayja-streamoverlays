@@ -6836,10 +6836,12 @@ const RETRO_95: FamilyStyle = {
     // Two folders with a document sheet flying between them (drift = paper fly).
     icon("Copy — from", { x: CD.x + 44, y: CD.y + 74, width: 82, height: 82 }, "window", { body: IC_FOLDER, fill: W95.text }),
     icon("Copy — to", { x: CD.x + CD.w - 126, y: CD.y + 74, width: 82, height: 82 }, "window", { body: IC_FOLDER, fill: W95.text }),
-    icon("Copy — sheet", { x: CD.x + CD.w / 2 - 32, y: CD.y + 80, width: 64, height: 64 }, "window", {
+    // Home at the left folder; convey flies it one-way to the right folder,
+    // fading out at the end and reappearing at the left — over and over.
+    icon("Copy — sheet", { x: CD.x + 100, y: CD.y + 82, width: 60, height: 60 }, "window", {
       body: IC_FILE,
       fill: W95.text,
-      animation: anim("drift", { duration: 1400, intensity: 2.6 }),
+      animation: anim("convey", { duration: 1500, intensity: 1.3 }),
     }),
     // The filename types itself out and loops — like files ticking past.
     text("Copy — filename", { x: CD.x + 22, y: CD.y + 168, width: 456, height: 24 }, "overlay_assets.zip", {
@@ -6849,14 +6851,14 @@ const RETRO_95: FamilyStyle = {
       fill: W95.text,
       animation: anim("typewriter", { duration: 2600, loop: true }),
     }),
-    // Classic segmented progress bar: a sunken track filled with navy blocks.
-    // Each block fades on a staggered loop, so a fill wave sweeps across like a
-    // real copy. Every block is its own layer — editable in the editor.
+    // Classic segmented progress bar: a sunken track of navy blocks. A bright
+    // band sweeps across and wraps around (staggered breathe), like a copy in
+    // progress. Every block is its own layer — editable in the editor.
     ...w95Sunken("Copy — track", { x: CD.x + 22, y: CD.y + 204, width: 456, height: 32 }),
-    ...Array.from({ length: 9 }, (_, i) =>
-      shape(`Copy — block ${i}`, { x: CD.x + 30 + i * 30, y: CD.y + 210, width: 22, height: 20 }, {
+    ...Array.from({ length: 13 }, (_, i) =>
+      shape(`Copy — block ${i}`, { x: CD.x + 30 + i * 33, y: CD.y + 210, width: 24, height: 20 }, {
         fill: W95.block,
-        animation: anim("fade", { duration: 1800, delay: i * 170, loop: true }),
+        animation: anim("breathe", { duration: 1600, delay: i * 120, loop: true }),
       }),
     ),
   ],

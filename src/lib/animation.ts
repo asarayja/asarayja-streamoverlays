@@ -101,6 +101,7 @@ const CONTINUOUS = new Set([
   "wobble",
   "orbit",
   "drift",
+  "convey",
   "breathe",
 ]);
 
@@ -213,6 +214,14 @@ export function sample(anim: Animation, t: number): AnimationSample {
           dx: Math.sin(phase * tau) * 60 * k,
           dy: Math.sin(phase * tau * 0.5 + 1) * 10 * k,
         };
+      case "convey": {
+        // A one-way glide: travel left→right over the cycle, fading in at the
+        // start and out at the end so the snap-back to the start is invisible.
+        // Like the Win95 copy dialog's sheet flying between folders, forever.
+        const inF = Math.min(1, phase / 0.14);
+        const outF = Math.min(1, (1 - phase) / 0.14);
+        return { ...IDENTITY, dx: phase * 240 * k, opacity: Math.max(0, Math.min(inF, outF)) };
+      }
       case "breathe":
         // A slow fade in and out — calmer than flicker, no motion.
         return { ...IDENTITY, opacity: 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(phase * tau)) };
