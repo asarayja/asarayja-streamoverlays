@@ -620,13 +620,13 @@ function DrawSettings() {
       <input
         type="range"
         min={1}
-        max={40}
+        max={500}
         value={drawWidth}
         onChange={(e) => setDrawWidth(Number(e.target.value))}
         className="ml-1 w-20 accent-brand-400"
         title={t("Brush width")}
       />
-      <span className="w-5 text-center font-mono text-[10px] text-zinc-500">{drawWidth}</span>
+      <span className="w-7 text-center font-mono text-[10px] text-zinc-500">{drawWidth}</span>
     </div>
   );
 }

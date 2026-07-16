@@ -914,7 +914,7 @@ function TypeSection({ layer, theme, live, commit, beginGesture }: TypeSectionPr
               label={t("Thickness")}
               suffix=" px"
               min={1}
-              max={80}
+              max={500}
               value={Math.round(shape.strokeWidth ?? 6)}
               onBegin={beginGesture}
               onChange={(strokeWidth) => live({ strokeWidth })}
