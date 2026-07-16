@@ -1247,6 +1247,12 @@ interface FamilyStyle {
   socialPill?: string;
   /** Panels use windows instead of plates. */
   windowChrome?: boolean;
+  /** Window chrome colours (camera/chat windows). Default to the theme
+      (@surface/85 body, @primary title bar, @text title). Override for a fixed
+      look, e.g. Retro 95's grey body + navy title bar. */
+  windowFill?: string;
+  windowTitleFill?: string;
+  windowTextFill?: string;
   /** Chat panel silhouette. */
   chatShape?: "rect" | "coffin";
   /** Event badges render as two-part pills (icon cap + text block). */
@@ -1562,6 +1568,9 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           fontFamily: f.body,
           fontSize: 13,
           cornerRadius: f.frameRadius,
+          fill: f.windowFill,
+          titleBarColor: f.windowTitleFill,
+          textColor: f.windowTextFill,
           effects: f.frameEffects,
           animation: anim("glow", { duration: 4200 }),
         })
@@ -1586,6 +1595,9 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
           fontFamily: f.body,
           fontSize: 13,
           cornerRadius: f.radius,
+          fill: f.windowFill,
+          titleBarColor: f.windowTitleFill,
+          textColor: f.windowTextFill,
           effects: f.frameEffects,
         })
       : chatbox(name, box, {
@@ -6740,6 +6752,10 @@ const RETRO_95: FamilyStyle = {
     shadow: { enabled: true, color: "@shadow", blur: 0, offsetX: 5, offsetY: 5, opacity: 0.6 },
   },
   plateShape: "rect",
+  // Camera/chat windows in genuine Win95 chrome: grey body, navy title bar.
+  windowFill: W95.face,
+  windowTitleFill: W95.title,
+  windowTextFill: W95.titleText,
   scene: () => [
     shape("Backdrop", FULL, { background: true, fill: W95.teal }),
 
