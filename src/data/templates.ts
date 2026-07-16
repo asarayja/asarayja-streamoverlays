@@ -6843,9 +6843,8 @@ const RETRO_95: FamilyStyle = {
       }),
     ),
   ],
-  overlayDecor: () => [
-    icon("Decor — Folder", { x: 90, y: 300, width: 68, height: 68 }, "window", { body: IC_FOLDER, fill: W95.text, opacity: 0.85 }),
-  ],
+  // No overlayDecor: it also lands on alerts, where a stray folder looked odd.
+  // The desktop identity lives in scene() on the full-screen scenes instead.
   contentOffsetY: -40,
 };
 
