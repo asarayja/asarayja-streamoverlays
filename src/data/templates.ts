@@ -1199,6 +1199,12 @@ interface FamilyStyle {
   /** Headline fill token. Defaults to "@text"; set to "@background" for a
       hollow outlined headline (paired with a border in headlineEffects). */
   displayFill?: string;
+  /** Channel-name fill. Defaults to "@accent"; override when the scene ground
+      is fixed (e.g. Retro 95's teal) so the name doesn't clash with the palette
+      accent. */
+  nameFill?: string;
+  /** Slogan fill. Defaults to "@textSecondary". */
+  sloganFill?: string;
   displayWeight: number;
   displayTracking: number;
   displayTransform: "none" | "uppercase";
@@ -1517,7 +1523,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fontWeight: f.displayWeight,
       italic: f.displayItalic,
       align: "center",
-      fill: "@accent",
+      fill: f.nameFill ?? "@accent",
       letterSpacing: Math.max(2, f.displayTracking * 0.5),
       textTransform: f.displayTransform,
       // The accent-coloured name reads fine on the usual dark grounds, but the
@@ -1533,7 +1539,7 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fontSize: 24,
       fontWeight: 400,
       align: "center",
-      fill: "@textSecondary",
+      fill: f.sloganFill ?? "@textSecondary",
     });
 
   // Social bars stay still — no entrance, no motion.
@@ -6716,6 +6722,10 @@ const RETRO_95: FamilyStyle = {
   displayWeight: 400,
   displayTracking: 2,
   displayTransform: "uppercase",
+  // Fixed teal desktop, so scene copy is Win95 white — not the palette accent.
+  displayFill: "#FFFFFF",
+  nameFill: "#FFFFFF",
+  sloganFill: "#E8E8E8",
   body: "Pixelify Sans",
   radius: 0,
   frameRadius: 0,
