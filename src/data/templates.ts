@@ -6789,16 +6789,23 @@ const RETRO_95: FamilyStyle = {
       fill: W95.text,
       animation: anim("drift", { duration: 1400, intensity: 2.6 }),
     }),
+    // The filename types itself out and loops — like files ticking past.
     text("Copy — filename", { x: CD.x + 22, y: CD.y + 168, width: 456, height: 24 }, "overlay_assets.zip", {
       fontFamily: "Pixelify Sans",
       fontSize: 22,
       fontWeight: 400,
       fill: W95.text,
+      animation: anim("typewriter", { duration: 2600, loop: true }),
     }),
     // Classic segmented progress bar: a sunken track filled with navy blocks.
+    // Each block fades on a staggered loop, so a fill wave sweeps across like a
+    // real copy. Every block is its own layer — editable in the editor.
     ...w95Sunken("Copy — track", { x: CD.x + 22, y: CD.y + 204, width: 456, height: 32 }),
     ...Array.from({ length: 9 }, (_, i) =>
-      shape(`Copy — block ${i}`, { x: CD.x + 30 + i * 30, y: CD.y + 210, width: 22, height: 20 }, { fill: W95.block }),
+      shape(`Copy — block ${i}`, { x: CD.x + 30 + i * 30, y: CD.y + 210, width: 22, height: 20 }, {
+        fill: W95.block,
+        animation: anim("fade", { duration: 1800, delay: i * 170, loop: true }),
+      }),
     ),
   ],
   overlayDecor: () => [
