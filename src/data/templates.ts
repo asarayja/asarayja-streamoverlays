@@ -248,6 +248,7 @@ function goal(
     fill?: string;
     trackColor?: string;
     barColor?: string;
+    barGradientTo?: string;
     labelColor?: string;
     valueColor?: string;
     fontFamily?: string;
@@ -267,6 +268,7 @@ function goal(
     fill: o.fill ?? "@surface/90",
     trackColor: o.trackColor ?? "@surface/55",
     barColor: o.barColor ?? "@accent",
+    ...(o.barGradientTo ? { barGradientTo: o.barGradientTo } : {}),
     labelColor: o.labelColor ?? "@accent",
     valueColor: o.valueColor ?? "@text",
     fontFamily: o.fontFamily ?? "Inter",
@@ -1763,9 +1765,10 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       goalStyle: "ring",
       fontFamily: f.display,
       barColor: f.plateTitle ?? "@accent",
+      barGradientTo: f.plateBorder ? "#1084D0" : undefined,
       trackColor: f.plateFill ?? "@surface/60",
       valueColor: f.plateText ?? "@text",
-      labelColor: f.plateTitle ?? "@accent",
+      labelColor: f.plateText ?? "@accent",
       runner: true,
       effects: { glow: { enabled: true, color: "@glow", strength: f.plateBorder ? 0 : 26 } },
     }),
@@ -1775,7 +1778,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fill: f.plateFill ?? "@surface/88",
       fontFamily: f.display,
       barColor: f.plateTitle ?? "@accent",
-      labelColor: f.plateTitle ?? "@accent",
+      barGradientTo: f.plateBorder ? "#1084D0" : undefined,
+      labelColor: f.plateText ?? "@accent",
       cornerRadius: f.radius,
       runner: true,
       effects: {
@@ -1789,7 +1793,8 @@ function familyScreens(f: FamilyStyle): BaseTemplate[] {
       fill: f.plateFill ?? "@surface/88",
       fontFamily: f.display,
       barColor: f.plateTitle ?? "@primary",
-      labelColor: f.plateTitle ?? "@accent",
+      barGradientTo: f.plateBorder ? "#1084D0" : undefined,
+      labelColor: f.plateText ?? "@accent",
       cornerRadius: f.radius,
       runner: true,
       effects: {

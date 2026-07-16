@@ -4028,7 +4028,14 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
           width={fillW}
           height={barH}
           cornerRadius={r}
-          fill={barColor}
+          fill={layer.barGradientTo ? undefined : barColor}
+          {...(layer.barGradientTo
+            ? {
+                fillLinearGradientStartPoint: { x: 0, y: 0 },
+                fillLinearGradientEndPoint: { x: fillW, y: 0 },
+                fillLinearGradientColorStops: [0, barColor, 1, resolveColor(layer.barGradientTo, ctx.theme)],
+              }
+            : {})}
           {...shadowProps(layer.effects, ctx.theme, glowBoost)}
         />
       )}

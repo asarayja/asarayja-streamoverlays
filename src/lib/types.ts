@@ -826,6 +826,9 @@ export interface GoalLayer extends LayerBase {
   trackColor: ColorValue;
   /** Filled portion. */
   barColor: ColorValue;
+  /** Optional: fade the filled bar from `barColor` to this colour (a Win95/98
+      progress gradient). Solid when unset. */
+  barGradientTo?: ColorValue;
   labelColor: ColorValue;
   valueColor: ColorValue;
   fontFamily: string;
