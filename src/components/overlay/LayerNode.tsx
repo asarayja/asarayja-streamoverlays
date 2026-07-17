@@ -3967,6 +3967,8 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
   const barX = padX;
   const barY = h - h * 0.24 - barH;
   const r = barH / 2;
+  // Win95 progress bars are square; everyone else keeps the rounded pill.
+  const barRadius = layer.barGradientTo ? 0 : r;
   const fillW = frac <= 0 ? 0 : Math.max(barH, barW * frac);
 
   return (
@@ -4026,14 +4028,14 @@ function GoalContent({ layer, ctx, glowBoost }: { layer: GoalLayer; ctx: RenderC
         fill={valueColor}
         {...textShadow}
       />
-      <Rect x={barX} y={barY} width={barW} height={barH} cornerRadius={r} fill={trackColor} />
+      <Rect x={barX} y={barY} width={barW} height={barH} cornerRadius={barRadius} fill={trackColor} />
       {fillW > 0 && (
         <Rect
           x={barX}
           y={barY}
           width={fillW}
           height={barH}
-          cornerRadius={r}
+          cornerRadius={barRadius}
           fill={layer.barGradientTo ? undefined : barColor}
           {...(layer.barGradientTo
             ? {
